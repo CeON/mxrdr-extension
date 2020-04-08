@@ -5,6 +5,9 @@
         [glassfish_directory]/domains/domain1/docroot/logos/
 
 
-- Configure your Dataverse installation to make use of the supplied `footer_logos_mxrdr.html` file:
+- Copy the `dataverse.default.properites` file to your `~/.dataverse/` folder, and change the file name to `dataverse.properties` (if you haven't already done so)
 
-        curl -X PUT -d 'footer_logos_mxrdr.html' [dataverse_web_address]/api/admin/settings/:FooterCustomizationFile
+
+- Edit the `~/.dataverse/dataverse.properites` file by adding the path to the footer HTML file in the line `FooterCustomizationFile=`:
+
+        FooterCustomizationFile=[path_to_html_file]
