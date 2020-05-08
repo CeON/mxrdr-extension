@@ -6,3 +6,4 @@
 src/main/resources/theme/**/*.css
 src/main/resources/theme/**/*.css.map
 
+/target/
