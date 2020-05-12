@@ -1,0 +1,55 @@
+###CBF: VERSION 1.5, CBFlib v0.7.8 - PILATUS detectors
+
+data_p14x4_w1_3_00001
+
+_array_data.header_convention "PILATUS_1.2"
+_array_data.header_contents
+;
+# Detector: PILATUS 6M-F, S/N 60-0117-F
+# 2019-10-16T17:57:06.959
+# Pixel_size 172e-6 m x 172e-6 m
+# Silicon sensor, thickness 0.000450 m
+# Exposure_time 0.0377450 s
+# Exposure_period 0.0401800 s
+# Tau = 124.0e-09 s
+# Count_cutoff 152194 counts
+# Threshold_setting: 8500 eV
+# Gain_setting: low gain (vrf = -0.300)
+# N_excluded_pixels = 502
+# Excluded_pixels: badpix_mask.tif
+# Flat_field: FF_p6m0117_E17000_T8500_vrf_m0p30.tif
+# Trim_file: p6m0117_E17000_T8500_vrf_m0p30.bin
+# Image_path: .../beegfs/P13/2019/user/20191016/RAW_DATA/User/
+# Wavelength 0.72932 A
+# Detector_distance 0.19050 m
+# Beam_xy (1221.62, 1257.86) pixels
+# Start_angle 303.5800 deg.
+# Angle_increment 0.1000 deg.
+# Detector_2theta 0.0000 deg.
+# Kappa 0.0012 deg.
+# Phi 180.0110 deg.
+# Phi_increment 0.0000 deg.
+# Omega 303.5800 deg.
+# Omega_increment 0.1000 deg.
+# Oscillation_axis OMEGA
+;
+
+_array_data.data
+;
+--CIF-BINARY-FORMAT-SECTION--
+Content-Type: application/octet-stream;
+     conversions="x-CBF_BYTE_OFFSET"
+Content-Transfer-Encoding: BINARY
+X-Binary-Size: 6225745
+X-Binary-ID: 1
+X-Binary-Element-Type: "signed 32-bit integer"
+X-Binary-Element-Byte-Order: LITTLE_ENDIAN
+Content-MD5: yL+hpz3CDm4PKRE1CFXFaA==
+X-Binary-Number-of-Elements: 6224001
+X-Binary-Size-Fastest-Dimension: 2463
+X-Binary-Size-Second-Dimension: 2527
+X-Binary-Size-Padding: 4095
+
+--CIF-BINARY-FORMAT-SECTION----
+;
+

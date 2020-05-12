@@ -1,14 +1,11 @@
 package edu.harvard.iq.dataverse.importer.metadata.mxrdr;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CbfMetadataFields {
 
-    private Map<String, UnaryOperator<String>> metadataFilters;
+    private final List<MetadataField> metadataFilters;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -16,94 +13,72 @@ public class CbfMetadataFields {
         metadataFilters = prepareCbfFilters();
     }
 
+    // -------------------- GETTERS --------------------
+
+    public List<MetadataField> getMetadataFilters() {
+        return metadataFilters;
+    }
+
     // -------------------- PRIVATE --------------------
 
-    private Map<String, UnaryOperator<String>> prepareCbfFilters() {
-        HashMap<String, UnaryOperator<String>> filters = new HashMap<>();
+    private List<MetadataField> prepareCbfFilters() {
+        List<MetadataField> filters = new ArrayList<>();
 
-        filters.put("detectorType", cbf -> {
-            if (cbf.contains("Detector:")) {
-                String[] splittedCbf = cbf.split(" ");
-                return splittedCbf[2] + " " + splittedCbf[3].replaceAll(",","");
-            }
-            return "";
-        });
+        filters.add(new MetadataField("detectorType", cbf -> extractDetectorType(cbf.toLowerCase(), cbf)));
 
-        filters.put("detectorSerialNumber", cbf -> {
-            if (cbf.contains("S/N")) {
-                String[] splittedCbf = cbf.split(" ");
-                return splittedCbf[5];
-            }
-            return "";
-        });
+        MetadataField measurementField = new MetadataField("dataCollection");
+        filters.add(measurementField);
 
-        filters.put("detectorDistance", cbf -> {
-            if (cbf.contains("Detector_distance")) {
-                String[] splittedCbf = cbf.split(" ");
-                return splittedCbf[2];
-            }
-            return "";
-        });
-
-        filters.put("oscillationStepSize", cbf -> {
-            if (cbf.contains("Angle_increment")) {
-                String[] splittedCbf = cbf.split(" ");
-                return splittedCbf[2];
-            }
-            return "";
-        });
-
-        filters.put("overload", cbf -> {
-            if (cbf.contains("Count_cutoff")) {
-                String[] splittedCbf = cbf.split(" ");
-                return splittedCbf[2];
-            }
-            return "";
-        });
-
-        filters.put("orgX", cbf -> {
-            if (cbf.contains("Beam_xy")) {
-                String[] splittedCbf = cbf.split(" ");
-                return splittedCbf[2]
-                        .replace("(", "")
-                        .replace(",","");
-            }
-            return "";
-        });
-
-        filters.put("orgY", cbf -> {
-            if (cbf.contains("Beam_xy")) {
-                String[] splittedCbf = cbf.split(" ");
-                return splittedCbf[3]
-                        .replace(")", "");
-            }
-            return "";
-        });
-
-        filters.put("sensorThickness", cbf -> {
-            if (cbf.contains("thickness")) {
-                String[] splittedCbf = cbf.split(" ");
-                return splittedCbf[4];
-            }
-            return "";
-        });
-
-        filters.put("startingAngle", cbf -> {
-            if (cbf.contains("Start_angle")) {
-                String[] splittedCbf = cbf.split(" ");
-                return splittedCbf[2];
-            }
-            return "";
-        });
-
-        filters.put("wavelength", cbf -> {
-            if (cbf.contains("Wavelength")) {
-                String[] splittedCbf = cbf.split(" ");
-                return splittedCbf[2];
-            }
-            return "";
-        });
+        measurementField.getChildFields().add(new MetadataField("dataCollectionDetectorDistance",
+                                                                cbf -> extractField(cbf.toLowerCase(), cbf, "detector_distance", 2)));
+        measurementField.getChildFields().add(new MetadataField("dataCollectionOscillationStepSize",
+                                                                cbf -> extractField(cbf.toLowerCase(), cbf, "angle_increment", 2)));
+        measurementField.getChildFields().add(new MetadataField("dataCollectionDetectorOverload",
+                                                                cbf -> extractField(cbf.toLowerCase(), cbf, "count_cutoff", 2)));
+        measurementField.getChildFields().add(new MetadataField("dataCollectionDetectorThickness",
+                                                                cbf -> extractField(cbf.toLowerCase(), cbf, "thickness", 4)));
+        measurementField.getChildFields().add(new MetadataField("dataCollectionStartingAngle",
+                                                                cbf -> extractField(cbf.toLowerCase(), cbf, "start_angle", 2)));
+        measurementField.getChildFields().add(new MetadataField("dataCollectionWavelength",
+                                                                cbf -> extractField(cbf.toLowerCase(), cbf, "wavelength", 2)));
+        measurementField.getChildFields().add(new MetadataField("dataCollectionOrgX", cbf -> extractOrgX(cbf.toLowerCase(), cbf)));
+        measurementField.getChildFields().add(new MetadataField("dataCollectionOrgY", cbf -> extractOrgY(cbf.toLowerCase(), cbf)));
 
         return filters;
+    }
+
+    private String extractDetectorType(String normalizedCbfLine, String originalCbfLine) {
+        if (normalizedCbfLine.contains("detector:")) {
+            String[] splittedCbf = originalCbfLine.split(" ");
+            return splittedCbf[2] + " " + splittedCbf[3].replaceAll(",", "");
+        }
+        return "";
+    }
+
+    private String extractField(String normalizedCbfLine, String originalCbfLine, String filteredField, int fieldPosition) {
+        if (normalizedCbfLine.contains(filteredField)) {
+            String[] splittedCbf = originalCbfLine.split(" ");
+            return splittedCbf[fieldPosition];
+        }
+        return "";
+    }
+
+    private String extractOrgX(String normalizedCbfLine, String originalCbfLine) {
+        if (normalizedCbfLine.contains("beam_xy")) {
+            String[] splittedCbf = originalCbfLine.split(" ");
+            return splittedCbf[2]
+                    .replace("(", "")
+                    .replace(",", "");
+        }
+        return "";
+    }
+
+    private String extractOrgY(String normalizedCbfLine, String originalCbfLine) {
+        if (normalizedCbfLine.contains("beam_xy")) {
+            String[] splittedCbf = originalCbfLine.split(" ");
+            return splittedCbf[3]
+                    .replace(")", "");
+        }
+        return "";
     }
 }
