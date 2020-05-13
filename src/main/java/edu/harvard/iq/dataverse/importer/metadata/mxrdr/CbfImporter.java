@@ -36,8 +36,6 @@ import java.util.logging.Logger;
 @ApplicationScoped
 public class CbfImporter implements MetadataImporter {
 
-    private static final Logger logger = Logger.getLogger(CbfImporter.class.getCanonicalName());
-
     private ImporterRegistry registry;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -83,8 +81,7 @@ public class CbfImporter implements MetadataImporter {
         if (map.containsKey(CbfImporterForm.CBF_FILE)) {
             File cbfFile = (File) map.get(CbfImporterForm.CBF_FILE);
 
-            List<String> cbfLines = Try.of(() -> readCbfWithoutBinaryData(cbfFile))
-                    .getOrElseThrow(throwable -> new IllegalStateException("Cbf file could not be loaded", throwable));
+            List<String> cbfLines = readCbfWithoutBinaryData(cbfFile);
 
             return extractMetadataFields(cbfLines);
         }
@@ -125,7 +122,7 @@ public class CbfImporter implements MetadataImporter {
             }
 
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "There was a problem with reading cbf file", e);
+           throw new IllegalStateException("There was a problem with reading cbf file", e);
         }
 
         return lines;
