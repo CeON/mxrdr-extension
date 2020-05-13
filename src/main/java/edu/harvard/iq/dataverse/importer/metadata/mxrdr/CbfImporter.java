@@ -16,7 +16,10 @@ import org.omnifaces.cdi.Eager;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,15 +29,22 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Eager
 @ApplicationScoped
 public class CbfImporter implements MetadataImporter {
 
+    private static final Logger logger = Logger.getLogger(CbfImporter.class.getCanonicalName());
 
-    private final ImporterRegistry registry;
+    private ImporterRegistry registry;
 
     // -------------------- CONSTRUCTORS --------------------
+
+    @Deprecated
+    public CbfImporter() {
+    }
 
     @Inject
     public CbfImporter(ImporterRegistry registry) {
@@ -55,14 +65,16 @@ public class CbfImporter implements MetadataImporter {
 
     @Override
     public ResourceBundle getBundle(Locale locale) {
-        return null;
+        return ResourceBundle.getBundle("CbfImporterBundle", locale);
     }
 
     @Override
     public ImporterData getImporterData() {
         return new ImporterData()
+                .addDescription("cbf.modal.description")
                 .addField(ImporterData.ImporterField.of(CbfImporterForm.CBF_FILE, ImporterFieldType.UPLOAD_TEMP_FILE,
-                                                        true, "", ""));
+                                                        true, getBundle(Locale.ENGLISH).getString("cbf.label"),
+                                                        ""));
     }
 
     @Override
@@ -71,7 +83,7 @@ public class CbfImporter implements MetadataImporter {
         if (map.containsKey(CbfImporterForm.CBF_FILE)) {
             File cbfFile = (File) map.get(CbfImporterForm.CBF_FILE);
 
-            List<String> cbfLines = Try.of(() -> Files.readAllLines(cbfFile.toPath()))
+            List<String> cbfLines = Try.of(() -> readCbfWithoutBinaryData(cbfFile))
                     .getOrElseThrow(throwable -> new IllegalStateException("Cbf file could not be loaded", throwable));
 
             return extractMetadataFields(cbfLines);
@@ -84,15 +96,10 @@ public class CbfImporter implements MetadataImporter {
     public Map<ImporterFieldKey, String> validate(Map<ImporterFieldKey, Object> importerInput) {
         Map<ImporterFieldKey, String> errors = new HashMap<>();
 
-        if (!importerInput.containsKey(CbfImporterForm.CBF_FILE)) {
-            errors.put(CbfImporterForm.CBF_FILE, "Nie ma pliku");
-            return errors;
-        }
-
         File cbfFile = (File) importerInput.get(CbfImporterForm.CBF_FILE);
 
-        if (!FilenameUtils.getExtension(cbfFile.getName()).equals("cbf")) {
-            errors.put(CbfImporterForm.CBF_FILE, "exten");
+        if (cbfFile != null && !FilenameUtils.getExtension(cbfFile.getName()).equals("cbf")) {
+            errors.put(CbfImporterForm.CBF_FILE, getBundle(Locale.ENGLISH).getString("cbf.error.wrongFile"));
             return errors;
         }
 
@@ -100,6 +107,29 @@ public class CbfImporter implements MetadataImporter {
     }
 
     // -------------------- PRIVATE --------------------
+
+    /**
+     * Reads headers from cbf file while skipping binary data which is very long in terms of text lines.
+     */
+    private List<String> readCbfWithoutBinaryData(File cbfFile) {
+        List<String> lines = new ArrayList<>();
+
+        try (BufferedReader reader = Files.newBufferedReader(cbfFile.toPath(), Charset.forName("windows-1252"))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.contains("CIF-BINARY-FORMAT-SECTION")) {
+                    break;
+                }
+                lines.add(line);
+            }
+
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "There was a problem with reading cbf file", e);
+        }
+
+        return lines;
+    }
 
     private List<ResultField> extractMetadataFields(List<String> cbfLines) {
         List<MetadataField> metadataFilters = new CbfMetadataFields().getMetadataFilters();

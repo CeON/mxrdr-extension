@@ -21,6 +21,9 @@ public class CbfMetadataFields {
 
     // -------------------- PRIVATE --------------------
 
+    /**
+     * Filters based on script made by scientists.
+     */
     private List<MetadataField> prepareCbfFilters() {
         List<MetadataField> filters = new ArrayList<>();
 

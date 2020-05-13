@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
+/**
+ * Class designed to hold metdata fields with filter made to extract desired field.
+ */
 public class MetadataField {
 
     private final String name;
@@ -27,6 +30,10 @@ public class MetadataField {
         return name;
     }
 
+    /**
+     * Filter function which helps extract metadata field from String line.
+     * @return extracted field value
+     */
     public UnaryOperator<String> getFieldFilter() {
         return fieldFilter;
     }
