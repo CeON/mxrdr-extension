@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.importer.metadata.mxrdr;
+package pl.edu.icm.pl.mxrdr.extension.importer;
 
 
 import com.google.common.collect.Iterables;
@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldType;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterRegistry;
 import edu.harvard.iq.dataverse.importer.metadata.MetadataImporter;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
-import io.vavr.control.Try;
 import org.apache.commons.io.FilenameUtils;
 import org.omnifaces.cdi.Eager;
 
@@ -29,8 +28,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Eager
 @ApplicationScoped
@@ -58,7 +55,7 @@ public class CbfImporter implements MetadataImporter {
 
     @Override
     public String getMetadataBlockName() {
-        return "macromolecularcrystallography";
+        return MetadataBlock.MXRDR.getMetadataBlockName();
     }
 
     @Override

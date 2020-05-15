@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.importer.metadata.mxrdr;
+package pl.edu.icm.pl.mxrdr.extension.importer;
 
 import edu.harvard.iq.dataverse.importer.metadata.ImporterData;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldKey;
@@ -17,7 +17,7 @@ import java.util.ResourceBundle;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CbfImporterIT {
+public class CbfImporterTest {
 
     private final CbfImporter cbfImporter = new CbfImporter(new ImporterRegistry());
 

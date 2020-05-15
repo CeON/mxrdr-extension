@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.importer.metadata.mxrdr;
+package pl.edu.icm.pl.mxrdr.extension.importer;
 
 import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldKey;
 
