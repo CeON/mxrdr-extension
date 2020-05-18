@@ -19,7 +19,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class CbfImporterTest {
 
-    private final CbfImporter cbfImporter = new CbfImporter(new ImporterRegistry());
+    private final CbfImporter cbfImporter = new CbfImporter(new ImporterRegistry(), new CbfFileParser());
+
+    // -------------------- TESTS --------------------
 
     @Test
     public void getMetadataBlockName() {
@@ -67,22 +69,22 @@ public class CbfImporterTest {
         assertEquals("PILATUS 6M-F", resultFields.get(0).getValue());
 
         ResultField parentOfMultiple = resultFields.get(1);
-        assertEquals("dataCollectionOscillationStepSize", parentOfMultiple.getChildren().get(0).getName());
-        assertEquals("0.1000", parentOfMultiple.getChildren().get(0).getValue());
-        assertEquals("dataCollectionStartingAngle", parentOfMultiple.getChildren().get(1).getName());
-        assertEquals("303.5800", parentOfMultiple.getChildren().get(1).getValue());
-        assertEquals("dataCollectionOrgX", parentOfMultiple.getChildren().get(2).getName());
-        assertEquals("1221.62", parentOfMultiple.getChildren().get(2).getValue());
-        assertEquals("dataCollectionOrgY", parentOfMultiple.getChildren().get(3).getName());
-        assertEquals("1257.86", parentOfMultiple.getChildren().get(3).getValue());
-        assertEquals("dataCollectionDetectorDistance", parentOfMultiple.getChildren().get(4).getName());
-        assertEquals("0.19050", parentOfMultiple.getChildren().get(4).getValue());
-        assertEquals("dataCollectionWavelength", parentOfMultiple.getChildren().get(5).getName());
-        assertEquals("0.72932", parentOfMultiple.getChildren().get(5).getValue());
-        assertEquals("dataCollectionDetectorOverload", parentOfMultiple.getChildren().get(6).getName());
-        assertEquals("152194", parentOfMultiple.getChildren().get(6).getValue());
-        assertEquals("dataCollectionDetectorThickness", parentOfMultiple.getChildren().get(7).getName());
-        assertEquals("0.000450", parentOfMultiple.getChildren().get(7).getValue());
+        assertTrue(containsName("dataCollectionOscillationStepSize", parentOfMultiple));
+        assertTrue(containsValue("0.1000", parentOfMultiple));
+        assertTrue(containsName("dataCollectionStartingAngle", parentOfMultiple));
+        assertTrue(containsValue("303.5800", parentOfMultiple));
+        assertTrue(containsName("dataCollectionOrgX", parentOfMultiple));
+        assertTrue(containsValue("1221.62", parentOfMultiple));
+        assertTrue(containsName("dataCollectionOrgY", parentOfMultiple));
+        assertTrue(containsValue("1257.86", parentOfMultiple));
+        assertTrue(containsName("dataCollectionDetectorDistance", parentOfMultiple));
+        assertTrue(containsValue("0.19050", parentOfMultiple));
+        assertTrue(containsName("dataCollectionWavelength", parentOfMultiple));
+        assertTrue(containsValue("0.72932", parentOfMultiple));
+        assertTrue(containsName("dataCollectionDetectorOverload", parentOfMultiple));
+        assertTrue(containsValue("152194", parentOfMultiple));
+        assertTrue(containsName("dataCollectionDetectorThickness", parentOfMultiple));
+        assertTrue(containsValue("0.000450", parentOfMultiple));
     }
 
     @Test
@@ -113,5 +115,15 @@ public class CbfImporterTest {
         assertEquals(1, validate.size());
         assertEquals(ResourceBundle.getBundle("CbfImporterBundle",Locale.ENGLISH).getString("cbf.error.wrongFile"),
                      validate.get(CbfImporterForm.CBF_FILE));
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private boolean containsName(String name, ResultField parent) {
+        return parent.getChildren().stream().anyMatch(field -> field.getName().equals(name));
+    }
+
+    private boolean containsValue(String value, ResultField parent) {
+        return parent.getChildren().stream().anyMatch(field -> field.getValue().equals(value));
     }
 }

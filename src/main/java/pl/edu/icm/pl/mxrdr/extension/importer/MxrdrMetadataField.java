@@ -1,6 +1,6 @@
 package pl.edu.icm.pl.mxrdr.extension.importer;
 
-public enum MxrdrMetadataField {
+enum MxrdrMetadataField {
     DETECTOR_TYPE("detectorType"),
     DATA_COLLECTION("dataCollection"),
     DATA_COLLECTION_DETECTOR_DISTANCE("dataCollectionDetectorDistance"),

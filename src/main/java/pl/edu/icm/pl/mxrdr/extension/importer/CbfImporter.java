@@ -34,6 +34,7 @@ import java.util.ResourceBundle;
 public class CbfImporter implements MetadataImporter {
 
     private ImporterRegistry registry;
+    private CbfFileParser cbfFileParser;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -42,8 +43,9 @@ public class CbfImporter implements MetadataImporter {
     }
 
     @Inject
-    public CbfImporter(ImporterRegistry registry) {
+    public CbfImporter(ImporterRegistry registry, CbfFileParser cbfFileParser) {
         this.registry = registry;
+        this.cbfFileParser = cbfFileParser;
     }
 
     // -------------------- LOGIC --------------------
@@ -80,7 +82,7 @@ public class CbfImporter implements MetadataImporter {
 
             List<String> cbfLines = readCbfWithoutBinaryData(cbfFile);
 
-            return extractMetadataFields(cbfLines);
+            return cbfFileParser.parse(cbfLines);
         }
 
         return Collections.emptyList();
@@ -123,57 +125,5 @@ public class CbfImporter implements MetadataImporter {
         }
 
         return lines;
-    }
-
-    private List<ResultField> extractMetadataFields(List<String> cbfLines) {
-        List<MetadataField> metadataFilters = new CbfMetadataFields().getMetadataFilters();
-        List<ResultField> extractedMetadata = new ArrayList<>();
-
-        for (String line : cbfLines) {
-            for (MetadataField metadataFilter : metadataFilters) {
-
-                if (metadataFilter.getChildFields().isEmpty() && !metadataFilter.getFieldFilter().apply(line).isEmpty()) {
-                    extractedMetadata.add(ResultField.of(metadataFilter.getName(),
-                                                         metadataFilter.getFieldFilter().apply(line)));
-                } else if (!metadataFilter.getChildFields().isEmpty()) {
-                    extractChildField(extractedMetadata, line, metadataFilter);
-                }
-            }
-
-
-        }
-
-        return extractedMetadata;
-    }
-
-    private ResultField extractChildField(List<ResultField> extractedMetadata, String line, MetadataField metadataFilter) {
-        List<ResultField> parsedChildren = new ArrayList<>();
-
-        for (MetadataField childField : metadataFilter.getChildFields()) {
-
-            if (!childField.getFieldFilter().apply(line).isEmpty()) {
-                parsedChildren.add(ResultField.of(childField.getName(), childField.getFieldFilter().apply(line)));
-            }
-        }
-
-        Optional<ResultField> parentField = extractedMetadata.stream()
-                .filter(field -> field.getName().equals(metadataFilter.getName()))
-                .findFirst();
-
-        ResultField freshParentField = parentField
-                .map(resultField -> copyFieldWithNewChildren(resultField,
-                                                             extractedMetadata,
-                                                             parsedChildren))
-                .orElseGet(() -> ResultField.of(metadataFilter.getName(), parsedChildren.toArray(new ResultField[0])));
-
-        extractedMetadata.add(freshParentField);
-        return freshParentField;
-    }
-
-    private ResultField copyFieldWithNewChildren(ResultField resultField, List<ResultField> extractedMetadata, List<ResultField> freshChildren) {
-        extractedMetadata.remove(resultField);
-        return ResultField.of(resultField.getName(),
-                              Lists.newArrayList(Iterables.concat(freshChildren,
-                                                                  resultField.getChildren())).toArray(new ResultField[0]));
     }
 }
