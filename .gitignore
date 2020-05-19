@@ -3,7 +3,7 @@
 **/target/*
 *.iml
 
-src/main/resources/theme/**/*.css
-src/main/resources/theme/**/*.css.map
+src/main/theme/**/*.css
+src/main/theme/**/*.css.map
 
 /target/
