@@ -12,6 +12,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <war.source.directory>${project.build.directory}/generated-webapp</war.source.directory>
+        <war.theme.path>resources/vecler</war.theme.path>
     </properties>
 
     <dependencies>
@@ -49,12 +51,75 @@
     </dependencies>
 
     <build>
-        <testResources>
-        </testResources>
-        <resources>
-        </resources>
-        
         <plugins>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-main-theme</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeTypes>war</includeTypes>
+                            <includes>${war.theme.path}/**</includes>
+                            <outputDirectory>${war.source.directory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-mxrdr-theme</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/theme</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${war.source.directory}/${war.theme.path}</outputDirectory>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.github.warmuuh</groupId>
+                <artifactId>libsass-maven-plugin</artifactId>
+                <version>0.2.10-libsass_3.5.3</version>
+                <executions>
+                    <execution>
+                        <id>sass-compile</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <inputPath>${war.source.directory}/${war.theme.path}</inputPath>
+                            <outputPath>${war.source.directory}/${war.theme.path}</outputPath>
+                            <sourceMapOutputPath>${war.source.directory}/${war.theme.path}</sourceMapOutputPath>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.bit3</groupId>
+                        <artifactId>jsass</artifactId>
+                        <version>5.9.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -70,10 +135,14 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.2.3</version>
                 <configuration>
+                    <warSourceDirectory>${war.source.directory}</warSourceDirectory>
                     <overlays>
                         <overlay>
                             <groupId>edu.harvard.iq</groupId>
                             <artifactId>dataverse-webapp</artifactId>
+                            <excludes>
+                                <exclude>${war.theme.path}/**</exclude>
+                            </excludes>
                         </overlay>
                         <overlay>
                             <!-- Here will be processed this project -->
@@ -81,54 +150,7 @@
                     </overlays>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>com.github.warmuuh</groupId>
-                <artifactId>libsass-maven-plugin</artifactId>
-                <version>0.2.10-libsass_3.5.3</version>
-                <executions>
-                    <execution>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>io.bit3</groupId>
-                        <artifactId>jsass</artifactId>
-                        <version>5.9.1</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <inputPath>${basedir}/src/main/resources/theme/</inputPath>
-                    <outputPath>${basedir}/src/main/resources/theme/</outputPath>
-                    <sourceMapOutputPath>${basedir}/src/main/resources/theme/</sourceMapOutputPath>
-                </configuration>
-            </plugin>
-            
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>create-distribution</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>assembly/assets.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            
         </plugins>
-        
     </build>
 
 </project>
