@@ -1,7 +1,8 @@
-package pl.edu.icm.pl.mxrdr.extension.importer;
+package pl.edu.icm.pl.mxrdr.extension.importer.cbf;
 
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
+import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
