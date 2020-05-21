@@ -26,8 +26,9 @@
         </dependency>
         <dependency>
             <groupId>edu.harvard.iq</groupId>
-            <artifactId>dataverse-extension-common</artifactId>
+            <artifactId>dataverse-webapp</artifactId>
             <version>4.11</version>
+            <classifier>classes</classifier>
             <scope>provided</scope>
         </dependency>
         <dependency>
