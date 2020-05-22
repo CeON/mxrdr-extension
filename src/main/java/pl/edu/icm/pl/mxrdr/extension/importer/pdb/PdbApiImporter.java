@@ -3,11 +3,15 @@ package pl.edu.icm.pl.mxrdr.extension.importer.pdb;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterData;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldKey;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldType;
+import edu.harvard.iq.dataverse.importer.metadata.ImporterRegistry;
 import edu.harvard.iq.dataverse.importer.metadata.MetadataImporter;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import org.omnifaces.cdi.Eager;
 import pl.edu.icm.pl.mxrdr.extension.importer.MetadataBlock;
 
+import javax.annotation.PostConstruct;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.HashMap;
@@ -16,10 +20,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-@Eager
-@ApplicationScoped
+@Singleton
+@Startup
 public class PdbApiImporter implements MetadataImporter {
 
+    private ImporterRegistry registry;
     private PdbApiCaller apiCaller;
     private PdbXmlParser xmlParser;
 
@@ -30,12 +35,18 @@ public class PdbApiImporter implements MetadataImporter {
     }
 
     @Inject
-    public PdbApiImporter(PdbApiCaller apiCaller, PdbXmlParser xmlParser) {
+    public PdbApiImporter(ImporterRegistry registry, PdbApiCaller apiCaller, PdbXmlParser xmlParser) {
+        this.registry = registry;
         this.apiCaller = apiCaller;
         this.xmlParser = xmlParser;
     }
 
     // -------------------- LOGIC --------------------
+
+    @PostConstruct
+    public void init() {
+        registry.register(this);
+    }
 
     @Override
     public String getMetadataBlockName() {
@@ -44,7 +55,7 @@ public class PdbApiImporter implements MetadataImporter {
 
     @Override
     public ResourceBundle getBundle(Locale locale) {
-        return null;
+        return ResourceBundle.getBundle("PdbApiImporterBundle", locale);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package pl.edu.icm.pl.mxrdr.extension.importer.pdb;
 
+import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import org.apache.xerces.parsers.DOMParser;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -8,6 +9,7 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.dom.DOMDocument;
 import org.dom4j.io.DOMReader;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 
@@ -24,21 +26,25 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class PdbXmlParserTest {
 
+    private PdbXmlParser pdbXmlParser;
+
+    // -------------------- TESTS --------------------
+
     @Test
-    public void parse() throws URISyntaxException, IOException, DocumentException {
-        DOMReader reader = new DOMReader();
+    public void parse() throws URISyntaxException, IOException {
 
+        //given
         File cbfFile = new File(getClass().getClassLoader().getResource("xml/pdbFromApi.xml").toURI());
-        String api = new PdbApiCaller().fetchPdbData("6qky");
-        List<String> strings = Files.readAllLines(cbfFile.toPath());
+        String xmlContent = new String(Files.readAllBytes(cbfFile.toPath()));
 
-        Document document = DocumentHelper.parseText(api);
+        //when
+        List<ResultField> resultFields = pdbXmlParser.parse(xmlContent);
 
-        List<Node> nodes = document.selectNodes("/dataset/record");
+        //then
+        //resultFields.stream().filter(field -> field.getName().equals() && field.getValue().equals()).findFirst()
 
-        for (Node node : nodes) {
-            System.out.println(node.selectSingleNode("dimEntity.structureId").getName());
-        }
-        System.out.println(document);
     }
+
+    // -------------------- PRIVATE --------------------
+
 }

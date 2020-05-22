@@ -23,6 +23,7 @@ public enum MxrdrMetadataField {
     UNIT_CELL_PARAMETERS_ALPHA("unitCellParametersAlpha"),
     UNIT_CELL_PARAMETERS_BETA("unitCellParametersBeta"),
     UNIT_CELL_PARAMETERS_GAMMA("unitCellParametersGamma"),
+    OVERALL("overall"),
     OVERALL_DATA_RESOLUTION_RANGE_HIGH("overallDataResolutionRangeHigh"),
     RESIDUE_COUNT("residueCount"),
     ATOM_SITE_COUNT("atomSiteCount"),
