@@ -6,13 +6,11 @@ import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldType;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterRegistry;
 import edu.harvard.iq.dataverse.importer.metadata.MetadataImporter;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
-import org.omnifaces.cdi.Eager;
 import pl.edu.icm.pl.mxrdr.extension.importer.MetadataBlock;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.List;
@@ -63,14 +61,14 @@ public class PdbApiImporter implements MetadataImporter {
         return new ImporterData().addField(ImporterData.ImporterField.of(PdbApiForm.STRUCTURE_ID,
                                                                   ImporterFieldType.INPUT,
                                                                   true,
-                                                                  "Structure id",
-                                                                  "id"));
+                                                                  "importer.label.id",
+                                                                  "importer.label.description.id"));
     }
 
     @Override
     public List<ResultField> fetchMetadata(Map<ImporterFieldKey, Object> map) {
 
-        String pdbXml = apiCaller.fetchPdbData((String) map.get(PdbApiForm.STRUCTURE_ID));
+        String pdbXml = apiCaller.fetchPdbData((String) map.get(PdbApiForm.STRUCTURE_ID), "https://www.rcsb.org/pdb/rest/customReport.xml");
 
         return xmlParser.parse(pdbXml);
     }
