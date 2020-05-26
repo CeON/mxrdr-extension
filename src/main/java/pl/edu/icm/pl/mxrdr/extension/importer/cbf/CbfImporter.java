@@ -1,8 +1,6 @@
-package pl.edu.icm.pl.mxrdr.extension.importer;
+package pl.edu.icm.pl.mxrdr.extension.importer.cbf;
 
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterData;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldKey;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldType;
@@ -11,6 +9,7 @@ import edu.harvard.iq.dataverse.importer.metadata.MetadataImporter;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import org.apache.commons.io.FilenameUtils;
 import org.omnifaces.cdi.Eager;
+import pl.edu.icm.pl.mxrdr.extension.importer.MetadataBlock;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -26,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 @Eager

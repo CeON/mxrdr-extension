@@ -1,13 +1,13 @@
-package pl.edu.icm.pl.mxrdr.extension.importer;
+package pl.edu.icm.pl.mxrdr.extension.importer.pdb;
 
 import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldKey;
 
-public enum CbfImporterForm implements ImporterFieldKey {
-    CBF_FILE;
+public enum PdbApiForm implements ImporterFieldKey {
+    STRUCTURE_ID;
 
     @Override
     public String getName() {
-        return "CbfImporterForm";
+        return "PdbApiForm";
     }
 
     @Override

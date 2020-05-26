@@ -6,6 +6,9 @@ import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldType;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterRegistry;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import org.junit.jupiter.api.Test;
+import pl.edu.icm.pl.mxrdr.extension.importer.cbf.CbfFileParser;
+import pl.edu.icm.pl.mxrdr.extension.importer.cbf.CbfImporter;
+import pl.edu.icm.pl.mxrdr.extension.importer.cbf.CbfImporterForm;
 
 import java.io.File;
 import java.net.URISyntaxException;
