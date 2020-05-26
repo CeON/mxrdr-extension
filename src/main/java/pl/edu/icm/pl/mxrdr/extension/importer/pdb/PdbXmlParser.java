@@ -9,6 +9,7 @@ import org.dom4j.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
+import pl.edu.icm.pl.mxrdr.extension.importer.SymmetryStructureMapper;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
@@ -41,11 +42,7 @@ public class PdbXmlParser {
                 getOrElseThrow(throwable -> new IllegalStateException("Pdb xml didn't have any nodes", throwable));
 
         List<ResultField> result = new ArrayList<>(parseSingleFields(firstNode));
-        result.addAll(parseFamilyFields(firstNode));
-
-        for (Node node : nodes) {
-            result.add(parseAllSequenceFields(node));
-        }
+        result.addAll(parseFamilyFields(nodes));
 
         return Lists.newArrayList(result);
     }
@@ -58,6 +55,12 @@ public class PdbXmlParser {
                                              .filter(value -> !value.equals("null"));
 
         return nodeValue.map(extractedNodeValue -> ResultField.of(fieldName.getValue(), extractedNodeValue));
+    }
+
+    private Optional<String> retrieveNodeValue(String nodeName, Node node) {
+        return Optional.ofNullable(node.selectSingleNode(nodeName))
+                                             .map(Node::getText)
+                                             .filter(value -> !value.equals("null"));
     }
 
     private ResultField parseAllSequenceFields(Node node) {
@@ -76,8 +79,9 @@ public class PdbXmlParser {
                 .ifPresent(fields::add);
         retrieveNodeValue(MxrdrMetadataField.MOLECULAR_WEIGHT, "dimStructure.structureMolecularWeight", firstNode)
                 .ifPresent(fields::add);
-        retrieveNodeValue(MxrdrMetadataField.SPACE_GROUP, "dimStructure.spaceGroup", firstNode)
-                .ifPresent(fields::add);
+        retrieveNodeValue("dimStructure.spaceGroup", firstNode)
+                .ifPresent(nodeValue -> fields.add(ResultField.of(MxrdrMetadataField.SPACE_GROUP.getValue(),
+                                                              ResultField.ofValue(SymmetryStructureMapper.map(nodeValue)))));
         retrieveNodeValue(MxrdrMetadataField.RESIDUE_COUNT, "dimStructure.residueCount", firstNode)
                 .ifPresent(fields::add);
         retrieveNodeValue(MxrdrMetadataField.ATOM_SITE_COUNT, "dimStructure.atomSiteCount", firstNode)
@@ -104,8 +108,8 @@ public class PdbXmlParser {
         retrieveNodeValue(MxrdrMetadataField.CITATION_AUTHOR, "dimStructure.citationAuthor", firstNode)
                 .map(this::splitByEverySecondComma)
                 .ifPresent(splitedField -> splitedField
-                                                 .forEach(field -> fields.add(ResultField.of(MxrdrMetadataField.CITATION_AUTHOR
-                                                                                                     .getValue(), field))));
+                        .forEach(field -> fields.add(ResultField.of(MxrdrMetadataField.CITATION_AUTHOR
+                                                                            .getValue(), field))));
         retrieveNodeValue(MxrdrMetadataField.CITATION_JOURNAL, "dimStructure.journalName", firstNode)
                 .ifPresent(fields::add);
         retrieveNodeValue(MxrdrMetadataField.CITATION_YEAR, "dimStructure.publicationYear", firstNode)
@@ -120,18 +124,19 @@ public class PdbXmlParser {
         Pattern pattern = Pattern.compile("[^,]+,[^,]+");
         Matcher matcher = pattern.matcher(field.getValue());
 
-        while (matcher.find()){
+        while (matcher.find()) {
 
             Try.of(matcher::group)
-            .onSuccess(value -> data.add(value.trim()))
-            .onFailure(throwable -> logger.error("There was a problem with splitting "+ field.getName() + " field", throwable));
+               .onSuccess(value -> data.add(value.trim()))
+               .onFailure(throwable -> logger.error("There was a problem with splitting " + field.getName() + " field", throwable));
         }
 
         return data;
     }
 
-    private Set<ResultField> parseFamilyFields(Node firstNode) {
+    private Set<ResultField> parseFamilyFields(List<Node> recordNodes) {
         Set<ResultField> fields = new HashSet<>();
+        Node firstNode = recordNodes.get(0);
 
         Optional.of(parseOveralls(firstNode))
                 .filter(field -> !field.getChildren().isEmpty())
@@ -145,23 +150,27 @@ public class PdbXmlParser {
                 .filter(field -> !field.getChildren().isEmpty())
                 .ifPresent(fields::add);
 
+        recordNodes.forEach(node -> Optional.of(parseAllSequenceFields(node))
+                                            .filter(field -> !field.getChildren().isEmpty())
+                                            .ifPresent(fields::add));
+
         return fields;
     }
 
     private ResultField parseUnitCells(Node firstNode) {
         List<ResultField> unitCellChildren = new ArrayList<>();
 
-        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETERS_A, "dimStructure.lengthOfUnitCellLatticeA", firstNode)
+        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_A, "dimStructure.lengthOfUnitCellLatticeA", firstNode)
                 .ifPresent(unitCellChildren::add);
-        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETERS_B, "dimStructure.lengthOfUnitCellLatticeB", firstNode)
+        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_B, "dimStructure.lengthOfUnitCellLatticeB", firstNode)
                 .ifPresent(unitCellChildren::add);
-        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETERS_C, "dimStructure.lengthOfUnitCellLatticeC", firstNode)
+        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_C, "dimStructure.lengthOfUnitCellLatticeC", firstNode)
                 .ifPresent(unitCellChildren::add);
-        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETERS_ALPHA, "dimStructure.unitCellAngleAlpha", firstNode)
+        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_ALPHA, "dimStructure.unitCellAngleAlpha", firstNode)
                 .ifPresent(unitCellChildren::add);
-        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETERS_BETA, "dimStructure.unitCellAngleBeta", firstNode)
+        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_BETA, "dimStructure.unitCellAngleBeta", firstNode)
                 .ifPresent(unitCellChildren::add);
-        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETERS_GAMMA, "dimStructure.unitCellAngleGamma", firstNode)
+        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_GAMMA, "dimStructure.unitCellAngleGamma", firstNode)
                 .ifPresent(unitCellChildren::add);
 
         return ResultField.of(MxrdrMetadataField.UNIT_CELL_PARAMETERS.getValue(), unitCellChildren.toArray(new ResultField[0]));

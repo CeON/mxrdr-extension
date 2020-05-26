@@ -35,7 +35,6 @@ public class PdbXmlParserTest {
         //then
         assertEquals("4IWR", retrieveFieldValue(MxrdrMetadataField.PDB_ID.getValue(), resultFields));
         assertEquals("68792.63", retrieveFieldValue(MxrdrMetadataField.MOLECULAR_WEIGHT.getValue(), resultFields));
-        assertEquals("P 32", retrieveFieldValue(MxrdrMetadataField.SPACE_GROUP.getValue(), resultFields));
         assertEquals("428", retrieveFieldValue(MxrdrMetadataField.RESIDUE_COUNT.getValue(), resultFields));
         assertEquals("4513", retrieveFieldValue(MxrdrMetadataField.ATOM_SITE_COUNT.getValue(), resultFields));
         assertEquals("428", retrieveFieldValue(MxrdrMetadataField.RESIDUE_COUNT.getValue(), resultFields));
@@ -50,55 +49,7 @@ public class PdbXmlParserTest {
         assertEquals("Acta Crystallogr.,Sect.F", retrieveFieldValue(MxrdrMetadataField.CITATION_JOURNAL.getValue(), resultFields));
         assertEquals("2013", retrieveFieldValue(MxrdrMetadataField.CITATION_YEAR.getValue(), resultFields));
 
-        ResultField unitCell = retrieveField(MxrdrMetadataField.UNIT_CELL_PARAMETERS.getValue(), resultFields);
-        List<ResultField> unitCellChildren = unitCell.getChildren();
-
-        assertEquals("48.02", retrieveFieldValue(MxrdrMetadataField.UNIT_CELL_PARAMETERS_A.getValue(), unitCellChildren));
-        assertEquals("48.02", retrieveFieldValue(MxrdrMetadataField.UNIT_CELL_PARAMETERS_B.getValue(), unitCellChildren));
-        assertEquals("218.35", retrieveFieldValue(MxrdrMetadataField.UNIT_CELL_PARAMETERS_C.getValue(), unitCellChildren));
-        assertEquals("90.0", retrieveFieldValue(MxrdrMetadataField.UNIT_CELL_PARAMETERS_ALPHA.getValue(), unitCellChildren));
-        assertEquals("90.0", retrieveFieldValue(MxrdrMetadataField.UNIT_CELL_PARAMETERS_BETA.getValue(), unitCellChildren));
-        assertEquals("120.0", retrieveFieldValue(MxrdrMetadataField.UNIT_CELL_PARAMETERS_GAMMA.getValue(), unitCellChildren));
-
-        ResultField dataCollection = retrieveField(MxrdrMetadataField.DATA_COLLECTION.getValue(), resultFields);
-        List<ResultField> dataCollectionChildren = dataCollection.getChildren();
-
-        assertEquals("100.0", retrieveFieldValue(MxrdrMetadataField.DATA_COLLECTION_TEMPERATURE.getValue(), dataCollectionChildren));
-
-        ResultField overall = retrieveField(MxrdrMetadataField.OVERALL.getValue(), resultFields);
-        List<ResultField> overallChildren = overall.getChildren();
-
-        assertEquals("2.4", retrieveFieldValue(MxrdrMetadataField.OVERALL_DATA_RESOLUTION_RANGE_HIGH.getValue(), overallChildren));
-
-        List<String> structureAuthors = retrieveFieldValues(MxrdrMetadataField.PDB_STRUCTURE_AUTHOR.getValue(), resultFields);
-
-        assertStructureAuthors(structureAuthors);
-
-        List<String> citationAuthors = retrieveFieldValues(MxrdrMetadataField.CITATION_AUTHOR.getValue(), resultFields);
-
-        assertCitationAuthor(citationAuthors);
-
-        List<ResultField> entities = retrieveFields(MxrdrMetadataField.ENTITY.getValue(), resultFields);
-        List<ResultField> entityChildren = entities
-                .stream()
-                .map(ResultField::getChildren)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-
-        List<String> sequences = retrieveFieldValues(MxrdrMetadataField.ENTITY_SEQUENCE.getValue(), entityChildren);
-        List<String> chainIds = retrieveFieldValues(MxrdrMetadataField.ENTITY_ID.getValue(), entityChildren);
-
-        assertTrue(sequences.contains("GSHMESFLLSKVSFVIKKIRLEKGMTQEDLAYKSNLDRTYISGIERNSRNLTIKSLELIMKGLEVSDVVFFEMLIKEILKHD"));
-        assertTrue(sequences.contains("ATGTGACTTATAGTCCGTGTGATTA"));
-        assertTrue(sequences.contains("TAATCACACGGACTATAAGTCACAT"));
-        assertTrue(chainIds.contains("A"));
-        assertTrue(chainIds.contains("B"));
-        assertTrue(chainIds.contains("C"));
-        assertTrue(chainIds.contains("D"));
-        assertTrue(chainIds.contains("E"));
-        assertTrue(chainIds.contains("F"));
-        assertTrue(chainIds.contains("G"));
-        assertTrue(chainIds.contains("H"));
+        checkFamilyFields(resultFields);
     }
 
     @Test
@@ -112,6 +63,75 @@ public class PdbXmlParserTest {
     }
 
     // -------------------- PRIVATE --------------------
+
+    private void checkFamilyFields(List<ResultField> resultFields) {
+        ResultField unitCell = retrieveField(MxrdrMetadataField.UNIT_CELL_PARAMETERS.getValue(), resultFields);
+        List<ResultField> unitCellChildren = unitCell.getChildren();
+
+        ResultField dataCollection = retrieveField(MxrdrMetadataField.DATA_COLLECTION.getValue(), resultFields);
+        List<ResultField> dataCollectionChildren = dataCollection.getChildren();
+
+        ResultField overall = retrieveField(MxrdrMetadataField.OVERALL.getValue(), resultFields);
+        List<ResultField> overallChildren = overall.getChildren();
+
+        ResultField spaceGroup = retrieveField(MxrdrMetadataField.SPACE_GROUP.getValue(), resultFields);
+        List<ResultField> spaceGroupChildren = spaceGroup.getChildren();
+
+        List<ResultField> entities = retrieveFields(MxrdrMetadataField.ENTITY.getValue(), resultFields);
+        List<ResultField> entityChildren = entities
+                .stream()
+                .map(ResultField::getChildren)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+
+        List<String> sequences = retrieveFieldValues(MxrdrMetadataField.ENTITY_SEQUENCE.getValue(), entityChildren);
+        List<String> chainIds = retrieveFieldValues(MxrdrMetadataField.ENTITY_ID.getValue(), entityChildren);
+        List<String> structureAuthors = retrieveFieldValues(MxrdrMetadataField.PDB_STRUCTURE_AUTHOR.getValue(), resultFields);
+        List<String> citationAuthors = retrieveFieldValues(MxrdrMetadataField.CITATION_AUTHOR.getValue(), resultFields);
+
+        assertUnitCellChildren(unitCellChildren);
+        assertDataCollectionChildren(dataCollectionChildren);
+        assertOverallChildren(overallChildren);
+        assertStructureAuthors(structureAuthors);
+        assertCitationAuthor(citationAuthors);
+        assertEntityChildren(sequences, chainIds);
+        assertSpaceGroupChildren(spaceGroupChildren);
+    }
+
+    private void assertOverallChildren(List<ResultField> overallChildren) {
+        assertEquals("2.4", retrieveFieldValue(MxrdrMetadataField.OVERALL_DATA_RESOLUTION_RANGE_HIGH.getValue(), overallChildren));
+    }
+
+    private void assertSpaceGroupChildren(List<ResultField> spaceGroupChildren) {
+        assertEquals("145. P3(2)", retrieveFieldValue("", spaceGroupChildren));
+    }
+
+    private void assertDataCollectionChildren(List<ResultField> dataCollectionChildren) {
+        assertEquals("100.0", retrieveFieldValue(MxrdrMetadataField.DATA_COLLECTION_TEMPERATURE.getValue(), dataCollectionChildren));
+    }
+
+    private void assertEntityChildren(List<String> sequences, List<String> chainIds) {
+        assertTrue(sequences.contains("GSHMESFLLSKVSFVIKKIRLEKGMTQEDLAYKSNLDRTYISGIERNSRNLTIKSLELIMKGLEVSDVVFFEMLIKEILKHD"));
+        assertTrue(sequences.contains("ATGTGACTTATAGTCCGTGTGATTA"));
+        assertTrue(sequences.contains("TAATCACACGGACTATAAGTCACAT"));
+        assertTrue(chainIds.contains("A"));
+        assertTrue(chainIds.contains("B"));
+        assertTrue(chainIds.contains("C"));
+        assertTrue(chainIds.contains("D"));
+        assertTrue(chainIds.contains("E"));
+        assertTrue(chainIds.contains("F"));
+        assertTrue(chainIds.contains("G"));
+        assertTrue(chainIds.contains("H"));
+    }
+
+    private void assertUnitCellChildren(List<ResultField> unitCellChildren) {
+        assertEquals("48.02", retrieveFieldValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_A.getValue(), unitCellChildren));
+        assertEquals("48.02", retrieveFieldValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_B.getValue(), unitCellChildren));
+        assertEquals("218.35", retrieveFieldValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_C.getValue(), unitCellChildren));
+        assertEquals("90.0", retrieveFieldValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_ALPHA.getValue(), unitCellChildren));
+        assertEquals("90.0", retrieveFieldValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_BETA.getValue(), unitCellChildren));
+        assertEquals("120.0", retrieveFieldValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_GAMMA.getValue(), unitCellChildren));
+    }
 
     private void assertStructureAuthors(List<String> structureAuthors) {
         assertTrue(structureAuthors.stream().anyMatch(fieldValue -> fieldValue.equals("Martin, R.N.A.")));
