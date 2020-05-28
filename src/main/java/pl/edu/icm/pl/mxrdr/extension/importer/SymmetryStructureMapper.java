@@ -5,12 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SymmetryStructureMapper {
-    private static Map<String, String> MAPPING = Initializer.createSettingsMapping();
+    private static Map<String, String> MAPPING = Initializer.createStructureMapping();
+
     public static String map(String value) {
         return MAPPING.getOrDefault(value.trim(), "Other");
     }
+
     private static class Initializer {
-        static Map<String, String> createSettingsMapping() {
+        static Map<String, String> createStructureMapping() {
             HashMap<String, String> mapping = new HashMap<>();
             mapping.put("P 1", "1. P1");
             mapping.put("P 1 2 1", "3. P2");

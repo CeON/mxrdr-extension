@@ -3,13 +3,12 @@ package pl.edu.icm.pl.mxrdr.extension.importer.pdb;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import io.vavr.control.Try;
-import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
 import pl.edu.icm.pl.mxrdr.extension.importer.SymmetryStructureMapper;
+import pl.edu.icm.pl.mxrdr.extension.importer.pdb.pojo.PdbDataset;
+import pl.edu.icm.pl.mxrdr.extension.importer.pdb.pojo.Record;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
@@ -24,95 +23,91 @@ import java.util.regex.Pattern;
 @Singleton
 public class PdbXmlParser {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(PdbXmlParser.class);
 
     // -------------------- LOGIC --------------------
 
     /**
      * Parses the pdb xml to our metadata model and science team demands.
      */
-    List<ResultField> parse(String pdbXml) {
+    List<ResultField> parse(PdbDataset pdbDataset) {
 
-        Document document = Try.of(() -> DocumentHelper.parseText(pdbXml))
-                               .getOrElseThrow(throwable -> new IllegalStateException("There was a problem with parsing pdb xml",
-                                                                                      throwable));
+        if (pdbDataset.getRecords().isEmpty()) {
+            throw new IllegalStateException("Pdb xml didn't have any records");
+        }
 
-        List<Node> nodes = document.selectNodes("/dataset/record");
-        Node firstNode = Try.of(() -> nodes.get(0)).
-                getOrElseThrow(throwable -> new IllegalStateException("Pdb xml didn't have any nodes", throwable));
+        Record firstRecord = pdbDataset.getRecords().get(0);
 
-        List<ResultField> result = new ArrayList<>(parseSingleFields(firstNode));
-        result.addAll(parseFamilyFields(nodes));
+        List<ResultField> result = new ArrayList<>(parseSingleFields(firstRecord));
+        result.addAll(parseFamilyFields(pdbDataset.getRecords()));
 
         return Lists.newArrayList(result);
     }
 
     // -------------------- PRIVATE --------------------
 
-    private Optional<ResultField> retrieveNodeValue(MxrdrMetadataField fieldName, String nodeName, Node node) {
-        Optional<String> nodeValue = Optional.ofNullable(node.selectSingleNode(nodeName))
-                                             .map(Node::getText)
-                                             .filter(value -> !value.equals("null"));
+    private Optional<ResultField> retrieveValueSafely(MxrdrMetadataField fieldName, String value) {
+        Optional<String> nodeValue = Optional.ofNullable(value)
+                                             .filter(val -> !val.equals("null"));
 
         return nodeValue.map(extractedNodeValue -> ResultField.of(fieldName.getValue(), extractedNodeValue));
     }
 
-    private Optional<String> retrieveNodeValue(String nodeName, Node node) {
-        return Optional.ofNullable(node.selectSingleNode(nodeName))
-                                             .map(Node::getText)
-                                             .filter(value -> !value.equals("null"));
+    private Optional<String> retrieveValueSafely(String value) {
+        return Optional.ofNullable(value)
+                       .filter(val -> !val.equals("null"));
     }
 
-    private ResultField parseAllSequenceFields(Node node) {
+    private ResultField parseAllSequenceFields(Record record) {
         List<ResultField> sequences = new ArrayList<>();
 
-        retrieveNodeValue(MxrdrMetadataField.ENTITY_SEQUENCE, "dimEntity.sequence", node).ifPresent(sequences::add);
-        retrieveNodeValue(MxrdrMetadataField.ENTITY_ID, "dimEntity.chainId", node).ifPresent(sequences::add);
+        retrieveValueSafely(MxrdrMetadataField.ENTITY_SEQUENCE, record.getSequence()).ifPresent(sequences::add);
+        retrieveValueSafely(MxrdrMetadataField.ENTITY_ID, record.getChainId()).ifPresent(sequences::add);
 
         return ResultField.of(MxrdrMetadataField.ENTITY.getValue(), sequences.toArray(new ResultField[0]));
     }
 
-    private Set<ResultField> parseSingleFields(Node firstNode) {
+    private Set<ResultField> parseSingleFields(Record record) {
         Set<ResultField> fields = new HashSet<>();
 
-        retrieveNodeValue(MxrdrMetadataField.PDB_ID, "dimEntity.structureId", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.PDB_ID, record.getStructureId())
                 .ifPresent(fields::add);
-        retrieveNodeValue(MxrdrMetadataField.MOLECULAR_WEIGHT, "dimStructure.structureMolecularWeight", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.MOLECULAR_WEIGHT, record.getStructureMolecularWeight())
                 .ifPresent(fields::add);
-        retrieveNodeValue("dimStructure.spaceGroup", firstNode)
-                .ifPresent(nodeValue -> fields.add(ResultField.of(MxrdrMetadataField.SPACE_GROUP.getValue(),
-                                                              ResultField.ofValue(SymmetryStructureMapper.map(nodeValue)))));
-        retrieveNodeValue(MxrdrMetadataField.RESIDUE_COUNT, "dimStructure.residueCount", firstNode)
+        this.retrieveValueSafely(record.getSpaceGroup())
+            .ifPresent(nodeValue -> fields.add(ResultField.of(MxrdrMetadataField.SPACE_GROUP.getValue(),
+                                                                  ResultField.ofValue(SymmetryStructureMapper.map(nodeValue)))));
+        retrieveValueSafely(MxrdrMetadataField.RESIDUE_COUNT, record.getResidueCount())
                 .ifPresent(fields::add);
-        retrieveNodeValue(MxrdrMetadataField.ATOM_SITE_COUNT, "dimStructure.atomSiteCount", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.ATOM_SITE_COUNT, record.getAtomSiteCount())
                 .ifPresent(fields::add);
-        retrieveNodeValue(MxrdrMetadataField.PDB_TITLE, "dimStructure.structureTitle", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.PDB_TITLE, record.getStructureTitle())
                 .ifPresent(fields::add);
-        retrieveNodeValue(MxrdrMetadataField.PDB_DOI, "dimStructure.pdbDoi", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.PDB_DOI, record.getPdbDoi())
                 .ifPresent(fields::add);
-        retrieveNodeValue(MxrdrMetadataField.PDB_STRUCTURE_AUTHOR, "dimStructure.structureAuthor", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.PDB_STRUCTURE_AUTHOR, record.getStructureAuthor())
                 .map(field -> field.getValue().split("#"))
                 .ifPresent(splitedField -> Arrays.asList(splitedField)
                                                  .forEach(field -> fields.add(ResultField.of(MxrdrMetadataField.PDB_STRUCTURE_AUTHOR
                                                                                                      .getValue(), field))));
-        retrieveNodeValue(MxrdrMetadataField.PDB_DEPOSIT_DATE, "dimStructure.depositionDate", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.PDB_DEPOSIT_DATE, record.getDepositionDate())
                 .ifPresent(fields::add);
-        retrieveNodeValue(MxrdrMetadataField.PDB_RELEASE_DATE, "dimStructure.releaseDate", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.PDB_RELEASE_DATE, record.getReleaseDate())
                 .ifPresent(fields::add);
-        retrieveNodeValue(MxrdrMetadataField.PDB_REVISION_DATE, "dimStructure.revisionDate", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.PDB_REVISION_DATE, record.getRevisionDate())
                 .ifPresent(fields::add);
-        retrieveNodeValue(MxrdrMetadataField.CITATION_TITLE, "dimStructure.title", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.CITATION_TITLE, record.getTitle())
                 .ifPresent(fields::add);
-        retrieveNodeValue(MxrdrMetadataField.CITATION_PUBMED_ID, "dimStructure.pubmedId", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.CITATION_PUBMED_ID, record.getPubmedId())
                 .ifPresent(fields::add);
-        retrieveNodeValue(MxrdrMetadataField.CITATION_AUTHOR, "dimStructure.citationAuthor", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.CITATION_AUTHOR, record.getCitationAuthor())
                 .map(this::splitByEverySecondComma)
                 .ifPresent(splitedField -> splitedField
                         .forEach(field -> fields.add(ResultField.of(MxrdrMetadataField.CITATION_AUTHOR
                                                                             .getValue(), field))));
-        retrieveNodeValue(MxrdrMetadataField.CITATION_JOURNAL, "dimStructure.journalName", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.CITATION_JOURNAL, record.getJournalName())
                 .ifPresent(fields::add);
-        retrieveNodeValue(MxrdrMetadataField.CITATION_YEAR, "dimStructure.publicationYear", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.CITATION_YEAR, record.getPublicationYear())
                 .ifPresent(fields::add);
 
         return fields;
@@ -134,61 +129,61 @@ public class PdbXmlParser {
         return data;
     }
 
-    private Set<ResultField> parseFamilyFields(List<Node> recordNodes) {
+    private Set<ResultField> parseFamilyFields(List<Record> records) {
         Set<ResultField> fields = new HashSet<>();
-        Node firstNode = recordNodes.get(0);
+        Record firstRecord = records.get(0);
 
-        Optional.of(parseOveralls(firstNode))
+        Optional.of(parseOveralls(firstRecord))
                 .filter(field -> !field.getChildren().isEmpty())
                 .ifPresent(fields::add);
 
-        Optional.of(parseDataCollections(firstNode))
+        Optional.of(parseDataCollections(firstRecord))
                 .filter(field -> !field.getChildren().isEmpty())
                 .ifPresent(fields::add);
 
-        Optional.of(parseUnitCells(firstNode))
+        Optional.of(parseUnitCells(firstRecord))
                 .filter(field -> !field.getChildren().isEmpty())
                 .ifPresent(fields::add);
 
-        recordNodes.forEach(node -> Optional.of(parseAllSequenceFields(node))
+        records.forEach(node -> Optional.of(parseAllSequenceFields(node))
                                             .filter(field -> !field.getChildren().isEmpty())
                                             .ifPresent(fields::add));
 
         return fields;
     }
 
-    private ResultField parseUnitCells(Node firstNode) {
+    private ResultField parseUnitCells(Record firstRecord) {
         List<ResultField> unitCellChildren = new ArrayList<>();
 
-        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_A, "dimStructure.lengthOfUnitCellLatticeA", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.UNIT_CELL_PARAMETER_A, firstRecord.getLengthOfUnitCellLatticeA())
                 .ifPresent(unitCellChildren::add);
-        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_B, "dimStructure.lengthOfUnitCellLatticeB", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.UNIT_CELL_PARAMETER_B, firstRecord.getLengthOfUnitCellLatticeB())
                 .ifPresent(unitCellChildren::add);
-        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_C, "dimStructure.lengthOfUnitCellLatticeC", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.UNIT_CELL_PARAMETER_C, firstRecord.getLengthOfUnitCellLatticeC())
                 .ifPresent(unitCellChildren::add);
-        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_ALPHA, "dimStructure.unitCellAngleAlpha", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.UNIT_CELL_PARAMETER_ALPHA, firstRecord.getUnitCellAngleAlpha())
                 .ifPresent(unitCellChildren::add);
-        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_BETA, "dimStructure.unitCellAngleBeta", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.UNIT_CELL_PARAMETER_BETA, firstRecord.getUnitCellAngleBeta())
                 .ifPresent(unitCellChildren::add);
-        retrieveNodeValue(MxrdrMetadataField.UNIT_CELL_PARAMETER_GAMMA, "dimStructure.unitCellAngleGamma", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.UNIT_CELL_PARAMETER_GAMMA, firstRecord.getUnitCellAngleGamma())
                 .ifPresent(unitCellChildren::add);
 
         return ResultField.of(MxrdrMetadataField.UNIT_CELL_PARAMETERS.getValue(), unitCellChildren.toArray(new ResultField[0]));
     }
 
-    private ResultField parseDataCollections(Node firstNode) {
+    private ResultField parseDataCollections(Record firstRecord) {
         List<ResultField> dataCollectionChildren = new ArrayList<>();
 
-        retrieveNodeValue(MxrdrMetadataField.DATA_COLLECTION_TEMPERATURE, "dimStructure.collectionTemperature", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.DATA_COLLECTION_TEMPERATURE, firstRecord.getCollectionTemperature())
                 .ifPresent(dataCollectionChildren::add);
 
         return ResultField.of(MxrdrMetadataField.DATA_COLLECTION.getValue(), dataCollectionChildren.toArray(new ResultField[0]));
     }
 
-    private ResultField parseOveralls(Node firstNode) {
+    private ResultField parseOveralls(Record firstRecord) {
         List<ResultField> overallChildren = new ArrayList<>();
 
-        retrieveNodeValue(MxrdrMetadataField.OVERALL_DATA_RESOLUTION_RANGE_HIGH, "dimStructure.resolution", firstNode)
+        retrieveValueSafely(MxrdrMetadataField.OVERALL_DATA_RESOLUTION_RANGE_HIGH, firstRecord.getResolution())
                 .ifPresent(overallChildren::add);
 
         return ResultField.of(MxrdrMetadataField.OVERALL.getValue(), overallChildren.toArray(new ResultField[0]));

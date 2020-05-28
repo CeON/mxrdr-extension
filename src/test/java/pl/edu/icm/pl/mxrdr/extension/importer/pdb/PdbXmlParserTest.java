@@ -1,14 +1,16 @@
 package pl.edu.icm.pl.mxrdr.extension.importer.pdb;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
+import pl.edu.icm.pl.mxrdr.extension.importer.pdb.pojo.PdbDataset;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,13 +26,14 @@ public class PdbXmlParserTest {
 
     @Test
     public void parse_correctXml() throws URISyntaxException, IOException {
-
         //given
         File cbfFile = new File(getClass().getClassLoader().getResource("xml/pdbFromApi.xml").toURI());
-        String xmlContent = new String(Files.readAllBytes(cbfFile.toPath()));
+        XmlMapper xmlMapper = new XmlMapper();
+        xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        PdbDataset pdbDataset = xmlMapper.readValue(cbfFile, PdbDataset.class);
 
         //when
-        List<ResultField> resultFields = pdbXmlParser.parse(xmlContent);
+        List<ResultField> resultFields = pdbXmlParser.parse(pdbDataset);
 
         //then
         assertEquals("4IWR", retrieveFieldValue(MxrdrMetadataField.PDB_ID.getValue(), resultFields));
@@ -54,12 +57,11 @@ public class PdbXmlParserTest {
 
     @Test
     public void parse_incorrectXml() {
-
         //given
-        String xmlContent = "";
+        PdbDataset pdbDataset = new PdbDataset();
 
         //when & then
-        Assertions.assertThrows(IllegalStateException.class, () -> pdbXmlParser.parse(xmlContent));
+        Assertions.assertThrows(IllegalStateException.class, () -> pdbXmlParser.parse(pdbDataset));
     }
 
     // -------------------- PRIVATE --------------------

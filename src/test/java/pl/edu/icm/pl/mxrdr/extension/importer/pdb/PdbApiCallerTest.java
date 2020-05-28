@@ -1,71 +1,87 @@
 package pl.edu.icm.pl.mxrdr.extension.importer.pdb;
 
-import kong.unirest.GetRequest;
-import kong.unirest.HttpResponse;
-import kong.unirest.UnirestInstance;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.google.common.collect.Lists;
+import org.apache.http.message.BasicNameValuePair;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
+import pl.edu.icm.pl.mxrdr.extension.importer.pdb.pojo.PdbDataset;
 
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+
 public class PdbApiCallerTest {
-    private static final String PDB_URL = "test";
 
-    @Mock
-    private UnirestInstance mockedUnirest;
+    private static final String PDB_URL = "http://localhost:8089";
 
-    @Mock
-    private HttpResponse<String> response;
+    private WireMockServer wireMockServer;
 
-    @Mock
-    private GetRequest request;
+    @BeforeEach
+    public void before() {
+        wireMockServer = new WireMockServer(8089);
+        wireMockServer.start();
+    }
+
+    @AfterEach
+    public void after() {
+        wireMockServer.stop();
+    }
 
     @Test
     public void fetchPdbData() {
         //given
-        PdbApiCaller pdbApiCaller = new PdbApiCaller();
-        pdbApiCaller.setApiCaller(mockedUnirest);
+        PdbApiCaller pdbApiCaller = new PdbApiCaller(PDB_URL);
+        BasicNameValuePair requestParams = new BasicNameValuePair("pdbid", "1");
 
         //when
+        wireMockServer.stubFor(get(urlEqualTo(pdbApiCaller.getPdbEndpoint() + "?" + requestParams.getName() + "=" + requestParams
+                .getValue()))
+                                       .willReturn(aResponse().withBody(generateTestXmlBody())));
 
-        Mockito.when(mockedUnirest.get(PDB_URL)).thenReturn(request);
-        Mockito.when(request.queryString(Mockito.any())).thenReturn(request);
-        Mockito.when(request.queryString(Mockito.anyString(), Mockito.anyString())).thenReturn(request);
-        Mockito.when(request.queryString(Mockito.anyString(), Mockito.anyInt())).thenReturn(request);
-        Mockito.when(request.connectTimeout(Mockito.anyInt())).thenReturn(request);
-        Mockito.when(request.asString()).thenReturn(response);
-        Mockito.when(response.isSuccess()).thenReturn(true);
-
-        pdbApiCaller.fetchPdbData("1", PDB_URL);
+        PdbDataset pdbDs = pdbApiCaller.fetchPdbData(Lists.newArrayList(requestParams));
 
         //then
-        Mockito.verify(mockedUnirest, Mockito.times(1)).get(PDB_URL);
+        Assertions.assertEquals(1, pdbDs.getRecords().size());
+        Assertions.assertEquals("10.9999/testiwr/pdb", pdbDs.getRecords().get(0).getPdbDoi());
+        Assertions.assertEquals("23269141", pdbDs.getRecords().get(0).getPubmedId());
     }
 
     @Test
     public void fetchPdbData_withNegativeStatusCode() {
         //given
-        PdbApiCaller pdbApiCaller = new PdbApiCaller();
-        pdbApiCaller.setApiCaller(mockedUnirest);
+        PdbApiCaller pdbApiCaller = new PdbApiCaller(PDB_URL);
+        BasicNameValuePair requestParams = new BasicNameValuePair("pdbid", "1");
 
         //when
-
-        Mockito.when(mockedUnirest.get(PDB_URL)).thenReturn(request);
-        Mockito.when(request.queryString(Mockito.any())).thenReturn(request);
-        Mockito.when(request.queryString(Mockito.anyString(), Mockito.anyString())).thenReturn(request);
-        Mockito.when(request.queryString(Mockito.anyString(), Mockito.anyInt())).thenReturn(request);
-        Mockito.when(request.connectTimeout(Mockito.anyInt())).thenReturn(request);
-        Mockito.when(request.asString()).thenReturn(response);
-        Mockito.when(response.isSuccess()).thenReturn(false);
-
+        wireMockServer.stubFor(get(urlEqualTo(pdbApiCaller.getPdbEndpoint() + "?" + requestParams.getName() + "=" + requestParams.getValue()))
+                                       .willReturn(aResponse().withBody("")
+                                                              .withStatus(500)));
 
         //when & then
-        Assertions.assertThrows(IllegalStateException.class, () -> pdbApiCaller.fetchPdbData("1", PDB_URL));
+        Assertions.assertThrows(IllegalStateException.class, () -> pdbApiCaller.fetchPdbData(Lists.newArrayList(requestParams)));
+    }
+
+    @Test
+    public void fetchPdbData_withEmptyEntity() {
+        //given
+        PdbApiCaller pdbApiCaller = new PdbApiCaller(PDB_URL);
+        BasicNameValuePair requestParams = new BasicNameValuePair("pdbid", "1");
+
+        //when
+        wireMockServer.stubFor(get(urlEqualTo(pdbApiCaller.getPdbEndpoint() + "?" + requestParams.getName() + "=" + requestParams.getValue()))
+                                       .willReturn(aResponse().withBody("")));
+
+        //when & then
+        Assertions.assertThrows(IllegalStateException.class, () -> pdbApiCaller.fetchPdbData(Lists.newArrayList(requestParams)));
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private String generateTestXmlBody() {
+        return "<dataset><record><dimStructure.pdbDoi>10.9999/testiwr/pdb</dimStructure.pdbDoi><dimStructure.pubmedId>23269141</dimStructure.pubmedId>" +
+                "</record></dataset>";
     }
 }

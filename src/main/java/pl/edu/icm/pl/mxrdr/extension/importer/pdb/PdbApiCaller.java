@@ -1,17 +1,40 @@
 package pl.edu.icm.pl.mxrdr.extension.importer.pdb;
 
-import kong.unirest.Config;
-import kong.unirest.HttpResponse;
-import kong.unirest.UnirestInstance;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.StatusLine;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.client.utils.URIBuilder;
+import pl.edu.icm.pl.mxrdr.extension.importer.pdb.pojo.PdbDataset;
 
 import javax.inject.Singleton;
-import java.util.HashMap;
+import java.net.URI;
+import java.util.List;
 
 @Singleton
 public class PdbApiCaller {
     public static final int TEN_SECONDS = 10000;
+    private String schemeWithHostname = "";
+    private final String pdbEndpoint = "/pdb/rest/customReport.xml";
 
-    private UnirestInstance apiCaller = new UnirestInstance(new Config());
+    // -------------------- CONSTRUCTORS --------------------
+
+    public PdbApiCaller() {
+        schemeWithHostname = "https://www.rcsb.org";
+    }
+
+    public PdbApiCaller(String schemeWithHostname) {
+        this.schemeWithHostname = schemeWithHostname;
+    }
+
+    // -------------------- GETTERS --------------------
+
+    public String getPdbEndpoint() {
+        return pdbEndpoint;
+    }
+
 
     // -------------------- LOGIC --------------------
 
@@ -19,40 +42,40 @@ public class PdbApiCaller {
      * Created to mainly call protein data bank in order to retrieve entity xml.
      * Watch out the api doesn't work very well, it returns 200 even if it can't find the entity.
      */
-    String fetchPdbData(String structureId, String apiURL) {
+    PdbDataset fetchPdbData(List<NameValuePair> queryParameters) {
+        PdbDataset pdbDataset;
 
-        HttpResponse<String> pdbResponse = apiCaller.get(apiURL)
-                .queryString("pdbids", structureId)
-                .queryString(getCustomReportColumns())
-                .queryString("primaryOnly", 1)
-                .connectTimeout(TEN_SECONDS)
-                .asString();
+        try {
+            URI builtQuery = new URIBuilder(schemeWithHostname + pdbEndpoint)
+                    .addParameters(queryParameters)
+                    .build();
 
-        if (!pdbResponse.isSuccess() || pdbResponse.getBody().isEmpty()) {
-            throw new IllegalStateException("Retrieving entity from pdb failed with status: " + pdbResponse.getStatus() +
-                                                    " and message: "+ pdbResponse.getStatusText());
+            HttpResponse pdbRespone = Request.Get(builtQuery)
+                                             .connectTimeout(TEN_SECONDS)
+                                             .execute()
+                                             .returnResponse();
+
+
+            pdbDataset = parseApiResponse(pdbRespone);
+            StatusLine status = pdbRespone.getStatusLine();
+
+            if (status.getStatusCode() > 200 || pdbDataset.getRecords().isEmpty()) {
+                throw new IllegalStateException("Retrieving entity from pdb failed with status: " + status.getStatusCode() +
+                                                        " and message: " + status.getReasonPhrase());
+            }
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
         }
 
-        return pdbResponse.getBody();
+        return pdbDataset;
     }
 
     // -------------------- PRIVATE --------------------
 
-    private HashMap<String, Object> getCustomReportColumns() {
-        HashMap<String, Object> customReportColumns = new HashMap<>();
+    private PdbDataset parseApiResponse(HttpResponse pdbRespone) throws java.io.IOException {
+        XmlMapper xmlMapper = new XmlMapper();
+        xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-        customReportColumns.put("customReportColumns",
-                                "structureId,collectionTemperature,sequence,macromoleculeType,structureMolecularWeight," +
-                                        "spaceGroup,lengthOfUnitCellLatticeA,lengthOfUnitCellLatticeB,lengthOfUnitCellLatticeC," +
-                                        "unitCellAngleAlpha,unitCellAngleBeta,unitCellAngleGamma,resolution,name," +
-                                        "residueCount,atomSiteCount,structureTitle,pdbDoi,structureAuthor,depositionDate," +
-                                        "releaseDate,revisionDate,experimentalTechnique,title,pubmedId,citationAuthor," +
-                                        "journalName,publicationYear");
-
-        return customReportColumns;
-    }
-
-    public void setApiCaller(UnirestInstance apiCaller) {
-        this.apiCaller = apiCaller;
+        return xmlMapper. readValue(pdbRespone.getEntity().getContent(), PdbDataset.class);
     }
 }
