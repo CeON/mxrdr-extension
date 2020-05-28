@@ -19,7 +19,7 @@ class XdsImagesPatternStepTest implements ArgumentsProvider {
     @ArgumentsSource(XdsImagesPatternStepTest.class)
     void shouldCalculatePatterns(String names, String expected) {
         // given
-        XdsImagesPatternStep step = new XdsImagesPatternStep(null, singletonMap(FILE_NAMES_PARAM_NAME, names));
+        XdsImagesPatternStep step = new XdsImagesPatternStep(singletonMap(FILE_NAMES_PARAM_NAME, names));
         // when
         String actual = step.calculatePattern();
         // then

@@ -2,7 +2,10 @@ package pl.edu.icm.pl.mxrdr.extension.workflow;
 
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.step.Failure;
+import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
 import java.io.IOException;
@@ -11,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,41 +24,100 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.dataAccess;
+import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
 import static pl.edu.icm.pl.mxrdr.extension.workflow.XdsImagesPatternStep.FILE_NAMES_PARAM_NAME;
 import static pl.edu.icm.pl.mxrdr.extension.workflow.XdsImagesPatternStep.FILE_NAMES_SEPARATOR;
 
 /**
  * Fetches dataset version files into local directory filtering images only.
  */
-class XdsImagesFetchingStep extends XdsWorkflowStep {
+class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
 
     static final String STEP_ID = "xds-images-fetching";
 
+    static final StorageSource DEFAULT_STORAGE_SOURCE = metadata ->
+            () -> dataAccess().getStorageIO(metadata.getDataFile()).getInputStream();
+
+    private final DatasetVersionServiceBean datasetVersions;
+    private final StorageSource storageSource;
+
     // -------------------- CONSTRUCTORS --------------------
 
-    public XdsImagesFetchingStep(DatasetVersionServiceBean datasetVersions) {
-        super(datasetVersions);
+    public XdsImagesFetchingStep(Map<String, String> inputParams, DatasetVersionServiceBean datasetVersions) {
+        this(inputParams, datasetVersions, DEFAULT_STORAGE_SOURCE);
+    }
+
+    public XdsImagesFetchingStep(Map<String, String> inputParams, DatasetVersionServiceBean datasetVersions,
+                                 StorageSource storageSource) {
+        super(inputParams);
+        this.datasetVersions = datasetVersions;
+        this.storageSource = storageSource;
     }
 
     // -------------------- LOGIC --------------------
 
     @Override
-    protected WorkflowStepResult runInternal(WorkflowContext context, Path workDir) throws Exception {
+    protected WorkflowStepResult.Source runInternal(WorkflowContext context, Path workDir) throws Exception {
         Path imgDir = imagesDir(workDir);
 
-        List<String> fileNames = new ArrayList<>();
-        for (FileMetadata metadata : datasetVersion.getFileMetadatas()) {
-            fileNames.addAll(new ImageFetcher(metadata).fetchInto(imgDir));
-        }
+        List<String> fileNames = fetchInto(getDatasetVersion(context).getFileMetadatas(), imgDir);
 
-        Map<String, String> outputParams = new HashMap<>();
-        outputParams.put(FILE_NAMES_PARAM_NAME, String.join(FILE_NAMES_SEPARATOR, fileNames));
-        // FIXME: pass on outputParams
-        return WorkflowStepResult.OK;
+        return successWith(outputParams ->
+                outputParams.put(FILE_NAMES_PARAM_NAME, String.join(FILE_NAMES_SEPARATOR, fileNames))
+        );
+    }
+
+    List<String> fetchInto(List<FileMetadata> metadatas, Path imgDir) throws IOException {
+        List<String> fileNames = new ArrayList<>();
+        for (FileMetadata metadata : metadatas) {
+            fileNames.addAll(new ImageFetcher(metadata, storageSource).fetchInto(imgDir));
+        }
+        return fileNames;
+    }
+
+    @Override
+    public WorkflowStepResult resume(WorkflowContext context, Map<String, String> internalData, String externalData) {
+        throw new UnsupportedOperationException("This step des not pause");
+    }
+
+    @Override
+    public void rollback(WorkflowContext context, Failure reason) {
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private Path imagesDir(Path workDir) throws IOException {
+        return Files.createDirectories(workDir.resolve("img"));
+    }
+
+    private DatasetVersion getDatasetVersion(WorkflowContext context) {
+        return datasetVersions.findByVersionNumber(
+                context.getDataset().getId(), context.getNextVersionNumber(), context.getNextMinorVersionNumber());
     }
 
     // -------------------- INNER CLASSES --------------------
 
+    /**
+     * Represents source of binary data to read from.
+     */
+    @FunctionalInterface
+    interface Storage {
+        InputStream getInputStream() throws IOException;
+    }
+
+    /**
+     * Represents {@link Storage} supplier for given {@link FileMetadata}.
+     */
+    @FunctionalInterface
+    interface StorageSource {
+        Storage getStorage(FileMetadata metadata);
+    }
+
+    /**
+     * Fetches given file from remote {@link Storage} into local directory.
+     * Fetching is done only if the file confirms to defined image naming patterns.
+     * If given file is a ZIP archive, it's contents are unpacked and taken.
+     */
     static class ImageFetcher {
 
         static final Predicate<String> IMAGES_PATTERNS =
@@ -66,23 +127,22 @@ class XdsImagesFetchingStep extends XdsWorkflowStep {
                         .reduce(x -> false, Predicate::or);
 
         private final FileMetadata metadata;
+        private final StorageSource storageSource;
 
-        ImageFetcher(FileMetadata metadata) {
+        ImageFetcher(FileMetadata metadata, StorageSource storageSource) {
             this.metadata = metadata;
+            this.storageSource = storageSource;
         }
 
         List<String> fetchInto(Path dir) throws IOException {
+            Storage fileStorage = storageSource.getStorage(metadata);
             if (isZip(metadata)) {
-                return fetchZipContents(this::fileStorage, dir);
+                return fetchZipContents(fileStorage, dir);
             } else {
-                return fetchImage(metadata.getLabel(), this::fileStorage, dir)
+                return fetchImage(metadata.getLabel(), fileStorage, dir)
                         .map(Collections::singletonList)
                         .orElseGet(Collections::emptyList);
             }
-        }
-
-        private InputStream fileStorage() throws IOException {
-            return dataAccess().getStorageIO(metadata.getDataFile()).getInputStream();
         }
 
         private boolean isZip(FileMetadata metadata) {
@@ -93,9 +153,10 @@ class XdsImagesFetchingStep extends XdsWorkflowStep {
         private List<String> fetchZipContents(Storage storage, Path dir) throws IOException {
             try (ZipInputStream zip = new ZipInputStream(storage.getInputStream())) {
                 List<String> names = new ArrayList<>();
+                Storage zipStorage = () -> new NonClosableInputStream(zip);
                 ZipEntry entry;
                 while ((entry = zip.getNextEntry()) != null) {
-                    fetchImage(entry.getName(), () -> zip, dir)
+                    fetchImage(entry.getName(), zipStorage, dir)
                             .ifPresent(names::add);
                     zip.closeEntry();
                 }
@@ -123,8 +184,25 @@ class XdsImagesFetchingStep extends XdsWorkflowStep {
         }
     }
 
-    @FunctionalInterface
-    interface Storage {
-        InputStream getInputStream() throws IOException;
+    /**
+     * Prevents stream from closing on {@link java.io.Closeable} call.
+     */
+    static class NonClosableInputStream extends InputStream {
+
+        private final InputStream stream;
+
+        NonClosableInputStream(InputStream stream) {
+            this.stream = stream;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return stream.read();
+        }
+
+        @Override
+        public void close() {
+            // do nothing
+        }
     }
 }
