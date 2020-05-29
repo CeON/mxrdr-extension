@@ -1,87 +1,127 @@
 package pl.edu.icm.pl.mxrdr.extension.importer.pdb;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.google.common.collect.Lists;
-import org.apache.http.message.BasicNameValuePair;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
+import org.apache.http.client.HttpResponseException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.edu.icm.pl.mxrdr.extension.importer.pdb.pojo.PdbDataset;
+import pl.edu.icm.pl.mxrdr.extension.importer.pdb.model.Dataset;
+
+import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static pl.edu.icm.pl.mxrdr.extension.importer.pdb.PdbApiCaller.CUSTOM_REPORT_COLUMNS_PARAM_NAME;
+import static pl.edu.icm.pl.mxrdr.extension.importer.pdb.PdbApiCaller.PDB_IDS_PARAM_NAME;
+import static pl.edu.icm.pl.mxrdr.extension.importer.pdb.PdbApiCaller.PDB_REPORT_ENDPOINT;
+import static pl.edu.icm.pl.mxrdr.extension.importer.pdb.PdbApiCaller.PDB_REPORT_COLUMNS;
+import static pl.edu.icm.pl.mxrdr.extension.importer.pdb.PdbApiCaller.PRIMARY_ONLY_PARAM_NAME;
 
 public class PdbApiCallerTest {
 
-    private static final String PDB_URL = "http://localhost:8089";
+    static WireMockServer wireMockServer;
 
-    private WireMockServer wireMockServer;
+    PdbApiCaller pdbApiCaller;
 
-    @BeforeEach
-    public void before() {
-        wireMockServer = new WireMockServer(8089);
+    @BeforeAll
+    static void beforeAll() {
+        wireMockServer = new WireMockServer(wireMockConfig().dynamicPort());
         wireMockServer.start();
     }
 
-    @AfterEach
-    public void after() {
+    @BeforeEach
+    void setUp() {
+        wireMockServer.resetAll();
+        pdbApiCaller = new PdbApiCaller(wireMockServer.baseUrl());
+    }
+
+    @AfterAll
+    static void afterAll() {
         wireMockServer.stop();
     }
 
     @Test
     public void fetchPdbData() {
-        //given
-        PdbApiCaller pdbApiCaller = new PdbApiCaller(PDB_URL);
-        BasicNameValuePair requestParams = new BasicNameValuePair("pdbid", "1");
-
-        //when
-        wireMockServer.stubFor(get(urlEqualTo(pdbApiCaller.getPdbEndpoint() + "?" + requestParams.getName() + "=" + requestParams
-                .getValue()))
-                                       .willReturn(aResponse().withBody(generateTestXmlBody())));
-
-        PdbDataset pdbDs = pdbApiCaller.fetchPdbData(Lists.newArrayList(requestParams));
-
-        //then
-        Assertions.assertEquals(1, pdbDs.getRecords().size());
-        Assertions.assertEquals("10.9999/testiwr/pdb", pdbDs.getRecords().get(0).getPdbDoi());
-        Assertions.assertEquals("23269141", pdbDs.getRecords().get(0).getPubmedId());
+        // given
+        String structureId = "x";
+        wireMockServer.stubFor(get(urlPathEqualTo(PDB_REPORT_ENDPOINT))
+                .withQueryParam(PDB_IDS_PARAM_NAME, equalTo(structureId))
+                .withQueryParam(PRIMARY_ONLY_PARAM_NAME, equalTo("1"))
+                .withQueryParam(CUSTOM_REPORT_COLUMNS_PARAM_NAME, equalTo(PDB_REPORT_COLUMNS))
+                .willReturn(aResponse().withBody(generateSampleXmlBody())));
+        // when
+        Optional<Dataset> result = pdbApiCaller.getStructureData(structureId);
+        // then
+        assertThat(result).isPresent();
+        result.map(d -> d.recordStream().collect(toList())).ifPresent(records -> {
+            assertThat(records.size()).isEqualTo(1);
+            assertThat(records.get(0).getPdbDoi()).isEqualTo("10.9999/testiwr/pdb");
+            assertThat(records.get(0).getPubmedId()).isEqualTo("23269141");
+        });
     }
 
     @Test
     public void fetchPdbData_withNegativeStatusCode() {
-        //given
-        PdbApiCaller pdbApiCaller = new PdbApiCaller(PDB_URL);
-        BasicNameValuePair requestParams = new BasicNameValuePair("pdbid", "1");
+        // given
+        String structureId = "y";
+        wireMockServer.stubFor(get(urlPathEqualTo(PDB_REPORT_ENDPOINT))
+                .withQueryParam(PDB_IDS_PARAM_NAME, equalTo(structureId))
+                .willReturn(aResponse().withBody("").withStatus(500)));
+        // expect
+        assertThatThrownBy(() -> pdbApiCaller.getStructureData(structureId))
+                .isInstanceOf(RuntimeException.class)
+                .getCause()
+                .isInstanceOf(HttpResponseException.class)
+                .hasMessage("Request failed with status: 500 and message: Server Error");
+    }
 
-        //when
-        wireMockServer.stubFor(get(urlEqualTo(pdbApiCaller.getPdbEndpoint() + "?" + requestParams.getName() + "=" + requestParams.getValue()))
-                                       .willReturn(aResponse().withBody("")
-                                                              .withStatus(500)));
-
-        //when & then
-        Assertions.assertThrows(IllegalStateException.class, () -> pdbApiCaller.fetchPdbData(Lists.newArrayList(requestParams)));
+    @Test
+    public void fetchPdbData_withNoContentEntity() {
+        // given
+        String structureId = "z";
+        wireMockServer.stubFor(get(urlPathEqualTo(PDB_REPORT_ENDPOINT))
+                .withQueryParam(PDB_IDS_PARAM_NAME, equalTo(structureId))
+                .willReturn(aResponse().withHeader("Content-Length", "0").withBody("")));
+        // when
+        Optional<Dataset> result = pdbApiCaller.getStructureData(structureId);
+        // then
+        assertThat(result).isNotPresent();
     }
 
     @Test
     public void fetchPdbData_withEmptyEntity() {
-        //given
-        PdbApiCaller pdbApiCaller = new PdbApiCaller(PDB_URL);
-        BasicNameValuePair requestParams = new BasicNameValuePair("pdbid", "1");
-
-        //when
-        wireMockServer.stubFor(get(urlEqualTo(pdbApiCaller.getPdbEndpoint() + "?" + requestParams.getName() + "=" + requestParams.getValue()))
-                                       .willReturn(aResponse().withBody("")));
-
-        //when & then
-        Assertions.assertThrows(IllegalStateException.class, () -> pdbApiCaller.fetchPdbData(Lists.newArrayList(requestParams)));
+        // given
+        String structureId = "z";
+        wireMockServer.stubFor(get(urlPathEqualTo(PDB_REPORT_ENDPOINT))
+                .withQueryParam(PDB_IDS_PARAM_NAME, equalTo(structureId))
+                .willReturn(aResponse().withBody(generateEmptyXmlBody())));
+        // when
+        Optional<Dataset> result = pdbApiCaller.getStructureData(structureId);
+        // then
+        assertThat(result).isNotPresent();
     }
 
     // -------------------- PRIVATE --------------------
 
-    private String generateTestXmlBody() {
-        return "<dataset><record><dimStructure.pdbDoi>10.9999/testiwr/pdb</dimStructure.pdbDoi><dimStructure.pubmedId>23269141</dimStructure.pubmedId>" +
-                "</record></dataset>";
+    private String generateSampleXmlBody() {
+        return "<?xml version='1.0' standalone='no' ?>\n" +
+                "<dataset>\n" +
+                "    <record>\n" +
+                "        <dimStructure.pdbDoi>10.9999/testiwr/pdb</dimStructure.pdbDoi>\n" +
+                "        <dimStructure.pubmedId>23269141</dimStructure.pubmedId>\n" +
+                "    </record>\n" +
+                "</dataset>\n";
+    }
+
+    private String generateEmptyXmlBody() {
+        return "<?xml version='1.0' standalone='no' ?>\n" +
+                "<dataset />\n";
     }
 }

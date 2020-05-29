@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
-import pl.edu.icm.pl.mxrdr.extension.importer.pdb.pojo.PdbDataset;
+import pl.edu.icm.pl.mxrdr.extension.importer.pdb.model.Dataset;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,9 +18,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class PdbXmlParserTest {
-
-    private PdbXmlParser pdbXmlParser = new PdbXmlParser();
+public class DatasetMapperTest {
 
     // -------------------- TESTS --------------------
 
@@ -30,10 +28,11 @@ public class PdbXmlParserTest {
         File cbfFile = new File(getClass().getClassLoader().getResource("xml/pdbFromApi.xml").toURI());
         XmlMapper xmlMapper = new XmlMapper();
         xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        PdbDataset pdbDataset = xmlMapper.readValue(cbfFile, PdbDataset.class);
+        Dataset dataset = xmlMapper.readValue(cbfFile, Dataset.class);
+        DatasetMapper datasetMapper = new DatasetMapper(dataset);
 
         //when
-        List<ResultField> resultFields = pdbXmlParser.parse(pdbDataset);
+        List<ResultField> resultFields = datasetMapper.asResultFields();
 
         //then
         assertEquals("4IWR", retrieveFieldValue(MxrdrMetadataField.PDB_ID.getValue(), resultFields));
@@ -58,10 +57,11 @@ public class PdbXmlParserTest {
     @Test
     public void parse_incorrectXml() {
         //given
-        PdbDataset pdbDataset = new PdbDataset();
+        Dataset dataset = new Dataset();
+        DatasetMapper datasetMapper = new DatasetMapper(dataset);
 
         //when & then
-        Assertions.assertThrows(IllegalStateException.class, () -> pdbXmlParser.parse(pdbDataset));
+        Assertions.assertThrows(IllegalStateException.class, () -> datasetMapper.asResultFields());
     }
 
     // -------------------- PRIVATE --------------------

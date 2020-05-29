@@ -1,4 +1,4 @@
-package pl.edu.icm.pl.mxrdr.extension.importer.pdb.pojo;
+package pl.edu.icm.pl.mxrdr.extension.importer.pdb.model;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 

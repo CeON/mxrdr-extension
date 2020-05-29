@@ -1,11 +1,19 @@
 package pl.edu.icm.pl.mxrdr.extension.importer;
 
+import edu.harvard.iq.dataverse.importer.metadata.ResultField;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class SymmetryStructureMapper {
-    private static Map<String, String> MAPPING = Initializer.createStructureMapping();
+
+    private static final Map<String, String> MAPPING = Initializer.createStructureMapping();
+
+    public static Stream<ResultField> map(MxrdrMetadataField field, String value) {
+        return Stream.of(ResultField.ofValue(SymmetryStructureMapper.map(value)));
+    }
 
     public static String map(String value) {
         return MAPPING.getOrDefault(value.trim(), "Other");
