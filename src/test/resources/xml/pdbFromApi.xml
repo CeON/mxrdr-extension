@@ -1,0 +1,259 @@
+<?xml version='1.0' standalone='no' ?>
+<dataset>
+    <record>
+        <dimEntity.structureId>4IWR</dimEntity.structureId>
+        <dimEntity.chainId>A</dimEntity.chainId>
+        <dimStructure.collectionTemperature>100.0</dimStructure.collectionTemperature>
+        <dimEntity.entityMacromoleculeType>Polypeptide(L)</dimEntity.entityMacromoleculeType>
+        <dimEntity.sequence>GSHMESFLLSKVSFVIKKIRLEKGMTQEDLAYKSNLDRTYISGIERNSRNLTIKSLELIMKGLEVSDVVFFEMLIKEILKHD</dimEntity.sequence>
+        <dimEntity.molecularWeight>9521.17</dimEntity.molecularWeight>
+        <dimStructure.macromoleculeType>Protein#DNA</dimStructure.macromoleculeType>
+        <dimStructure.structureMolecularWeight>68792.63</dimStructure.structureMolecularWeight>
+        <dimStructure.spaceGroup>P 32</dimStructure.spaceGroup>
+        <dimStructure.lengthOfUnitCellLatticeA>48.02</dimStructure.lengthOfUnitCellLatticeA>
+        <dimStructure.lengthOfUnitCellLatticeB>48.02</dimStructure.lengthOfUnitCellLatticeB>
+        <dimStructure.lengthOfUnitCellLatticeC>218.35</dimStructure.lengthOfUnitCellLatticeC>
+        <dimStructure.unitCellAngleAlpha>90.0</dimStructure.unitCellAngleAlpha>
+        <dimStructure.unitCellAngleBeta>90.0</dimStructure.unitCellAngleBeta>
+        <dimStructure.unitCellAngleGamma>120.0</dimStructure.unitCellAngleGamma>
+        <dimStructure.resolution>2.4</dimStructure.resolution>
+        <dimStructure.residueCount>428</dimStructure.residueCount>
+        <dimStructure.atomSiteCount>4513</dimStructure.atomSiteCount>
+        <dimStructure.structureTitle>C.Esp1396I bound to a 25 base pair operator site</dimStructure.structureTitle>
+        <dimStructure.pdbDoi>10.2210/pdb4iwr/pdb</dimStructure.pdbDoi>
+        <dimStructure.structureAuthor>Martin, R.N.A.#McGeehan, J.E.#Ball, N.J.#Streeter, S.D.#Thresh, S.-J.#Kneale, G.G.</dimStructure.structureAuthor>
+        <dimStructure.depositionDate>2013-01-24</dimStructure.depositionDate>
+        <dimStructure.releaseDate>2013-09-11</dimStructure.releaseDate>
+        <dimStructure.revisionDate>null</dimStructure.revisionDate>
+        <dimStructure.experimentalTechnique>X-RAY DIFFRACTION</dimStructure.experimentalTechnique>
+        <dimStructure.title>Structural analysis of DNA-protein complexes regulating the restriction-modification system Esp1396I.</dimStructure.title>
+        <dimStructure.pubmedId>23989141</dimStructure.pubmedId>
+        <dimStructure.citationAuthor>Martin, R.N., McGeehan, J.E., Ball, N.J., Streeter, S.D., Thresh, S.J., Kneale, G.G.</dimStructure.citationAuthor>
+        <dimStructure.journalName>Acta Crystallogr.,Sect.F</dimStructure.journalName>
+        <dimStructure.publicationYear>2013</dimStructure.publicationYear>
+    </record>
+    <record>
+        <dimEntity.structureId>4IWR</dimEntity.structureId>
+        <dimEntity.chainId>B</dimEntity.chainId>
+        <dimStructure.collectionTemperature>100.0</dimStructure.collectionTemperature>
+        <dimEntity.entityMacromoleculeType>Polypeptide(L)</dimEntity.entityMacromoleculeType>
+        <dimEntity.sequence>GSHMESFLLSKVSFVIKKIRLEKGMTQEDLAYKSNLDRTYISGIERNSRNLTIKSLELIMKGLEVSDVVFFEMLIKEILKHD</dimEntity.sequence>
+        <dimEntity.molecularWeight>9521.17</dimEntity.molecularWeight>
+        <dimStructure.macromoleculeType>Protein#DNA</dimStructure.macromoleculeType>
+        <dimStructure.structureMolecularWeight>68792.63</dimStructure.structureMolecularWeight>
+        <dimStructure.spaceGroup>P 32</dimStructure.spaceGroup>
+        <dimStructure.lengthOfUnitCellLatticeA>48.02</dimStructure.lengthOfUnitCellLatticeA>
+        <dimStructure.lengthOfUnitCellLatticeB>48.02</dimStructure.lengthOfUnitCellLatticeB>
+        <dimStructure.lengthOfUnitCellLatticeC>218.35</dimStructure.lengthOfUnitCellLatticeC>
+        <dimStructure.unitCellAngleAlpha>90.0</dimStructure.unitCellAngleAlpha>
+        <dimStructure.unitCellAngleBeta>90.0</dimStructure.unitCellAngleBeta>
+        <dimStructure.unitCellAngleGamma>120.0</dimStructure.unitCellAngleGamma>
+        <dimStructure.resolution>2.4</dimStructure.resolution>
+        <dimStructure.residueCount>428</dimStructure.residueCount>
+        <dimStructure.atomSiteCount>4513</dimStructure.atomSiteCount>
+        <dimStructure.structureTitle>C.Esp1396I bound to a 25 base pair operator site</dimStructure.structureTitle>
+        <dimStructure.pdbDoi>10.2210/pdb4iwr/pdb</dimStructure.pdbDoi>
+        <dimStructure.structureAuthor>Martin, R.N.A.#McGeehan, J.E.#Ball, N.J.#Streeter, S.D.#Thresh, S.-J.#Kneale, G.G.</dimStructure.structureAuthor>
+        <dimStructure.depositionDate>2013-01-24</dimStructure.depositionDate>
+        <dimStructure.releaseDate>2013-09-11</dimStructure.releaseDate>
+        <dimStructure.revisionDate>null</dimStructure.revisionDate>
+        <dimStructure.experimentalTechnique>X-RAY DIFFRACTION</dimStructure.experimentalTechnique>
+        <dimStructure.title>Structural analysis of DNA-protein complexes regulating the restriction-modification system Esp1396I.</dimStructure.title>
+        <dimStructure.pubmedId>23989141</dimStructure.pubmedId>
+        <dimStructure.citationAuthor>Martin, R.N., McGeehan, J.E., Ball, N.J., Streeter, S.D., Thresh, S.J., Kneale, G.G.</dimStructure.citationAuthor>
+        <dimStructure.journalName>Acta Crystallogr.,Sect.F</dimStructure.journalName>
+        <dimStructure.publicationYear>2013</dimStructure.publicationYear>
+    </record>
+    <record>
+        <dimEntity.structureId>4IWR</dimEntity.structureId>
+        <dimEntity.chainId>C</dimEntity.chainId>
+        <dimStructure.collectionTemperature>100.0</dimStructure.collectionTemperature>
+        <dimEntity.entityMacromoleculeType>Polydeoxyribonucleotide (DNA)</dimEntity.entityMacromoleculeType>
+        <dimEntity.sequence>ATGTGACTTATAGTCCGTGTGATTA</dimEntity.sequence>
+        <dimEntity.molecularWeight>7718.99</dimEntity.molecularWeight>
+        <dimStructure.macromoleculeType>Protein#DNA</dimStructure.macromoleculeType>
+        <dimStructure.structureMolecularWeight>68792.63</dimStructure.structureMolecularWeight>
+        <dimStructure.spaceGroup>P 32</dimStructure.spaceGroup>
+        <dimStructure.lengthOfUnitCellLatticeA>48.02</dimStructure.lengthOfUnitCellLatticeA>
+        <dimStructure.lengthOfUnitCellLatticeB>48.02</dimStructure.lengthOfUnitCellLatticeB>
+        <dimStructure.lengthOfUnitCellLatticeC>218.35</dimStructure.lengthOfUnitCellLatticeC>
+        <dimStructure.unitCellAngleAlpha>90.0</dimStructure.unitCellAngleAlpha>
+        <dimStructure.unitCellAngleBeta>90.0</dimStructure.unitCellAngleBeta>
+        <dimStructure.unitCellAngleGamma>120.0</dimStructure.unitCellAngleGamma>
+        <dimStructure.resolution>2.4</dimStructure.resolution>
+        <dimStructure.residueCount>428</dimStructure.residueCount>
+        <dimStructure.atomSiteCount>4513</dimStructure.atomSiteCount>
+        <dimStructure.structureTitle>C.Esp1396I bound to a 25 base pair operator site</dimStructure.structureTitle>
+        <dimStructure.pdbDoi>10.2210/pdb4iwr/pdb</dimStructure.pdbDoi>
+        <dimStructure.structureAuthor>Martin, R.N.A.#McGeehan, J.E.#Ball, N.J.#Streeter, S.D.#Thresh, S.-J.#Kneale, G.G.</dimStructure.structureAuthor>
+        <dimStructure.depositionDate>2013-01-24</dimStructure.depositionDate>
+        <dimStructure.releaseDate>2013-09-11</dimStructure.releaseDate>
+        <dimStructure.revisionDate>null</dimStructure.revisionDate>
+        <dimStructure.experimentalTechnique>X-RAY DIFFRACTION</dimStructure.experimentalTechnique>
+        <dimStructure.title>Structural analysis of DNA-protein complexes regulating the restriction-modification system Esp1396I.</dimStructure.title>
+        <dimStructure.pubmedId>23989141</dimStructure.pubmedId>
+        <dimStructure.citationAuthor>Martin, R.N., McGeehan, J.E., Ball, N.J., Streeter, S.D., Thresh, S.J., Kneale, G.G.</dimStructure.citationAuthor>
+        <dimStructure.journalName>Acta Crystallogr.,Sect.F</dimStructure.journalName>
+        <dimStructure.publicationYear>2013</dimStructure.publicationYear>
+    </record>
+    <record>
+        <dimEntity.structureId>4IWR</dimEntity.structureId>
+        <dimEntity.chainId>D</dimEntity.chainId>
+        <dimStructure.collectionTemperature>100.0</dimStructure.collectionTemperature>
+        <dimEntity.entityMacromoleculeType>Polydeoxyribonucleotide (DNA)</dimEntity.entityMacromoleculeType>
+        <dimEntity.sequence>TAATCACACGGACTATAAGTCACAT</dimEntity.sequence>
+        <dimEntity.molecularWeight>7634.98</dimEntity.molecularWeight>
+        <dimStructure.macromoleculeType>Protein#DNA</dimStructure.macromoleculeType>
+        <dimStructure.structureMolecularWeight>68792.63</dimStructure.structureMolecularWeight>
+        <dimStructure.spaceGroup>P 32</dimStructure.spaceGroup>
+        <dimStructure.lengthOfUnitCellLatticeA>48.02</dimStructure.lengthOfUnitCellLatticeA>
+        <dimStructure.lengthOfUnitCellLatticeB>48.02</dimStructure.lengthOfUnitCellLatticeB>
+        <dimStructure.lengthOfUnitCellLatticeC>218.35</dimStructure.lengthOfUnitCellLatticeC>
+        <dimStructure.unitCellAngleAlpha>90.0</dimStructure.unitCellAngleAlpha>
+        <dimStructure.unitCellAngleBeta>90.0</dimStructure.unitCellAngleBeta>
+        <dimStructure.unitCellAngleGamma>120.0</dimStructure.unitCellAngleGamma>
+        <dimStructure.resolution>2.4</dimStructure.resolution>
+        <dimStructure.residueCount>428</dimStructure.residueCount>
+        <dimStructure.atomSiteCount>4513</dimStructure.atomSiteCount>
+        <dimStructure.structureTitle>C.Esp1396I bound to a 25 base pair operator site</dimStructure.structureTitle>
+        <dimStructure.pdbDoi>10.2210/pdb4iwr/pdb</dimStructure.pdbDoi>
+        <dimStructure.structureAuthor>Martin, R.N.A.#McGeehan, J.E.#Ball, N.J.#Streeter, S.D.#Thresh, S.-J.#Kneale, G.G.</dimStructure.structureAuthor>
+        <dimStructure.depositionDate>2013-01-24</dimStructure.depositionDate>
+        <dimStructure.releaseDate>2013-09-11</dimStructure.releaseDate>
+        <dimStructure.revisionDate>null</dimStructure.revisionDate>
+        <dimStructure.experimentalTechnique>X-RAY DIFFRACTION</dimStructure.experimentalTechnique>
+        <dimStructure.title>Structural analysis of DNA-protein complexes regulating the restriction-modification system Esp1396I.</dimStructure.title>
+        <dimStructure.pubmedId>23989141</dimStructure.pubmedId>
+        <dimStructure.citationAuthor>Martin, R.N., McGeehan, J.E., Ball, N.J., Streeter, S.D., Thresh, S.J., Kneale, G.G.</dimStructure.citationAuthor>
+        <dimStructure.journalName>Acta Crystallogr.,Sect.F</dimStructure.journalName>
+        <dimStructure.publicationYear>2013</dimStructure.publicationYear>
+    </record>
+    <record>
+        <dimEntity.structureId>4IWR</dimEntity.structureId>
+        <dimEntity.chainId>E</dimEntity.chainId>
+        <dimStructure.collectionTemperature>100.0</dimStructure.collectionTemperature>
+        <dimEntity.entityMacromoleculeType>Polypeptide(L)</dimEntity.entityMacromoleculeType>
+        <dimEntity.sequence>GSHMESFLLSKVSFVIKKIRLEKGMTQEDLAYKSNLDRTYISGIERNSRNLTIKSLELIMKGLEVSDVVFFEMLIKEILKHD</dimEntity.sequence>
+        <dimEntity.molecularWeight>9521.17</dimEntity.molecularWeight>
+        <dimStructure.macromoleculeType>Protein#DNA</dimStructure.macromoleculeType>
+        <dimStructure.structureMolecularWeight>68792.63</dimStructure.structureMolecularWeight>
+        <dimStructure.spaceGroup>P 32</dimStructure.spaceGroup>
+        <dimStructure.lengthOfUnitCellLatticeA>48.02</dimStructure.lengthOfUnitCellLatticeA>
+        <dimStructure.lengthOfUnitCellLatticeB>48.02</dimStructure.lengthOfUnitCellLatticeB>
+        <dimStructure.lengthOfUnitCellLatticeC>218.35</dimStructure.lengthOfUnitCellLatticeC>
+        <dimStructure.unitCellAngleAlpha>90.0</dimStructure.unitCellAngleAlpha>
+        <dimStructure.unitCellAngleBeta>90.0</dimStructure.unitCellAngleBeta>
+        <dimStructure.unitCellAngleGamma>120.0</dimStructure.unitCellAngleGamma>
+        <dimStructure.resolution>2.4</dimStructure.resolution>
+        <dimStructure.residueCount>428</dimStructure.residueCount>
+        <dimStructure.atomSiteCount>4513</dimStructure.atomSiteCount>
+        <dimStructure.structureTitle>C.Esp1396I bound to a 25 base pair operator site</dimStructure.structureTitle>
+        <dimStructure.pdbDoi>10.2210/pdb4iwr/pdb</dimStructure.pdbDoi>
+        <dimStructure.structureAuthor>Martin, R.N.A.#McGeehan, J.E.#Ball, N.J.#Streeter, S.D.#Thresh, S.-J.#Kneale, G.G.</dimStructure.structureAuthor>
+        <dimStructure.depositionDate>2013-01-24</dimStructure.depositionDate>
+        <dimStructure.releaseDate>2013-09-11</dimStructure.releaseDate>
+        <dimStructure.revisionDate>null</dimStructure.revisionDate>
+        <dimStructure.experimentalTechnique>X-RAY DIFFRACTION</dimStructure.experimentalTechnique>
+        <dimStructure.title>Structural analysis of DNA-protein complexes regulating the restriction-modification system Esp1396I.</dimStructure.title>
+        <dimStructure.pubmedId>23989141</dimStructure.pubmedId>
+        <dimStructure.citationAuthor>Martin, R.N., McGeehan, J.E., Ball, N.J., Streeter, S.D., Thresh, S.J., Kneale, G.G.</dimStructure.citationAuthor>
+        <dimStructure.journalName>Acta Crystallogr.,Sect.F</dimStructure.journalName>
+        <dimStructure.publicationYear>2013</dimStructure.publicationYear>
+    </record>
+    <record>
+        <dimEntity.structureId>4IWR</dimEntity.structureId>
+        <dimEntity.chainId>F</dimEntity.chainId>
+        <dimStructure.collectionTemperature>100.0</dimStructure.collectionTemperature>
+        <dimEntity.entityMacromoleculeType>Polypeptide(L)</dimEntity.entityMacromoleculeType>
+        <dimEntity.sequence>GSHMESFLLSKVSFVIKKIRLEKGMTQEDLAYKSNLDRTYISGIERNSRNLTIKSLELIMKGLEVSDVVFFEMLIKEILKHD</dimEntity.sequence>
+        <dimEntity.molecularWeight>9521.17</dimEntity.molecularWeight>
+        <dimStructure.macromoleculeType>Protein#DNA</dimStructure.macromoleculeType>
+        <dimStructure.structureMolecularWeight>68792.63</dimStructure.structureMolecularWeight>
+        <dimStructure.spaceGroup>P 32</dimStructure.spaceGroup>
+        <dimStructure.lengthOfUnitCellLatticeA>48.02</dimStructure.lengthOfUnitCellLatticeA>
+        <dimStructure.lengthOfUnitCellLatticeB>48.02</dimStructure.lengthOfUnitCellLatticeB>
+        <dimStructure.lengthOfUnitCellLatticeC>218.35</dimStructure.lengthOfUnitCellLatticeC>
+        <dimStructure.unitCellAngleAlpha>90.0</dimStructure.unitCellAngleAlpha>
+        <dimStructure.unitCellAngleBeta>90.0</dimStructure.unitCellAngleBeta>
+        <dimStructure.unitCellAngleGamma>120.0</dimStructure.unitCellAngleGamma>
+        <dimStructure.resolution>2.4</dimStructure.resolution>
+        <dimStructure.residueCount>428</dimStructure.residueCount>
+        <dimStructure.atomSiteCount>4513</dimStructure.atomSiteCount>
+        <dimStructure.structureTitle>C.Esp1396I bound to a 25 base pair operator site</dimStructure.structureTitle>
+        <dimStructure.pdbDoi>10.2210/pdb4iwr/pdb</dimStructure.pdbDoi>
+        <dimStructure.structureAuthor>Martin, R.N.A.#McGeehan, J.E.#Ball, N.J.#Streeter, S.D.#Thresh, S.-J.#Kneale, G.G.</dimStructure.structureAuthor>
+        <dimStructure.depositionDate>2013-01-24</dimStructure.depositionDate>
+        <dimStructure.releaseDate>2013-09-11</dimStructure.releaseDate>
+        <dimStructure.revisionDate>null</dimStructure.revisionDate>
+        <dimStructure.experimentalTechnique>X-RAY DIFFRACTION</dimStructure.experimentalTechnique>
+        <dimStructure.title>Structural analysis of DNA-protein complexes regulating the restriction-modification system Esp1396I.</dimStructure.title>
+        <dimStructure.pubmedId>23989141</dimStructure.pubmedId>
+        <dimStructure.citationAuthor>Martin, R.N., McGeehan, J.E., Ball, N.J., Streeter, S.D., Thresh, S.J., Kneale, G.G.</dimStructure.citationAuthor>
+        <dimStructure.journalName>Acta Crystallogr.,Sect.F</dimStructure.journalName>
+        <dimStructure.publicationYear>2013</dimStructure.publicationYear>
+    </record>
+    <record>
+        <dimEntity.structureId>4IWR</dimEntity.structureId>
+        <dimEntity.chainId>G</dimEntity.chainId>
+        <dimStructure.collectionTemperature>100.0</dimStructure.collectionTemperature>
+        <dimEntity.entityMacromoleculeType>Polydeoxyribonucleotide (DNA)</dimEntity.entityMacromoleculeType>
+        <dimEntity.sequence>ATGTGACTTATAGTCCGTGTGATTA</dimEntity.sequence>
+        <dimEntity.molecularWeight>7718.99</dimEntity.molecularWeight>
+        <dimStructure.macromoleculeType>Protein#DNA</dimStructure.macromoleculeType>
+        <dimStructure.structureMolecularWeight>68792.63</dimStructure.structureMolecularWeight>
+        <dimStructure.spaceGroup>P 32</dimStructure.spaceGroup>
+        <dimStructure.lengthOfUnitCellLatticeA>48.02</dimStructure.lengthOfUnitCellLatticeA>
+        <dimStructure.lengthOfUnitCellLatticeB>48.02</dimStructure.lengthOfUnitCellLatticeB>
+        <dimStructure.lengthOfUnitCellLatticeC>218.35</dimStructure.lengthOfUnitCellLatticeC>
+        <dimStructure.unitCellAngleAlpha>90.0</dimStructure.unitCellAngleAlpha>
+        <dimStructure.unitCellAngleBeta>90.0</dimStructure.unitCellAngleBeta>
+        <dimStructure.unitCellAngleGamma>120.0</dimStructure.unitCellAngleGamma>
+        <dimStructure.resolution>2.4</dimStructure.resolution>
+        <dimStructure.residueCount>428</dimStructure.residueCount>
+        <dimStructure.atomSiteCount>4513</dimStructure.atomSiteCount>
+        <dimStructure.structureTitle>C.Esp1396I bound to a 25 base pair operator site</dimStructure.structureTitle>
+        <dimStructure.pdbDoi>10.2210/pdb4iwr/pdb</dimStructure.pdbDoi>
+        <dimStructure.structureAuthor>Martin, R.N.A.#McGeehan, J.E.#Ball, N.J.#Streeter, S.D.#Thresh, S.-J.#Kneale, G.G.</dimStructure.structureAuthor>
+        <dimStructure.depositionDate>2013-01-24</dimStructure.depositionDate>
+        <dimStructure.releaseDate>2013-09-11</dimStructure.releaseDate>
+        <dimStructure.revisionDate>null</dimStructure.revisionDate>
+        <dimStructure.experimentalTechnique>X-RAY DIFFRACTION</dimStructure.experimentalTechnique>
+        <dimStructure.title>Structural analysis of DNA-protein complexes regulating the restriction-modification system Esp1396I.</dimStructure.title>
+        <dimStructure.pubmedId>23989141</dimStructure.pubmedId>
+        <dimStructure.citationAuthor>Martin, R.N., McGeehan, J.E., Ball, N.J., Streeter, S.D., Thresh, S.J., Kneale, G.G.</dimStructure.citationAuthor>
+        <dimStructure.journalName>Acta Crystallogr.,Sect.F</dimStructure.journalName>
+        <dimStructure.publicationYear>2013</dimStructure.publicationYear>
+    </record>
+    <record>
+        <dimEntity.structureId>4IWR</dimEntity.structureId>
+        <dimEntity.chainId>H</dimEntity.chainId>
+        <dimStructure.collectionTemperature>100.0</dimStructure.collectionTemperature>
+        <dimEntity.entityMacromoleculeType>Polydeoxyribonucleotide (DNA)</dimEntity.entityMacromoleculeType>
+        <dimEntity.sequence>TAATCACACGGACTATAAGTCACAT</dimEntity.sequence>
+        <dimEntity.molecularWeight>7634.98</dimEntity.molecularWeight>
+        <dimStructure.macromoleculeType>Protein#DNA</dimStructure.macromoleculeType>
+        <dimStructure.structureMolecularWeight>68792.63</dimStructure.structureMolecularWeight>
+        <dimStructure.spaceGroup>P 32</dimStructure.spaceGroup>
+        <dimStructure.lengthOfUnitCellLatticeA>48.02</dimStructure.lengthOfUnitCellLatticeA>
+        <dimStructure.lengthOfUnitCellLatticeB>48.02</dimStructure.lengthOfUnitCellLatticeB>
+        <dimStructure.lengthOfUnitCellLatticeC>218.35</dimStructure.lengthOfUnitCellLatticeC>
+        <dimStructure.unitCellAngleAlpha>90.0</dimStructure.unitCellAngleAlpha>
+        <dimStructure.unitCellAngleBeta>90.0</dimStructure.unitCellAngleBeta>
+        <dimStructure.unitCellAngleGamma>120.0</dimStructure.unitCellAngleGamma>
+        <dimStructure.resolution>2.4</dimStructure.resolution>
+        <dimStructure.residueCount>428</dimStructure.residueCount>
+        <dimStructure.atomSiteCount>4513</dimStructure.atomSiteCount>
+        <dimStructure.structureTitle>C.Esp1396I bound to a 25 base pair operator site</dimStructure.structureTitle>
+        <dimStructure.pdbDoi>10.2210/pdb4iwr/pdb</dimStructure.pdbDoi>
+        <dimStructure.structureAuthor>Martin, R.N.A.#McGeehan, J.E.#Ball, N.J.#Streeter, S.D.#Thresh, S.-J.#Kneale, G.G.</dimStructure.structureAuthor>
+        <dimStructure.depositionDate>2013-01-24</dimStructure.depositionDate>
+        <dimStructure.releaseDate>2013-09-11</dimStructure.releaseDate>
+        <dimStructure.revisionDate>null</dimStructure.revisionDate>
+        <dimStructure.experimentalTechnique>X-RAY DIFFRACTION</dimStructure.experimentalTechnique>
+        <dimStructure.title>Structural analysis of DNA-protein complexes regulating the restriction-modification system Esp1396I.</dimStructure.title>
+        <dimStructure.pubmedId>23989141</dimStructure.pubmedId>
+        <dimStructure.citationAuthor>Martin, R.N., McGeehan, J.E., Ball, N.J., Streeter, S.D., Thresh, S.J., Kneale, G.G.</dimStructure.citationAuthor>
+        <dimStructure.journalName>Acta Crystallogr.,Sect.F</dimStructure.journalName>
+        <dimStructure.publicationYear>2013</dimStructure.publicationYear>
+    </record>
+</dataset>
