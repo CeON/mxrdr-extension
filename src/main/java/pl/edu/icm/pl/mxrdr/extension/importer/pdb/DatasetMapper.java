@@ -2,7 +2,6 @@ package pl.edu.icm.pl.mxrdr.extension.importer.pdb;
 
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import io.vavr.control.Try;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
@@ -20,7 +19,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -31,42 +29,42 @@ public class DatasetMapper {
     private static final Logger log = LoggerFactory.getLogger(DatasetMapper.class);
 
     private static final List<RecordMapper> RECORD_MAPPERS = Arrays.asList(
-            new FirstRecordMapper(MxrdrMetadataField.PDB_ID, Record::getStructureId),
-            new FirstRecordMapper(MxrdrMetadataField.MOLECULAR_WEIGHT, Record::getStructureMolecularWeight),
-            new FirstRecordMapper(MxrdrMetadataField.SPACE_GROUP,
-                    new FirstRecordMapper(null, Record::getSpaceGroup)
-                            .withValueMapper(SymmetryStructureMapper::map)),
-            new FirstRecordMapper(MxrdrMetadataField.RESIDUE_COUNT, Record::getResidueCount),
-            new FirstRecordMapper(MxrdrMetadataField.ATOM_SITE_COUNT, Record::getAtomSiteCount),
-            new FirstRecordMapper(MxrdrMetadataField.PDB_TITLE, Record::getStructureTitle),
-            new FirstRecordMapper(MxrdrMetadataField.PDB_DOI, Record::getPdbDoi),
-            new FirstRecordMapper(MxrdrMetadataField.PDB_STRUCTURE_AUTHOR, Record::getStructureAuthor)
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.PDB_ID, Record::getStructureId)),
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.MOLECULAR_WEIGHT, Record::getStructureMolecularWeight)),
+            new FirstRecordMapper(new NestedRecordMapper(MxrdrMetadataField.SPACE_GROUP,
+                    new ValueRecordMapper(Record::getSpaceGroup)
+                            .withValueMapper(SymmetryStructureMapper::mapToStream))),
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.RESIDUE_COUNT, Record::getResidueCount)),
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.ATOM_SITE_COUNT, Record::getAtomSiteCount)),
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.PDB_TITLE, Record::getStructureTitle)),
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.PDB_DOI, Record::getPdbDoi)),
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.PDB_STRUCTURE_AUTHOR, Record::getStructureAuthor)
                     .withValueMapper((field, value) -> Stream.of(value.split("#"))
-                            .map(val -> ResultField.of(field.getValue(), val))),
-            new FirstRecordMapper(MxrdrMetadataField.PDB_DEPOSIT_DATE, Record::getDepositionDate),
-            new FirstRecordMapper(MxrdrMetadataField.PDB_RELEASE_DATE, Record::getReleaseDate),
-            new FirstRecordMapper(MxrdrMetadataField.PDB_REVISION_DATE, Record::getRevisionDate),
-            new FirstRecordMapper(MxrdrMetadataField.CITATION_TITLE, Record::getTitle),
-            new FirstRecordMapper(MxrdrMetadataField.CITATION_PUBMED_ID, Record::getPubmedId),
-            new FirstRecordMapper(MxrdrMetadataField.CITATION_AUTHOR, Record::getCitationAuthor)
+                            .map(val -> ResultField.of(field.getValue(), val)))),
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.PDB_DEPOSIT_DATE, Record::getDepositionDate)),
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.PDB_RELEASE_DATE, Record::getReleaseDate)),
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.PDB_REVISION_DATE, Record::getRevisionDate)),
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.CITATION_TITLE, Record::getTitle)),
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.CITATION_PUBMED_ID, Record::getPubmedId)),
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.CITATION_AUTHOR, Record::getCitationAuthor)
                     .withValueMapper((field, value) -> splitByEverySecondComma(value).stream()
-                            .map(val -> ResultField.of(field.getValue(), val))),
-            new FirstRecordMapper(MxrdrMetadataField.CITATION_JOURNAL, Record::getJournalName),
-            new FirstRecordMapper(MxrdrMetadataField.CITATION_YEAR, Record::getPublicationYear),
-            new FirstRecordMapper(MxrdrMetadataField.OVERALL,
-                    new FirstRecordMapper(MxrdrMetadataField.OVERALL_DATA_RESOLUTION_RANGE_HIGH, Record::getResolution)),
-            new FirstRecordMapper(MxrdrMetadataField.DATA_COLLECTION,
-                    new FirstRecordMapper(MxrdrMetadataField.DATA_COLLECTION_TEMPERATURE, Record::getCollectionTemperature)),
-            new FirstRecordMapper(MxrdrMetadataField.UNIT_CELL_PARAMETERS,
-                    new FirstRecordMapper(MxrdrMetadataField.UNIT_CELL_PARAMETER_A, Record::getLengthOfUnitCellLatticeA),
-                    new FirstRecordMapper(MxrdrMetadataField.UNIT_CELL_PARAMETER_B, Record::getLengthOfUnitCellLatticeB),
-                    new FirstRecordMapper(MxrdrMetadataField.UNIT_CELL_PARAMETER_C, Record::getLengthOfUnitCellLatticeC),
-                    new FirstRecordMapper(MxrdrMetadataField.UNIT_CELL_PARAMETER_ALPHA, Record::getUnitCellAngleAlpha),
-                    new FirstRecordMapper(MxrdrMetadataField.UNIT_CELL_PARAMETER_BETA, Record::getUnitCellAngleBeta),
-                    new FirstRecordMapper(MxrdrMetadataField.UNIT_CELL_PARAMETER_GAMMA, Record::getUnitCellAngleGamma)),
-            new RecordMapper(MxrdrMetadataField.ENTITY,
-                    new RecordMapper(MxrdrMetadataField.ENTITY_SEQUENCE, Record::getSequence),
-                    new RecordMapper(MxrdrMetadataField.ENTITY_ID, Record::getChainId))
+                            .map(val -> ResultField.of(field.getValue(), val)))),
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.CITATION_JOURNAL, Record::getJournalName)),
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.CITATION_YEAR, Record::getPublicationYear)),
+            new FirstRecordMapper(new NestedRecordMapper(MxrdrMetadataField.OVERALL,
+                    new BasicRecordMapper(MxrdrMetadataField.OVERALL_DATA_RESOLUTION_RANGE_HIGH, Record::getResolution))),
+            new FirstRecordMapper(new NestedRecordMapper(MxrdrMetadataField.DATA_COLLECTION,
+                    new BasicRecordMapper(MxrdrMetadataField.DATA_COLLECTION_TEMPERATURE, Record::getCollectionTemperature))),
+            new FirstRecordMapper(new NestedRecordMapper(MxrdrMetadataField.UNIT_CELL_PARAMETERS,
+                    new BasicRecordMapper(MxrdrMetadataField.UNIT_CELL_PARAMETER_A, Record::getLengthOfUnitCellLatticeA),
+                    new BasicRecordMapper(MxrdrMetadataField.UNIT_CELL_PARAMETER_B, Record::getLengthOfUnitCellLatticeB),
+                    new BasicRecordMapper(MxrdrMetadataField.UNIT_CELL_PARAMETER_C, Record::getLengthOfUnitCellLatticeC),
+                    new BasicRecordMapper(MxrdrMetadataField.UNIT_CELL_PARAMETER_ALPHA, Record::getUnitCellAngleAlpha),
+                    new BasicRecordMapper(MxrdrMetadataField.UNIT_CELL_PARAMETER_BETA, Record::getUnitCellAngleBeta),
+                    new BasicRecordMapper(MxrdrMetadataField.UNIT_CELL_PARAMETER_GAMMA, Record::getUnitCellAngleGamma))),
+            new NestedRecordMapper(MxrdrMetadataField.ENTITY,
+                    new BasicRecordMapper(MxrdrMetadataField.ENTITY_SEQUENCE, Record::getSequence),
+                    new BasicRecordMapper(MxrdrMetadataField.ENTITY_ID, Record::getChainId))
     );
 
     private final Dataset dataset;
@@ -109,98 +107,121 @@ public class DatasetMapper {
     /**
      * Maps a {@link Record} into zero or more {@link ResultField}'s.
      */
-    static class RecordMapper {
-
-        /**
-         * Default mapping resulting in a single {@link ResultField} from given {@link Record} value.
-         */
-        private static final BiFunction<MxrdrMetadataField, String, Stream<ResultField>> DEFAULT_VALUE_MAPPER =
-                (field, value) -> Stream.of(ResultField.of(fieldName(field), value));
-
-        private final MxrdrMetadataField field;
-        private final Function<Record, String> valueSource;
-        private BiFunction<MxrdrMetadataField, String, Stream<ResultField>> valueMapper = DEFAULT_VALUE_MAPPER;
-        private final List<RecordMapper> children = new ArrayList<>();
-
-        RecordMapper(MxrdrMetadataField field, Function<Record, String> valueSource) {
-            this.field = field;
-            this.valueSource = valueSource;
-        }
-
-        RecordMapper(MxrdrMetadataField field, RecordMapper...children) {
-            this.field = field;
-            this.valueSource = r -> null;
-            this.children.addAll(Arrays.asList(children));
-        }
-
-        /**
-         * Sets custom transformation of {@link Record} value in case {@link #DEFAULT_VALUE_MAPPER} is not applicable.
-         * @param valueMapper transformation function.
-         * @return this mapper with new transformation set.
-         */
-        RecordMapper withValueMapper(BiFunction<MxrdrMetadataField, String, Stream<ResultField>> valueMapper) {
-            this.valueMapper = valueMapper;
-            return this;
-        }
+    interface RecordMapper {
 
         /**
          * Performs the mapping of given record.
          * @param record record to map from.
          * @return resulting fields.
          */
-        Stream<ResultField> asResultFields(Record record) {
-            if (children.isEmpty()) {
-                return Stream.of(valueSource.apply(record))
-                        .filter(nonNullOrEmpty())
-                        .flatMap(value -> valueMapper.apply(field, value));
-            } else {
-                return Stream.of(ResultField.of(fieldName(field),
-                        children.stream()
-                                .flatMap(child -> child.asResultFields(record))
-                                .toArray(ResultField[]::new)))
-                        .filter(field -> !field.getChildren().isEmpty());
-            }
+        Stream<ResultField> asResultFields(Record record);
+
+        /**
+         * Predicate defining a valid value for mapped {@link ResultField}s.
+         * Values that are {@literal null}, empty or equal to {@literal "null"} are deemed invalid.
+         */
+        Predicate<String> IS_VALID_RESULT_FILED_VALUE = value ->
+                value != null && value.length() > 0 && !"null".equals(value);
+    }
+
+    /**
+     * Maps a {@link Record} into a basic {@link ResultField}'s with name and value.
+     */
+    static class BasicRecordMapper implements RecordMapper {
+
+        private final MxrdrMetadataField field;
+        private final Function<Record, String> valueSource;
+        private BiFunction<MxrdrMetadataField, String, Stream<ResultField>> valueMapper =
+                (field, value) -> Stream.of(ResultField.of(field.getValue(), value));
+
+        BasicRecordMapper(MxrdrMetadataField field, Function<Record, String> valueSource) {
+            this.field = field;
+            this.valueSource = valueSource;
         }
 
-        private static String fieldName(MxrdrMetadataField field) {
-            return ofNullable(field)
-                    .map(MxrdrMetadataField::getValue)
-                    .orElse(StringUtils.EMPTY);
+        BasicRecordMapper withValueMapper(BiFunction<MxrdrMetadataField, String, Stream<ResultField>> valueMapper) {
+            this.valueMapper = valueMapper;
+            return this;
         }
 
-        private static Predicate<String> nonNullOrEmpty() {
-            return value -> value != null && value.length() > 0 && !"null".equals(value);
+        @Override
+        public Stream<ResultField> asResultFields(Record record) {
+            return Stream.of(valueSource.apply(record))
+                    .filter(IS_VALID_RESULT_FILED_VALUE)
+                    .flatMap(value -> valueMapper.apply(field, value));
         }
     }
 
     /**
-     * Stateful extension of {@link RecordMapper} allowing to be called only once
+     * Maps a {@link Record} into unnamed, value only {@link ResultField}'s.
+     */
+    static class ValueRecordMapper implements RecordMapper {
+
+        private final Function<Record, String> valueSource;
+        private Function<String, Stream<ResultField>> valueMapper =
+                value -> Stream.of(ResultField.ofValue(value));
+
+        ValueRecordMapper(Function<Record, String> valueSource) {
+            this.valueSource = valueSource;
+        }
+
+        ValueRecordMapper withValueMapper(Function<String, Stream<ResultField>> valueMapper) {
+            this.valueMapper = valueMapper;
+            return this;
+        }
+
+        @Override
+        public Stream<ResultField> asResultFields(Record record) {
+            return Stream.of(valueSource.apply(record))
+                    .filter(IS_VALID_RESULT_FILED_VALUE)
+                    .flatMap(valueMapper);
+        }
+    }
+
+    /**
+     * Maps a {@link Record} into a nested {@link ResultField}'s
+     * with children obtained from their respective {@link RecordMapper}'s.
+     */
+    static class NestedRecordMapper implements RecordMapper {
+
+        private final MxrdrMetadataField field;
+        private final List<RecordMapper> children;
+
+        NestedRecordMapper(MxrdrMetadataField field, RecordMapper...children) {
+            this.field = field;
+            this.children = Arrays.asList(children);
+        }
+
+        @Override
+        public Stream<ResultField> asResultFields(Record record) {
+            return Stream.of(ResultField.of(field.getValue(),
+                    children.stream()
+                            .flatMap(child -> child.asResultFields(record))
+                            .toArray(ResultField[]::new)))
+                    .filter(field -> !field.getChildren().isEmpty());
+        }
+    }
+
+    /**
+     * Stateful wrapper of {@link RecordMapper} allowing to be called only once
      * to enable mapping from first passed {@link Record} only.
      */
-    static class FirstRecordMapper extends RecordMapper {
+    static class FirstRecordMapper implements RecordMapper {
 
-        private boolean collected = false;
+        private final RecordMapper mapper;
+        private boolean mapped = false;
 
-        public FirstRecordMapper(MxrdrMetadataField field, Function<Record, String> valueSource) {
-            super(field, valueSource);
+        public FirstRecordMapper(RecordMapper mapper) {
+            this.mapper = mapper;
         }
 
-        public FirstRecordMapper(MxrdrMetadataField field, RecordMapper... children) {
-            super(field, children);
-        }
-
-        /**
-         * Performs the mapping only once. Each subsequent call will return an empty stream.
-         * @param record record to map from.
-         * @return resulting fields, or empty stream on subsequent calls.
-         */
         @Override
-        Stream<ResultField> asResultFields(Record record) {
-            if (collected) {
+        public Stream<ResultField> asResultFields(Record record) {
+            if (mapped) {
                 return Stream.empty();
             }
-            collected = true;
-            return super.asResultFields(record);
+            mapped = true;
+            return mapper.asResultFields(record);
         }
     }
 }

@@ -11,7 +11,7 @@ public class SymmetryStructureMapper {
 
     private static final Map<String, String> MAPPING = Initializer.createStructureMapping();
 
-    public static Stream<ResultField> map(MxrdrMetadataField field, String value) {
+    public static Stream<ResultField> mapToStream(String value) {
         return Stream.of(ResultField.ofValue(SymmetryStructureMapper.map(value)));
     }
 
