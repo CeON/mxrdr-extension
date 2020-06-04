@@ -3,7 +3,7 @@ package pl.edu.icm.pl.mxrdr.extension.workflow;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.workflow.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
@@ -57,7 +57,7 @@ class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
     // -------------------- LOGIC --------------------
 
     @Override
-    protected WorkflowStepResult.Source runInternal(WorkflowContext context, Path workDir) throws Exception {
+    protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) throws Exception {
         Path imgDir = imagesDir(workDir);
 
         List<String> fileNames = fetchInto(getDatasetVersion(context).getFileMetadatas(), imgDir);
@@ -76,12 +76,12 @@ class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
     }
 
     @Override
-    public WorkflowStepResult resume(WorkflowContext context, Map<String, String> internalData, String externalData) {
+    public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
         throw new UnsupportedOperationException("This step des not pause");
     }
 
     @Override
-    public void rollback(WorkflowContext context, Failure reason) {
+    public void rollback(WorkflowExecutionContext context, Failure reason) {
     }
 
     // -------------------- PRIVATE --------------------
@@ -90,7 +90,7 @@ class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
         return Files.createDirectories(workDir.resolve("img"));
     }
 
-    private DatasetVersion getDatasetVersion(WorkflowContext context) {
+    private DatasetVersion getDatasetVersion(WorkflowExecutionContext context) {
         return datasetVersions.findByVersionNumber(
                 context.getDataset().getId(), context.getNextVersionNumber(), context.getNextMinorVersionNumber());
     }
