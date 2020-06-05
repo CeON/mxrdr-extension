@@ -1,7 +1,8 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow;
 
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.step.Failure;
+import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.apache.commons.lang3.StringUtils;
 
@@ -12,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import static edu.harvard.iq.dataverse.workflow.internalspi.SystemProcessStep.ARGUMENTS_PARAM_NAME;
+import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
 import static java.util.Arrays.asList;
 
 /**
@@ -36,7 +39,7 @@ import static java.util.Arrays.asList;
  * the dataset did not conform with our assumptions, we expect the author to correct the dataset in accordance to them
  * and retry the process on the next dataset version.
  */
-class XdsImagesPatternStep extends XdsWorkflowStep {
+class XdsImagesPatternStep extends FilesystemAccessingWorkflowStep {
 
     static final String STEP_ID = "xds-images-pattern";
 
@@ -54,18 +57,29 @@ class XdsImagesPatternStep extends XdsWorkflowStep {
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public XdsImagesPatternStep(DatasetVersionServiceBean datasetVersions, Map<String, String> inputParams) {
-        super(datasetVersions);
+    public XdsImagesPatternStep(Map<String, String> inputParams) {
+        super(inputParams);
         this.fileNames = asList(inputParams.getOrDefault(FILE_NAMES_PARAM_NAME, "").split(FILE_NAMES_SEPARATOR));
     }
 
     // -------------------- LOGIC --------------------
 
     @Override
-    protected WorkflowStepResult runInternal(WorkflowContext context, Path workDir) {
+    protected WorkflowStepResult.Source runInternal(WorkflowContext context, Path workDir) {
         String namePattern = calculatePattern();
-        // FIXME: save name pattern in result
-        return WorkflowStepResult.OK;
+
+        return successWith(outputParams ->
+                outputParams.put(ARGUMENTS_PARAM_NAME, "\"" + namePattern + "\"")
+        );
+    }
+
+    @Override
+    public WorkflowStepResult resume(WorkflowContext context, Map<String, String> internalData, String externalData) {
+        throw new UnsupportedOperationException("This step des not pause");
+    }
+
+    @Override
+    public void rollback(WorkflowContext context, Failure reason) {
     }
 
     // -------------------- PRIVATE --------------------

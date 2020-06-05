@@ -39,9 +39,9 @@ public class MxrdrWorkflowStepSPI implements WorkflowStepSPI {
     public WorkflowStep getStep(String stepType, Map<String, String> stepParameters) {
         switch (stepType) {
             case XdsImagesFetchingStep.STEP_ID:
-                return new XdsImagesFetchingStep(datasetVersions);
+                return new XdsImagesFetchingStep(stepParameters, datasetVersions);
             case XdsImagesPatternStep.STEP_ID:
-                return new XdsImagesPatternStep(datasetVersions, stepParameters);
+                return new XdsImagesPatternStep(stepParameters);
             default:
                 throw new IllegalArgumentException("Unsupported step type: '" + stepType + "'.");
         }
