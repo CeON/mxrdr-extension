@@ -31,89 +31,91 @@ import pl.edu.icm.pl.mxrdr.extension.importer.MetadataBlock;
 @ApplicationScoped
 public class XdsImporter implements MetadataImporter {
 
-	private ImporterRegistry registry;
-	private XdsFileParser xdsFileParser;
+    private ImporterRegistry registry;
+    private XdsFileParser xdsFileParser;
 
-	// -------------------- CONSTRUCTORS --------------------
+    // -------------------- CONSTRUCTORS --------------------
 
-	@Deprecated
-	public XdsImporter() {
-	}
+    @Deprecated
+    public XdsImporter() {
+    }
 
-	@Inject
-	public XdsImporter(ImporterRegistry registry, XdsFileParser xdsFileParser) {
-		this.registry = registry;
-		this.xdsFileParser = xdsFileParser;
-	}
+    @Inject
+    public XdsImporter(ImporterRegistry registry, XdsFileParser xdsFileParser) {
+        this.registry = registry;
+        this.xdsFileParser = xdsFileParser;
+    }
 
-	// -------------------- LOGIC --------------------
+    // -------------------- LOGIC --------------------
 
-	@PostConstruct
-	public void init() {
-		registry.register(this);
-	}
+    @PostConstruct
+    public void init() {
+        registry.register(this);
+    }
 
-	@Override
-	public String getMetadataBlockName() {
-		return MetadataBlock.MXRDR.getMetadataBlockName();
-	}
+    @Override
+    public String getMetadataBlockName() {
+        return MetadataBlock.MXRDR.getMetadataBlockName();
+    }
 
-	@Override
-	public ResourceBundle getBundle(Locale locale) {
-		return ResourceBundle.getBundle("XdsImporterBundle", locale);
-	}
+    @Override
+    public ResourceBundle getBundle(Locale locale) {
+        return ResourceBundle.getBundle("XdsImporterBundle", locale);
+    }
 
-	@Override
-	public ImporterData getImporterData() {
-		return new ImporterData().addDescription("xds.modal.description")
-				.addField(ImporterData.ImporterField.of(XdsImporterForm.XDS_FILE, ImporterFieldType.UPLOAD_TEMP_FILE,
-						true, getBundle(Locale.ENGLISH).getString("xds.label"), ""));
-	}
+    @Override
+    public ImporterData getImporterData() {
+        return new ImporterData()
+                .addDescription("xds.modal.description")
+                .addField(ImporterData.ImporterField.of(XdsImporterForm.XDS_FILE, ImporterFieldType.UPLOAD_TEMP_FILE,
+                                                        true, getBundle(Locale.ENGLISH).getString("xds.label"),
+                                                        ""));
+    }
 
-	@Override
-	public List<ResultField> fetchMetadata(Map<ImporterFieldKey, Object> map) {
+    @Override
+    public List<ResultField> fetchMetadata(Map<ImporterFieldKey, Object> map) {
 
-		if (map.containsKey(XdsImporterForm.XDS_FILE)) {
-			File dataFile = (File) map.get(XdsImporterForm.XDS_FILE);
+        if (map.containsKey(XdsImporterForm.XDS_FILE)) {
+            File dataFile = (File) map.get(XdsImporterForm.XDS_FILE);
 
-			List<String> dataRecords = readXdsMetadata(dataFile);
+            List<String> dataRecords = readXdsMetadata(dataFile);
 
-			return xdsFileParser.parse(dataRecords);
-		}
+            return xdsFileParser.parse(dataRecords);
+        }
 
-		return Collections.emptyList();
-	}
+        return Collections.emptyList();
+    }
 
-	@Override
-	public Map<ImporterFieldKey, String> validate(Map<ImporterFieldKey, Object> importerInput) {
-		Map<ImporterFieldKey, String> errors = new HashMap<>();
-		File xdsFile = (File) importerInput.get(XdsImporterForm.XDS_FILE);
-		if (xdsFile.length() < 1) {
-			errors.put(XdsImporterForm.XDS_FILE, getBundle(Locale.ENGLISH).getString("xds.error.wrongFile"));
-		}
+    @Override
+    public Map<ImporterFieldKey, String> validate(Map<ImporterFieldKey, Object> importerInput) {
+        Map<ImporterFieldKey, String> errors = new HashMap<>();
+        File xdsFile = (File) importerInput.get(XdsImporterForm.XDS_FILE);
+        if (xdsFile.length() < 1) {
+            errors.put(XdsImporterForm.XDS_FILE, getBundle(Locale.ENGLISH).getString("xds.error.wrongFile"));
+        }
 
-		return errors;
-	}
+        return errors;
+    }
 
-	// -------------------- PRIVATE --------------------
+    // -------------------- PRIVATE --------------------
 
-	/**
-	 * Reads content of XDS file.
-	 */
-	private List<String> readXdsMetadata(File dataFile) {
-		List<String> lines = new ArrayList<>();
+    /**
+     * Reads content of XDS file.
+     */
+    private List<String> readXdsMetadata(File dataFile) {
+        List<String> lines = new ArrayList<>();
 
-		try (BufferedReader reader = Files.newBufferedReader(dataFile.toPath(), Charset.forName("windows-1252"))) {
+        try (BufferedReader reader = Files.newBufferedReader(dataFile.toPath(), Charset.forName("windows-1252"))) {
 
-			String line;
-			while ((line = reader.readLine()) != null) {
-				lines.add(line);
-			}
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
 
-		} catch (IOException e) {
-			throw new IllegalStateException("There was a problem with reading XDS file", e);
-		}
+        } catch (IOException e) {
+           throw new IllegalStateException("There was a problem with reading XDS file", e);
+        }
 
-		return lines;
-	}
+        return lines;
+    }
 }
