@@ -120,6 +120,25 @@
                             <overwrite>true</overwrite>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>copy-notification-template</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <includes>
+                                        <include>notificationTemplate.xhtml</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${war.source.directory}</outputDirectory>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -172,6 +191,7 @@
                             <artifactId>dataverse-webapp</artifactId>
                             <excludes>
                                 <exclude>${war.theme.path}/**</exclude>
+                                <exclude>notificationTemplate.xhtml</exclude>
                             </excludes>
                         </overlay>
                         <overlay>
