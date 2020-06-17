@@ -1,13 +1,31 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:o="http://omnifaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core"
 >
     <o:importConstants type="pl.edu.icm.pl.mxrdr.extension.notification.MxrdrNotificationType" />
+    <f:loadBundle var="mxrdrBundle" basename="MxrdrBundle"/>
 
+    <!--@elvariable id="item" type="edu.harvard.iq.dataverse.persistence.user.UserNotification"-->
     <ui:fragment rendered="#{item.type == MxrdrNotificationType.MXRDR_WORKFLOW_SUCCESS}">
+        <i class="icon-dataset text-icon-inline text-muted"></i>
+        <h:outputFormat value="#{mxrdrBundle['workflow.success.xds']}" escape="false">
+            <o:param>
+                <a href="${pageContext.request.contextPath}/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}"
+                   title="#{item.theObject.getDisplayName()}"> #{item.theObject.getDisplayName()} </a>
+            </o:param>
+
+        </h:outputFormat>
 
     </ui:fragment>
 
     <ui:fragment rendered="#{item.type == MxrdrNotificationType.MXRDR_WORKFLOW_FAIL}">
+        <i class="icon-dataset text-icon-inline text-muted"></i>
+        <h:outputFormat value="#{mxrdrBundle['workflow.fail.xds']}" escape="false">
+            <o:param>
+                <a href="${pageContext.request.contextPath}/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}"
+                   title="#{item.theObject.getDisplayName()}"> #{item.theObject.getDisplayName()} </a>
+            </o:param>
+        </h:outputFormat>
 
     </ui:fragment>
 
