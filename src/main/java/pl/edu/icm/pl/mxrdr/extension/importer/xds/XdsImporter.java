@@ -65,11 +65,8 @@ public class XdsImporter implements MetadataImporter {
 
     @Override
     public ImporterData getImporterData() {
-        return new ImporterData()
-                .addDescription("xds.modal.description")
-                .addField(ImporterData.ImporterField.of(XdsImporterForm.XDS_FILE, ImporterFieldType.UPLOAD_TEMP_FILE,
-                                                        true, getBundle(Locale.ENGLISH).getString("xds.label"),
-                                                        ""));
+        return new ImporterData().addDescription("xds.modal.description").addField(ImporterData.ImporterField
+                .of(XdsImporterForm.XDS_FILE, ImporterFieldType.UPLOAD_TEMP_FILE, true, "xds.label", ""));
     }
 
     @Override
@@ -91,7 +88,7 @@ public class XdsImporter implements MetadataImporter {
         Map<ImporterFieldKey, String> errors = new HashMap<>();
         File xdsFile = (File) importerInput.get(XdsImporterForm.XDS_FILE);
         if (xdsFile.length() < 1) {
-            errors.put(XdsImporterForm.XDS_FILE, getBundle(Locale.ENGLISH).getString("xds.error.wrongFile"));
+            errors.put(XdsImporterForm.XDS_FILE, "xds.error.wrongFile");
         }
 
         return errors;
@@ -113,7 +110,7 @@ public class XdsImporter implements MetadataImporter {
             }
 
         } catch (IOException e) {
-           throw new IllegalStateException("There was a problem with reading XDS file", e);
+            throw new IllegalStateException("There was a problem with reading XDS file", e);
         }
 
         return lines;
