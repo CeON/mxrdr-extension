@@ -29,45 +29,46 @@ public class XdsImporterTest {
 
     @Test
     public void getMetadataBlockName() {
-        //given & when
+        // given & when
         String metadataBlockName = xdsImporter.getMetadataBlockName();
 
-        //then
+        // then
         assertEquals("macromolecularcrystallography", metadataBlockName);
     }
 
     @Test
     public void getBundle() {
-        //given & when
+        // given & when
         ResourceBundle bundle = xdsImporter.getBundle(Locale.ENGLISH);
 
-        //then
+        // then
         assertEquals("XdsImporterBundle", bundle.getBaseBundleName());
     }
 
     @Test
     public void getImporterData() {
-        //given & when
+        // given & when
         ImporterData importerData = xdsImporter.getImporterData();
 
-        //then
+        // then
         assertAll(() -> assertEquals(2, importerData.getImporterFormSchema().size()),
-                  () -> assertEquals(XdsImporterForm.XDS_FILE, importerData.getImporterFormSchema().get(1).fieldKey),
-                  () -> assertEquals(ImporterFieldType.UPLOAD_TEMP_FILE, importerData.getImporterFormSchema().get(1).fieldType));
+                () -> assertEquals(XdsImporterForm.XDS_FILE, importerData.getImporterFormSchema().get(1).fieldKey),
+                () -> assertEquals(ImporterFieldType.UPLOAD_TEMP_FILE,
+                        importerData.getImporterFormSchema().get(1).fieldType));
 
     }
 
     @Test
     public void fetchMetadata_forXdsOutputData() throws URISyntaxException {
-        //given
+        // given
         File xdsFile = new File(getClass().getClassLoader().getResource("xds/CORRECT.LP").toURI());
         Map<ImporterFieldKey, Object> xdsData = new HashMap<>();
         xdsData.put(XdsImporterForm.XDS_FILE, xdsFile);
 
-        //when
+        // when
         List<ResultField> resultFields = xdsImporter.fetchMetadata(xdsData);
 
-        //then
+        // then
         assertEquals(6, resultFields.size());
         assertEquals("unitCellParameters", resultFields.get(0).getName());
         assertEquals("dataCollection", resultFields.get(1).getName());
@@ -130,52 +131,38 @@ public class XdsImporterTest {
 
     @Test
     public void validate_withCorrectFile() throws URISyntaxException {
-        //given
+        // given
         File xdsFile = new File(getClass().getClassLoader().getResource("xds/CORRECT.LP").toURI());
         Map<ImporterFieldKey, Object> xdsData = new HashMap<>();
         xdsData.put(XdsImporterForm.XDS_FILE, xdsFile);
 
-        //when
+        // when
         Map<ImporterFieldKey, String> validate = xdsImporter.validate(xdsData);
 
-        //then
+        // then
         assertTrue(validate.isEmpty());
     }
 
     @Test
     public void validate_withFileMissing() throws URISyntaxException {
-        //given
+        // given
         File txtFile = new File(getClass().getClassLoader().getResource("txt/blank.txt").toURI());
         Map<ImporterFieldKey, Object> txtData = new HashMap<>();
         txtData.put(XdsImporterForm.XDS_FILE, txtFile);
 
-        //when
+        // when
         Map<ImporterFieldKey, String> validate = xdsImporter.validate(txtData);
 
-        //then
+        // then
         assertEquals(1, validate.size());
-        assertEquals(ResourceBundle.getBundle("XdsImporterBundle",Locale.ENGLISH).getString("xds.error.wrongFile"),
-                     validate.get(XdsImporterForm.XDS_FILE));
-    }
-
-    @Test
-    public void testMapSpaceGroup() throws URISyntaxException {
-    	XdsFileParser parser = new XdsFileParser();
-    	
-    	for (String key:ResourceBundle.getBundle("XdsSpaceGroups").keySet()) {
-    		assertEquals(ResourceBundle.getBundle("XdsSpaceGroups").getString(key), parser.mapSpaceGroup(key));
-    	}
-
-    	assertEquals("Other", parser.mapSpaceGroup(""));
-    	assertEquals("Other", parser.mapSpaceGroup("aaa"));
-    	assertEquals("Other", parser.mapSpaceGroup("999"));
-
+        assertEquals("xds.error.wrongFile", validate.get(XdsImporterForm.XDS_FILE));
     }
 
     // -------------------- PRIVATE --------------------
 
     private boolean containsNameAndValue(String name, String value, ResultField parent) {
-        return parent.getChildren().stream().anyMatch(field -> field.getName().equals(name) && field.getValue().equals(value));
+        return parent.getChildren().stream()
+                .anyMatch(field -> field.getName().equals(name) && field.getValue().equals(value));
     }
 
 }
