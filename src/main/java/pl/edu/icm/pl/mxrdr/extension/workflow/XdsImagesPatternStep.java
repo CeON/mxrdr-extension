@@ -1,6 +1,6 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow;
 
-import edu.harvard.iq.dataverse.workflow.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
@@ -65,7 +65,7 @@ class XdsImagesPatternStep extends FilesystemAccessingWorkflowStep {
     // -------------------- LOGIC --------------------
 
     @Override
-    protected WorkflowStepResult.Source runInternal(WorkflowContext context, Path workDir) {
+    protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) {
         String namePattern = calculatePattern();
 
         return successWith(outputParams ->
@@ -74,12 +74,12 @@ class XdsImagesPatternStep extends FilesystemAccessingWorkflowStep {
     }
 
     @Override
-    public WorkflowStepResult resume(WorkflowContext context, Map<String, String> internalData, String externalData) {
+    public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
         throw new UnsupportedOperationException("This step des not pause");
     }
 
     @Override
-    public void rollback(WorkflowContext context, Failure reason) {
+    public void rollback(WorkflowExecutionContext context, Failure reason) {
     }
 
     // -------------------- PRIVATE --------------------
