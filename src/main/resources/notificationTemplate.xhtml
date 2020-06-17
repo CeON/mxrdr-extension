@@ -1,8 +1,13 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:o="http://omnifaces.org/ui"
 >
+    <o:importConstants type="pl.edu.icm.pl.mxrdr.extension.notification.MxrdrNotificationType" />
 
-    <ui:fragment rendered="#{item.type == 'TEST'}">
+    <ui:fragment rendered="#{item.type == MxrdrNotificationType.MXRDR_WORKFLOW_SUCCESS}">
+
+    </ui:fragment>
+
+    <ui:fragment rendered="#{item.type == MxrdrNotificationType.MXRDR_WORKFLOW_FAIL}">
 
     </ui:fragment>
 
