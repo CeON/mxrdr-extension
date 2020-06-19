@@ -42,6 +42,8 @@ public class MxrdrWorkflowStepSPI implements WorkflowStepSPI {
                 return new XdsImagesFetchingStep(stepParameters, datasetVersions);
             case XdsImagesPatternStep.STEP_ID:
                 return new XdsImagesPatternStep(stepParameters);
+            case XdsAdjustResultStep.STEP_ID:
+                return new XdsAdjustResultStep(stepParameters);
             default:
                 throw new IllegalArgumentException("Unsupported step type: '" + stepType + "'.");
         }
