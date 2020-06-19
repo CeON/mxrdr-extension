@@ -7,25 +7,46 @@ import edu.harvard.iq.dataverse.persistence.user.UserNotification;
 import edu.harvard.iq.dataverse.persistence.user.UserNotificationDao;
 import edu.harvard.iq.dataverse.workflow.WorkflowExecutionContext;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.sql.Timestamp;
-import java.util.Date;
+import java.time.Clock;
+import java.time.Instant;
 
 @Singleton
 public class MxrdrNotificationSender {
 
+    private Clock clock;
+
     private UserNotificationDao userNotificationDao;
     private MailService mailService;
 
-    void sendNotification(WorkflowExecutionContext workflowExecutionContext, EmailContent emailContent) {
+    // -------------------- CONSTRUCTORS --------------------
+
+    @Inject
+    public MxrdrNotificationSender(UserNotificationDao userNotificationDao, MailService mailService) {
+        this.clock = Clock.systemDefaultZone();
+        this.userNotificationDao = userNotificationDao;
+        this.mailService = mailService;
+    }
+
+    public MxrdrNotificationSender(UserNotificationDao userNotificationDao, MailService mailService, Clock clock) {
+        this.clock = clock;
+        this.userNotificationDao = userNotificationDao;
+        this.mailService = mailService;
+    }
+
+    // -------------------- LOGIC --------------------
+
+    NotificationSentResult sendNotification(WorkflowExecutionContext workflowExecutionContext, EmailContent emailContent, String notificationType) {
 
         AuthenticatedUser userSender = workflowExecutionContext
                 .getRequest()
                 .getAuthenticatedUser();
 
         UserNotification notification = createNotification(userSender,
-                                                           new Timestamp(new Date().getTime()),
-                                                           "",
+                                                           Timestamp.from(Instant.now(clock)),
+                                                           notificationType,
                                                            workflowExecutionContext
                                                                    .getExecution()
                                                                    .getDatasetId());
@@ -38,6 +59,25 @@ public class MxrdrNotificationSender {
             userNotificationDao.updateEmailSent(notification.getId());
         }
 
+        return new NotificationSentResult(notification, emailSent);
+    }
+
+    UserNotification sendNotificationWithoutEmail(WorkflowExecutionContext workflowExecutionContext, String notificationType) {
+
+        AuthenticatedUser userSender = workflowExecutionContext
+                .getRequest()
+                .getAuthenticatedUser();
+
+        UserNotification notification = createNotification(userSender,
+                                                           Timestamp.from(Instant.now(clock)),
+                                                           notificationType,
+                                                           workflowExecutionContext
+                                                                   .getExecution()
+                                                                   .getDatasetId());
+        userNotificationDao.save(notification);
+        userNotificationDao.flush();
+
+        return notification;
     }
 
     // -------------------- PRIVATE --------------------
