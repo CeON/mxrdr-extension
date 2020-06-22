@@ -93,7 +93,7 @@
                         </goals>
                         <configuration>
                             <includeTypes>war</includeTypes>
-                            <includes>${war.theme.path}/**</includes>
+                            <includes>${war.theme.path}/**,pluggable/**</includes>
                             <outputDirectory>${war.source.directory}</outputDirectory>
                         </configuration>
                     </execution>
@@ -121,7 +121,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-notification-template</id>
+                        <id>copy-webapp-overrides</id>
                         <phase>generate-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -129,10 +129,7 @@
                         <configuration>
                             <resources>
                                 <resource>
-                                    <directory>src/main/resources</directory>
-                                    <includes>
-                                        <include>notificationTemplate.xhtml</include>
-                                    </includes>
+                                    <directory>src/main/webapp</directory>
                                 </resource>
                             </resources>
                             <outputDirectory>${war.source.directory}</outputDirectory>
@@ -191,7 +188,7 @@
                             <artifactId>dataverse-webapp</artifactId>
                             <excludes>
                                 <exclude>${war.theme.path}/**</exclude>
-                                <exclude>notificationTemplate.xhtml</exclude>
+                                <exclude>pluggable/**</exclude>
                             </excludes>
                         </overlay>
                         <overlay>
