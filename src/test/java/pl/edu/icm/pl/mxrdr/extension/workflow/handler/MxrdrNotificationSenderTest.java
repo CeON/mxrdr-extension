@@ -19,26 +19,23 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowExecutionContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 import pl.edu.icm.pl.mxrdr.extension.notification.MxrdrNotificationType;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType.PostPublishDataset;
+import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-@ExtendWith(MockitoExtension.class)
 public class MxrdrNotificationSenderTest {
 
     private MxrdrNotificationSender mxrdrNotificationSender;
@@ -48,7 +45,7 @@ public class MxrdrNotificationSenderTest {
     private MailService mailService;
 
     private AuthenticatedUser user;
-    private final Instant timer = Instant.ofEpochSecond(1592570489);
+    private final Clock clock = Clock.fixed(Instant.parse("2020-06-01T09:10:20.00Z"), UTC);
 
     @BeforeEach
     void setUp() {
@@ -57,7 +54,7 @@ public class MxrdrNotificationSenderTest {
         user = new AuthenticatedUser();
         user.setEmail("testemail@test.com");
 
-        mxrdrNotificationSender = new MxrdrNotificationSender(userNotificationDao, mailService, Clock.fixed(timer, ZoneId.systemDefault()));
+        mxrdrNotificationSender = new MxrdrNotificationSender(userNotificationDao, mailService, clock);
     }
 
     @Test
@@ -81,7 +78,7 @@ public class MxrdrNotificationSenderTest {
         assertEquals(dataset.getId(), createdNotification.getObjectId());
         assertEquals(user, createdNotification.getUser());
         assertEquals(mxrdrWorkflowSuccess, createdNotification.getType());
-        assertEquals(new SimpleDateFormat("MMMM d, yyyy h:mm a z").format(Timestamp.from(timer)), createdNotification.getSendDate());
+        assertEquals(new SimpleDateFormat("MMMM d, yyyy h:mm a z").format(Timestamp.from(clock.instant())), createdNotification.getSendDate());
 
     }
 
@@ -101,7 +98,7 @@ public class MxrdrNotificationSenderTest {
         assertEquals(dataset.getId(), notificationSentResult.getObjectId());
         assertEquals(user, notificationSentResult.getUser());
         assertEquals(mxrdrWorkflowSuccess, notificationSentResult.getType());
-        assertEquals(new SimpleDateFormat("MMMM d, yyyy h:mm a z").format(Timestamp.from(timer)), notificationSentResult.getSendDate());
+        assertEquals(new SimpleDateFormat("MMMM d, yyyy h:mm a z").format(Timestamp.from(clock.instant())), notificationSentResult.getSendDate());
     }
 
     // -------------------- TESTS --------------------
