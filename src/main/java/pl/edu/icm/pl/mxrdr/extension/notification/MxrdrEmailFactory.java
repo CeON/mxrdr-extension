@@ -5,48 +5,49 @@ import edu.harvard.iq.dataverse.mail.EmailContent;
 import edu.harvard.iq.dataverse.mail.MailService;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import io.vavr.control.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Class that manages email templates.
  */
 public class MxrdrEmailFactory {
 
-    private Locale repoLocale;
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final String BUNDLE_NAME = "MxrdrBundle";
+    private static final Logger log = LoggerFactory.getLogger(MxrdrEmailFactory.class);
 
-    private MailService mailService;
-    private SettingsServiceBean settings;
+    static final String BUNDLE_NAME = "MxrdrBundle";
+
+    private final Locale repoLocale;
+    private final MailService mailService;
+    private final SettingsServiceBean settings;
 
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
     public MxrdrEmailFactory(MailService mailService, SettingsServiceBean settings) {
-        repoLocale = Locale.ENGLISH;
+        this.repoLocale = Locale.ENGLISH;
         this.mailService = mailService;
         this.settings = settings;
     }
 
     // -------------------- LOGIC --------------------
 
-    public Option<EmailContent> getEmailTemplate(String notificationType, DvObject dvObject) {
+    public Optional<EmailContent> getEmailTemplate(String notificationType, DvObject dvObject) {
 
         if (notificationType.equals(MxrdrNotificationType.MXRDR_WORKFLOW_SUCCESS)) {
-            return Option.of(getWorkflowSuccessTemplate(dvObject));
+            return Optional.of(getWorkflowSuccessTemplate(dvObject));
         }
 
         if (notificationType.equals(MxrdrNotificationType.MXRDR_WORKFLOW_FAIL)) {
-            return Option.of(getWorkflowFailureTemplate(dvObject));
+            return Optional.of(getWorkflowFailureTemplate(dvObject));
         }
 
-        logger.warn("No email template found for notification type: " + notificationType);
-        return Option.none();
+        log.warn("No email template found for notification type: " + notificationType);
+        return Optional.empty();
     }
 
     // -------------------- PRIVATE --------------------

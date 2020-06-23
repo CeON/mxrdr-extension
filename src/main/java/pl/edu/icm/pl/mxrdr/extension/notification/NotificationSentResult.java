@@ -1,4 +1,4 @@
-package pl.edu.icm.pl.mxrdr.extension.workflow.handler;
+package pl.edu.icm.pl.mxrdr.extension.notification;
 
 import edu.harvard.iq.dataverse.persistence.user.UserNotification;
 
