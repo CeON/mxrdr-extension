@@ -1,6 +1,5 @@
 package pl.edu.icm.pl.mxrdr.extension.notification;
 
-import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.mail.EmailContent;
 import edu.harvard.iq.dataverse.mail.MailService;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
@@ -10,63 +9,55 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import io.vavr.control.Option;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static edu.harvard.iq.dataverse.common.BundleUtil.getStringFromBundle;
+import static edu.harvard.iq.dataverse.common.BundleUtil.getStringFromPropertyFile;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+import static pl.edu.icm.pl.mxrdr.extension.notification.MxrdrEmailFactory.BUNDLE_NAME;
+import static pl.edu.icm.pl.mxrdr.extension.notification.MxrdrNotificationType.MXRDR_WORKFLOW_FAIL;
+import static pl.edu.icm.pl.mxrdr.extension.notification.MxrdrNotificationType.MXRDR_WORKFLOW_SUCCESS;
 
-@ExtendWith(MockitoExtension.class)
 public class MxrdrEmailFactoryTest {
 
-    @InjectMocks
-    private MxrdrEmailFactory emailFactory;
+    MailService mailService = Mockito.mock(MailService.class);
+    SettingsServiceBean settings = Mockito.mock(SettingsServiceBean.class);
 
-    @Mock
-    private MailService mailService;
-
-    @Mock
-    private SettingsServiceBean settings;
-
-    private static final String BUNDLE_NAME = "MxrdrBundle";
+    MxrdrEmailFactory emailFactory = new MxrdrEmailFactory(mailService, settings);
 
     // -------------------- TESTS --------------------
 
     @Test
     public void getEmailTemplate_withSuccessTemplate() throws AddressException {
-        //given
+        // given
         Dataset dataset = makeDataset();
         GlobalId pid = new GlobalId("doi", "auth", dataset.getIdentifier());
         dataset.setGlobalId(pid);
-        String mxrdrWorkflowSuccess = MxrdrNotificationType.MXRDR_WORKFLOW_SUCCESS;
         InternetAddress testAddress = new InternetAddress("testAddress");
         String repoURL = "http://localhost:8080";
-
-        //when
-        Mockito.when(mailService.getSystemAddress()).thenReturn(testAddress);
-        Mockito.when(settings.getValueForKey(SettingsServiceBean.Key.SiteUrl)).thenReturn(repoURL);
-        Option<EmailContent> emailTemplate = emailFactory.getEmailTemplate(mxrdrWorkflowSuccess, dataset);
-
-        //then
-        assertTrue(emailTemplate.isDefined());
-        assertEquals(BundleUtil.getStringFromPropertyFile("mail.subject.workflow.success.xds", BUNDLE_NAME), emailTemplate.get().getSubject());
-        assertEquals(BundleUtil.getStringFromBundle("mail.content.workflow.success.xds",BUNDLE_NAME,
-                                                               dataset.getDisplayName(),
-                                                               expectedURL(repoURL, pid.asString()),
-                                                               testAddress), emailTemplate.get().getMessageText());
-
-
+        // and
+        when(mailService.getSystemAddress())
+                .thenReturn(testAddress);
+        when(settings.getValueForKey(SettingsServiceBean.Key.SiteUrl))
+                .thenReturn(repoURL);
+        // when
+        Optional<EmailContent> emailTemplate = emailFactory.getEmailTemplate(MXRDR_WORKFLOW_SUCCESS, dataset);
+        // then
+        assertThat(emailTemplate).isPresent();
+        assertThat(emailTemplate.get().getSubject())
+                .isEqualTo(getStringFromPropertyFile("mail.subject.workflow.success.xds", BUNDLE_NAME));
+        assertThat(emailTemplate.get().getMessageText())
+                .isEqualTo(getStringFromBundle("mail.content.workflow.success.xds",BUNDLE_NAME,
+                        dataset.getDisplayName(), expectedURL(repoURL, pid.asString()), testAddress));
     }
 
     @Test
@@ -75,36 +66,32 @@ public class MxrdrEmailFactoryTest {
         Dataset dataset = makeDataset();
         GlobalId pid = new GlobalId("doi", "auth", dataset.getIdentifier());
         dataset.setGlobalId(pid);
-        String mxrdrWorkflowSuccess = MxrdrNotificationType.MXRDR_WORKFLOW_FAIL;
         InternetAddress testAddress = new InternetAddress("testAddress");
         String repoURL = "http://localhost:8080";
-
-        //when
-        Mockito.when(mailService.getSystemAddress()).thenReturn(testAddress);
-        Mockito.when(settings.getValueForKey(SettingsServiceBean.Key.SiteUrl)).thenReturn(repoURL);
-        Option<EmailContent> emailTemplate = emailFactory.getEmailTemplate(mxrdrWorkflowSuccess, dataset);
-
-        //then
-        assertTrue(emailTemplate.isDefined());
-        assertEquals(BundleUtil.getStringFromPropertyFile("mail.subject.workflow.fail.xds", BUNDLE_NAME), emailTemplate.get().getSubject());
-        assertEquals(BundleUtil.getStringFromBundle("mail.content.workflow.fail.xds",BUNDLE_NAME,
-                                                               dataset.getDisplayName(),
-                                                               expectedURL(repoURL, pid.asString()),
-                                                               testAddress), emailTemplate.get().getMessageText());
-
+        // and
+        when(mailService.getSystemAddress())
+                .thenReturn(testAddress);
+        when(settings.getValueForKey(SettingsServiceBean.Key.SiteUrl))
+                .thenReturn(repoURL);
+        // when
+        Optional<EmailContent> emailTemplate = emailFactory.getEmailTemplate(MXRDR_WORKFLOW_FAIL, dataset);
+        // then
+        assertThat(emailTemplate).isPresent();
+        assertThat(emailTemplate.get().getSubject())
+                .isEqualTo(getStringFromPropertyFile("mail.subject.workflow.fail.xds", BUNDLE_NAME));
+        assertThat(emailTemplate.get().getMessageText())
+                .isEqualTo(getStringFromBundle("mail.content.workflow.fail.xds",BUNDLE_NAME,
+                        dataset.getDisplayName(), expectedURL(repoURL, pid.asString()), testAddress));
     }
 
     @Test
-    public void getEmailTemplate_withInvalidNotification() throws AddressException {
-        //given
+    public void getEmailTemplate_withInvalidNotification() {
+        // given
         Dataset dataset = makeDataset();
-
-        //when
-        Option<EmailContent> emailTemplate = emailFactory.getEmailTemplate("", dataset);
-
-        //then
-        assertTrue(emailTemplate.isEmpty());
-
+        // when
+        Optional<EmailContent> emailTemplate = emailFactory.getEmailTemplate("", dataset);
+        // then
+        assertThat(emailTemplate).isNotPresent();
     }
 
     // -------------------- PRIVATE --------------------
