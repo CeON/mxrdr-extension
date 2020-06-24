@@ -75,9 +75,7 @@ public class XdsImporter implements MetadataImporter {
         if (map.containsKey(XdsImporterForm.XDS_FILE)) {
             File dataFile = (File) map.get(XdsImporterForm.XDS_FILE);
 
-            List<String> dataRecords = readXdsMetadata(dataFile);
-
-            return xdsFileParser.parse(dataRecords);
+            return xdsFileParser.parse(dataFile);
         }
 
         return Collections.emptyList();
@@ -94,25 +92,4 @@ public class XdsImporter implements MetadataImporter {
         return errors;
     }
 
-    // -------------------- PRIVATE --------------------
-
-    /**
-     * Reads content of XDS file.
-     */
-    private List<String> readXdsMetadata(File dataFile) {
-        List<String> lines = new ArrayList<>();
-
-        try (BufferedReader reader = Files.newBufferedReader(dataFile.toPath(), Charset.forName("windows-1252"))) {
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-            }
-
-        } catch (IOException e) {
-            throw new IllegalStateException("There was a problem with reading XDS file", e);
-        }
-
-        return lines;
-    }
 }
