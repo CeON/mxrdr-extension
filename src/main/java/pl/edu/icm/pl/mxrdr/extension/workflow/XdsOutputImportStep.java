@@ -1,16 +1,8 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
-
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
-import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.workflow.WorkflowExecutionContext;
@@ -21,21 +13,41 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult.Source;
 import pl.edu.icm.pl.mxrdr.extension.importer.xds.XdsFileParser;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+
 public class XdsOutputImportStep extends FilesystemAccessingWorkflowStep {
 
-    private static final String WORKFLOW = "WORKFLOW";
+    static final String STEP_ID = "xds-output-import";
 
-    static final String CORRECT_LP = "CORRECT.LP";
-    
-    private DatasetFieldServiceBean datasetFieldService;
+    static final String XDS_OUTPUT_FILE_NAME = "CORRECT.LP";
 
-    private DatasetVersionServiceBean datasetVersionService;
+    static final String XDS_DATASET_FIELD_SOURCE = "XDS";
 
+    private final DatasetVersionServiceBean datasetVersions;
 
-    public XdsOutputImportStep(Map<String, String> inputParams, DatasetFieldServiceBean datasetFieldService, DatasetVersionServiceBean datasetVersionService) {
+    private final DatasetFieldServiceBean datasetFields;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public XdsOutputImportStep(Map<String, String> inputParams, DatasetVersionServiceBean datasetVersions,
+                               DatasetFieldServiceBean datasetFields) {
         super(inputParams);
-        this.datasetFieldService = datasetFieldService;
-        this.datasetVersionService = datasetVersionService;
+        this.datasetFields = datasetFields;
+        this.datasetVersions = datasetVersions;
+    }
+
+    // -------------------- LOGIC --------------------
+
+    @Override
+    protected Source runInternal(WorkflowExecutionContext context, Path workdirPath) {
+        DatasetVersion editVersion = context.getDataset().getEditVersion();
+        addXdsDatasetFields(workdirPath, editVersion);
+        datasetVersions.updateDatasetVersion(editVersion, true);
+        return Success::new;
     }
 
     @Override
@@ -45,36 +57,43 @@ public class XdsOutputImportStep extends FilesystemAccessingWorkflowStep {
 
     @Override
     public void rollback(WorkflowExecutionContext context, Failure failure) {
-        Dataset dataset = context.getDataset();
-        DatasetVersion editVersion = dataset.getEditVersion();
-        editVersion.getDatasetFields().removeIf(e -> e.getSource().equals(WORKFLOW));
+        DatasetVersion editVersion = context.getDataset().getEditVersion();
+        removeXdsDatasetFields(editVersion);
+        datasetVersions.updateDatasetVersion(editVersion, true);
     }
 
-    @Override
-    protected Source runInternal(WorkflowExecutionContext context, Path workdirPath) throws Exception {
-        
-        File correctionFile = workdirPath.resolve(CORRECT_LP).toFile();
-        Dataset dataset = context.getDataset();
-        XdsFileParser parser = new XdsFileParser();
-        List<ResultField> resultFields = parser.parse(correctionFile);
-        DatasetVersion editVersion = dataset.getEditVersion();
-                
-        resultFields
+    // -------------------- PRIVATE --------------------
+
+    private void addXdsDatasetFields(Path workdirPath, DatasetVersion editVersion) {
+        List<DatasetField> editDatasetFields = editVersion.getDatasetFields();
+
+        parseXdsOutputFrom(workdirPath)
+                .map(this::asDatasetField)
+                .forEach(editDatasetFields::add);
+    }
+
+    private Stream<ResultField> parseXdsOutputFrom(Path workdirPath) {
+        File correctionFile = workdirPath.resolve(XDS_OUTPUT_FILE_NAME).toFile();
+        return new XdsFileParser()
+                .parse(correctionFile)
                 .stream()
-                .flatMap(resultField -> resultField.getChildren().isEmpty() ? Stream.of(resultField) : resultField.getChildren().stream())
-                .map(resultField -> {
-                    DatasetField datasetField = new DatasetField();
-                    datasetField.setDatasetFieldType(datasetFieldService.findByName(resultField.getName()));
-                    datasetField.setSource(WORKFLOW);
-                    datasetField.setFieldValue(resultField.getValue());
-                    return datasetField;
-                })
-                .forEach(datasetField -> editVersion.getDatasetFields().add(datasetField));
-        
-        datasetVersionService.updateDatasetVersion(editVersion, true);
-
-        return Success.successWith(output -> Collections.emptyMap());
-
+                .flatMap(ResultField::stream);
     }
 
+    private DatasetField asDatasetField(ResultField resultField) {
+        DatasetField datasetField = new DatasetField();
+        datasetField.setDatasetFieldType(datasetFields.findByName(resultField.getName()));
+        datasetField.setSource(XDS_DATASET_FIELD_SOURCE);
+        datasetField.setFieldValue(resultField.getValue());
+        return datasetField;
+    }
+
+    private void removeXdsDatasetFields(DatasetVersion editVersion) {
+        editVersion.getDatasetFields()
+                .removeIf(this::isXdsDatasetField);
+    }
+
+    private boolean isXdsDatasetField(DatasetField field) {
+        return XDS_DATASET_FIELD_SOURCE.equals(field.getSource());
+    }
 }

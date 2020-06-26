@@ -79,10 +79,10 @@ public class XdsAdjustResultStep extends FilesystemAccessingWorkflowStep {
                             RESOLUTION_PARAM_REPLACEMENT + ResolutionParameterExtractor.of(workDir).extract())
                             : PatternAndReplacement.NONE)
                     .replace();
-            return Success.successWith(output -> Collections.emptyMap());
+            return Success::new;
         } catch (RuntimeException re) {
             logger.warn("Exception during step execution: ", re);
-            return ooutput -> new Failure(re.getMessage());
+            return output -> new Failure(re.getMessage());
         }
     }
 

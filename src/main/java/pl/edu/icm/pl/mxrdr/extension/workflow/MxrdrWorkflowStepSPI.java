@@ -1,5 +1,6 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow;
 
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepSPI;
@@ -19,13 +20,16 @@ public class MxrdrWorkflowStepSPI implements WorkflowStepSPI {
 
     private final WorkflowStepRegistry stepRegistry;
     private final DatasetVersionServiceBean datasetVersions;
+    private final DatasetFieldServiceBean datasetFields;
 
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
-    public MxrdrWorkflowStepSPI(WorkflowStepRegistry stepRegistry, DatasetVersionServiceBean datasetVersions) {
+    public MxrdrWorkflowStepSPI(WorkflowStepRegistry stepRegistry, DatasetVersionServiceBean datasetVersions,
+                                DatasetFieldServiceBean datasetFields) {
         this.stepRegistry = stepRegistry;
         this.datasetVersions = datasetVersions;
+        this.datasetFields = datasetFields;
     }
 
     @PostConstruct
@@ -44,6 +48,8 @@ public class MxrdrWorkflowStepSPI implements WorkflowStepSPI {
                 return new XdsImagesPatternStep(stepParameters);
             case XdsAdjustResultStep.STEP_ID:
                 return new XdsAdjustResultStep(stepParameters);
+            case XdsOutputImportStep.STEP_ID:
+                return new XdsOutputImportStep(stepParameters, datasetVersions, datasetFields);
             default:
                 throw new IllegalArgumentException("Unsupported step type: '" + stepType + "'.");
         }

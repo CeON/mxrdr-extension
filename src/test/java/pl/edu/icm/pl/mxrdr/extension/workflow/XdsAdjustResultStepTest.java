@@ -1,6 +1,5 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow;
 
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +19,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class XdsAdjustResultStepTest {
+public class XdsAdjustResultStepTest {
     private static final String JOB_LIST = "TEST_JOB_LIST";
     private static final String TEST_PATH_PREFIX = "xds/xar-test-";
     private Path workDir;

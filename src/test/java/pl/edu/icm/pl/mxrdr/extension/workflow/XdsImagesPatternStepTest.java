@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static pl.edu.icm.pl.mxrdr.extension.workflow.XdsImagesPatternStep.FILE_NAMES_PARAM_NAME;
 import static pl.edu.icm.pl.mxrdr.extension.workflow.XdsImagesPatternStep.FILE_NAMES_SEPARATOR;
 
-class XdsImagesPatternStepTest implements ArgumentsProvider {
+public class XdsImagesPatternStepTest implements ArgumentsProvider {
 
     @ParameterizedTest(name = "[{index}] \"{1}\" pattern")
     @ArgumentsSource(XdsImagesPatternStepTest.class)
