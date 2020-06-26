@@ -1,5 +1,10 @@
 package pl.edu.icm.pl.mxrdr.extension.importer.xds;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,12 +28,15 @@ public class XdsFileParser {
 
     private final String OVERALL_RESOLUTION_INDICATOR = "STANDARD ERROR OF REFLECTION INTENSITIES AS FUNCTION OF RESOLUTION";
 
-    private final String SPACE_GROUPS_MAPPING_BUNDLE_NAME = "XdsSpaceGroups";
-
-    private static final String SPACE_GROUP_OTHER = "Other";
 
     // -------------------- LOGIC --------------------
 
+    
+    public List<ResultField> parse(File xdsOutput) {
+        return parse(readXdsMetadata(xdsOutput));
+    }
+    
+    
     /**
      * Extracts metadataFields from String lines taken from XDS output file (usually
      * "CORRECT.LP").
@@ -337,6 +345,23 @@ public class XdsFileParser {
 
     private String clearNonDigits(String value) {
         return value.replaceAll("[^\\d.+-]", "");
+    }
+
+    private List<String> readXdsMetadata(File dataFile) {
+        List<String> lines = new ArrayList<>();
+
+        try (BufferedReader reader = Files.newBufferedReader(dataFile.toPath(), Charset.forName("windows-1252"))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
+
+        } catch (IOException e) {
+            throw new IllegalStateException("There was a problem with reading XDS file", e);
+        }
+
+        return lines;
     }
 
 }
