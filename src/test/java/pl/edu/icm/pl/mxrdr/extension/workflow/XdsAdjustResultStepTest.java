@@ -5,9 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,7 +12,6 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,10 +27,6 @@ public class XdsAdjustResultStepTest {
         String inputFileSourcePath = getFileFromResources(XdsAdjustResultStep.XDS_INP);
         Files.copy(Paths.get(correctionFileSourcePath), workDir.resolve(XdsAdjustResultStep.CORRECT_LP));
         Files.copy(Paths.get(inputFileSourcePath), workDir.resolve(XdsAdjustResultStep.XDS_INP));
-    }
-
-    private String getFileFromResources(String xdsInp) {
-        return getClass().getClassLoader().getResource(TEST_PATH_PREFIX + xdsInp).getPath();
     }
 
     @AfterEach
@@ -56,12 +48,8 @@ public class XdsAdjustResultStepTest {
         step.runInternal(null, workDir);
 
         // then
-        File file = workDir.resolve(XdsAdjustResultStep.XDS_INP).toFile();
-        List<String> lines;
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            lines = reader.lines()
-                    .collect(Collectors.toList());
-        }
+        List<String> lines = Files.readAllLines(workDir.resolve(XdsAdjustResultStep.XDS_INP));
+
         assertThat(lines).anyMatch(s -> s.contains(JOB_LIST));
         assertThat(lines).anyMatch(s -> s.contains("INCLUDE_RESOLUTION_RANGE=50"))
                 .noneMatch(s -> s.contains("INCLUDE_RESOLUTION_RANGE=50 0")); // here we care only whether the parameter is changed
@@ -78,5 +66,11 @@ public class XdsAdjustResultStepTest {
 
         // then
         assertThat(value).isEqualTo("2.11");
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private String getFileFromResources(String name) {
+        return getClass().getClassLoader().getResource(TEST_PATH_PREFIX + name).getPath();
     }
 }

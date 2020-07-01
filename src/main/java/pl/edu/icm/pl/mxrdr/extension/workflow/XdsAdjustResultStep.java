@@ -5,23 +5,18 @@ import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.edu.icm.pl.mxrdr.extension.workflow.utils.FileContentReplacer;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -72,12 +67,12 @@ public class XdsAdjustResultStep extends FilesystemAccessingWorkflowStep {
     protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext workflowExecutionContext, Path workDir) throws Exception {
         try {
             FileContentReplacer.of(XDS_INP, workDir)
-                    .add(PatternAndReplacement.of(
+                    .add(FileContentReplacer.PatternAndReplacement.of(
                             JOB_PARAM_REGEX, JOB_PARAM_REPLACEMENT + sanitizeJobList(jobs)))
                     .add(shouldProcessResolutionRange
-                            ? PatternAndReplacement.of(RESOLUTION_PARAM_REGEX,
+                            ? FileContentReplacer.PatternAndReplacement.of(RESOLUTION_PARAM_REGEX,
                             RESOLUTION_PARAM_REPLACEMENT + ResolutionParameterExtractor.of(workDir).extract())
-                            : PatternAndReplacement.NONE)
+                            : FileContentReplacer.PatternAndReplacement.NONE)
                     .replace();
             return Success::new;
         } catch (RuntimeException re) {
@@ -102,58 +97,6 @@ public class XdsAdjustResultStep extends FilesystemAccessingWorkflowStep {
     }
 
     // -------------------- INNER CLASSES --------------------
-
-    static class FileContentReplacer {
-        private String fileName;
-        private Path workDir;
-        private Set<PatternAndReplacement> actions = new HashSet<>();
-
-        // -------------------- CONSTRUCTORS --------------------
-
-        private FileContentReplacer(String fileName, Path workDir) {
-            this.fileName = fileName;
-            this.workDir = workDir;
-        }
-
-        // -------------------- LOGIC --------------------
-
-        public static FileContentReplacer of(String fileName, Path workDir) {
-            return new FileContentReplacer(fileName, workDir);
-        }
-
-        public FileContentReplacer add(PatternAndReplacement action) {
-            if (action != PatternAndReplacement.NONE) {
-                actions.add(action);
-            }
-            return this;
-        }
-
-        public void replace() {
-            File file = workDir.resolve(fileName).toFile();
-            File modifiedFile = workDir.resolve(fileName + RandomStringUtils.randomAlphanumeric(8)).toFile();
-            try (BufferedReader reader = new BufferedReader(new FileReader(file));
-                 BufferedWriter writer = new BufferedWriter(new FileWriter(modifiedFile))) {
-                readReplaceAndWrite(reader, writer);
-                file.delete();
-                modifiedFile.renameTo(workDir.resolve(fileName).toFile());
-            } catch (IOException ioe) {
-                throw new RuntimeException(ioe);
-            }
-        }
-
-        // -------------------- PRIVATE --------------------
-
-        private void readReplaceAndWrite(BufferedReader reader, BufferedWriter writer) throws IOException {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                for (PatternAndReplacement action : actions) {
-                    line = line.replaceAll(action.pattern, action.replacement);
-                }
-                writer.write(line);
-                writer.newLine();
-            }
-        }
-    }
 
     static class ResolutionParameterExtractor {
         public static final String NUMBER_REGEX = "[0-9.\\-+Ee]+";
@@ -221,25 +164,6 @@ public class XdsAdjustResultStep extends FilesystemAccessingWorkflowStep {
 
         private boolean isBetween(double checked, double lowerBound, double upperBound) {
             return checked >= lowerBound && checked <= upperBound;
-        }
-    }
-
-    private static class PatternAndReplacement {
-        public static final PatternAndReplacement NONE = new PatternAndReplacement(StringUtils.EMPTY, StringUtils.EMPTY);
-        public final String pattern;
-        public final String replacement;
-
-        // -------------------- CONSTRUCTORS --------------------
-
-        private PatternAndReplacement(String pattern, String replacement) {
-            this.pattern = pattern;
-            this.replacement = replacement;
-        }
-
-        // -------------------- LOGIC --------------------
-
-        public static PatternAndReplacement of(String pattern, String replacement) {
-            return new PatternAndReplacement(pattern, replacement);
         }
     }
 }
