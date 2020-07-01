@@ -9,11 +9,10 @@
         xmlns:o="http://omnifaces.org/ui">
 
     <o:importConstants type="pl.edu.icm.pl.mxrdr.extension.importer.xds.XdsAnalysisField" />
-    
-    <ui:fragment rendered="#{!widgetWrapper.widgetView}">
+
+    <ui:fragment rendered="#{datasetAnalysisTab.showAnalysisResults()}">
 
         <h:panelGroup id="analysisContent">
-
             <p:dataTable id="analysisTable" class="no-alternating-row-colors"
                          value="#{XdsAnalysisField.values()}" var="analysisField" widgetVar="analysisTable">
 
@@ -31,5 +30,39 @@
         </h:panelGroup>
     </ui:fragment>
 
+    <ui:fragment rendered="#{!datasetAnalysisTab.showAnalysisResults()}">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="col-sm-9">
+                    <ui:fragment rendered="#{datasetAnalysisTab.isDatasetInDraft()}">
+                        <p>The attempt of automatic analysis with XDS will start after this version of this dataset is published.</p>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{datasetAnalysisTab.isDatasetUnderEmbargo() and !datasetAnalysisTab.isPermissionToViewFiles()}">
+                        <p>Results of the automatic analysis with XDS of this version of the dataset will be available after the end of the embargo period, i.e. from endOfTheEmbargoDate.</p>
+                        <p>
+                            <h:outputFormat value="#{bundle['dataset.embargo.analysisTab.message']}">
+                                <f:param value="#{datasetAnalysisTab.getEmbargoDateForDisplay()}"/>
+                            </h:outputFormat>
+                        </p>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{(!datasetAnalysisTab.isDatasetUnderEmbargo or
+                                              (datasetAnalysisTab.isDatasetUnderEmbargo and datasetAnalysisTab.isPermissionToViewFiles()) and
+                                              datasetAnalysisTab.isAnalysisInProgress())}">
+                        <p>Automatic analysis with XDS of this version of the dataset is in progress.</p>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{(!datasetAnalysisTab.isDatasetUnderEmbargo or
+                                              (datasetAnalysisTab.isDatasetUnderEmbargo and datasetAnalysisTab.isPermissionToViewFiles()) and
+                                              !datasetAnalysisTab.isAnalysisPerformed())}">
+                        <p>Automatic analysis with XDS of this version of the dataset was not performed.</p>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{(!datasetAnalysisTab.isDatasetUnderEmbargo or
+                                              (datasetAnalysisTab.isDatasetUnderEmbargo and datasetAnalysisTab.isPermissionToViewFiles()) and
+                                              !datasetAnalysisTab.isAnalysisFailure())}">
+                        <p>Analysis failure screen.</p>
+                    </ui:fragment>
+                </div>
+            </div>
+        </div>
+    </ui:fragment>
 
 </ui:composition>
