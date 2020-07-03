@@ -17,7 +17,7 @@ import java.util.Set;
 public class FileContentReplacer {
     private final String fileName;
     private final Path workDir;
-    private Set<PatternAndReplacement> actions = new HashSet<>();
+    private final Set<PatternAndReplacement> actions = new HashSet<>();
 
     // -------------------- CONSTRUCTORS --------------------
 

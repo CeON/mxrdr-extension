@@ -1,4 +1,4 @@
-ORGX= XXX ORGY= 1250.00  ! values from frame header; only read by XYCORR, IDXREF
+ORGX= XXX ORGY= XXX  ! values from frame header; only read by XYCORR, IDXREF
 
 DETECTOR_DISTANCE= XXX
 OSCILLATION_RANGE= 2345.0

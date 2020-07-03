@@ -19,15 +19,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+/**
+ * This step checks whether some values in XDS.INP were not set (these are: DETECTOR_DISTANCE,
+ * OSCILLATION_RANGE, STARTING_ANGLE, X-RAY_WAVELENGTH, ORGX, ORGY – in case there are not set
+ * their values are XXX or 0 (single zero, without dot)) and tries to supply their values
+ * from dataset metadata.
+ */
 public class XdsSupplyMissingValuesStep extends FilesystemAccessingWorkflowStep {
 
     static final String STEP_ID = "xds-supply-missing-values";
 
-    private static final Set<String> SOURCE_FIELDS_SET = Initializer.initializeSourceFieldsSet();
     private static final Map<String, PatternAndReplacement> PATTERNS = Initializer.initializePatternMap();
 
     private DatasetVersionServiceBean versionService;
@@ -58,13 +61,10 @@ public class XdsSupplyMissingValuesStep extends FilesystemAccessingWorkflowStep 
 
     private List<PatternAndReplacement> prepareReplacementActions(WorkflowExecutionContext workflowExecutionContext) {
         Map<String, String> replacementValues = readReplacementValues(workflowExecutionContext);
-        return PATTERNS.keySet().stream()
-                .filter(k -> replacementValues.get(k) != null)
-                .map(k -> {
-                    PatternAndReplacement patterns = PATTERNS.get(k);
-                    return FileContentReplacer.PatternAndReplacement.of(patterns.pattern,
-                            String.format(patterns.replacement, replacementValues.get(k)));
-                })
+        return PATTERNS.entrySet().stream()
+                .filter(e -> replacementValues.get(e.getKey()) != null)
+                .map(e -> PatternAndReplacement.of(e.getValue().pattern,
+                        String.format(e.getValue().replacement, replacementValues.get(e.getKey()))))
                 .collect(Collectors.toList());
     }
 
@@ -77,7 +77,7 @@ public class XdsSupplyMissingValuesStep extends FilesystemAccessingWorkflowStep 
                 .findFirst()
                 .map(DatasetField::getDatasetFieldsChildren)
                 .orElse(Collections.emptyList()).stream()
-                .filter(f -> SOURCE_FIELDS_SET.contains(extractFieldName(f)))
+                .filter(f -> PATTERNS.keySet().contains(extractFieldName(f)))
                 .collect(HashMap::new,
                         (m, f) -> m.put(extractFieldName(f), f.getValue()),
                         HashMap::putAll);
@@ -100,38 +100,35 @@ public class XdsSupplyMissingValuesStep extends FilesystemAccessingWorkflowStep 
         private static final String UNDEFINED_REGEX = "(XXX|0[^.]?)";
         private static final String COMMENT = " ! value supplied by " + STEP_ID + " step.";
 
-        static Set<String> initializeSourceFieldsSet() {
-            return Stream.of(MxrdrMetadataField.DATA_COLLECTION_DETECTOR_DISTANCE,
-                    MxrdrMetadataField.DATA_COLLECTION_OSCILLATION_STEP_SIZE,
-                    MxrdrMetadataField.DATA_COLLECTION_STARTING_ANGLE,
-                    MxrdrMetadataField.DATA_COLLECTION_WAVE_LENGTH,
-                    MxrdrMetadataField.DATA_COLLECTION_ORG_X,
-                    MxrdrMetadataField.DATA_COLLECTION_ORG_Y)
-                    .map(MxrdrMetadataField::getValue)
-                    .collect(Collectors.toSet());
-        }
+        // -------------------- LOGIC --------------------
 
         static Map<String, PatternAndReplacement> initializePatternMap() {
             Map<String, PatternAndReplacement> patterns = new HashMap<>();
             patterns.put(MxrdrMetadataField.DATA_COLLECTION_DETECTOR_DISTANCE.getValue(),
-                    FileContentReplacer.PatternAndReplacement.of("^.*DETECTOR_DISTANCE=\\s*" + UNDEFINED_REGEX,
-                            "DETECTOR_DISTANCE= %s" + COMMENT));
+                    createPatternAndReplacement("DETECTOR_DISTANCE"));
             patterns.put(MxrdrMetadataField.DATA_COLLECTION_OSCILLATION_STEP_SIZE.getValue(),
-                    FileContentReplacer.PatternAndReplacement.of("^.*OSCILLATION_RANGE=\\s*" + UNDEFINED_REGEX,
-                            "OSCILLATION_RANGE= %s" + COMMENT));
+                    createPatternAndReplacement("OSCILLATION_RANGE"));
             patterns.put(MxrdrMetadataField.DATA_COLLECTION_STARTING_ANGLE.getValue(),
-                    FileContentReplacer.PatternAndReplacement.of("^.*STARTING_ANGLE=\\s*" + UNDEFINED_REGEX,
-                            "STARTING_ANGLE= %s" + COMMENT));
+                    createPatternAndReplacement("STARTING_ANGLE"));
             patterns.put(MxrdrMetadataField.DATA_COLLECTION_WAVE_LENGTH.getValue(),
-                    FileContentReplacer.PatternAndReplacement.of("^.*X-RAY_WAVELENGTH=\\s*" + UNDEFINED_REGEX,
-                            "X-RAY_WAVELENGTH= %s" + COMMENT));
+                    createPatternAndReplacement("X-RAY_WAVELENGTH"));
             patterns.put(MxrdrMetadataField.DATA_COLLECTION_ORG_X.getValue(),
-                    FileContentReplacer.PatternAndReplacement.of("^.*ORGX=\\s*" + UNDEFINED_REGEX,
-                            "ORGX= %s"));
+                    PatternAndReplacement.of(createPattern("ORGX"), "ORGX= %s"));
             patterns.put(MxrdrMetadataField.DATA_COLLECTION_ORG_Y.getValue(),
-                    FileContentReplacer.PatternAndReplacement.of("ORGY=\\s*" + UNDEFINED_REGEX,
-                            "ORGY= %s" + COMMENT));
+                    createPatternAndReplacement("ORGY"));
             return patterns;
+        }
+
+        // -------------------- PRIVATE --------------------
+
+        private static String createPattern(String parameter) {
+            return parameter + "=\\s*" + UNDEFINED_REGEX;
+        }
+
+        private static PatternAndReplacement createPatternAndReplacement(String parameter) {
+            return PatternAndReplacement.of(
+                    createPattern(parameter),
+                    parameter + "= %s" + COMMENT);
         }
     }
 }
