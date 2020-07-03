@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class FileContentReplacer {
@@ -33,7 +34,7 @@ public class FileContentReplacer {
     }
 
     public FileContentReplacer add(PatternAndReplacement action) {
-        if (action != PatternAndReplacement.NONE) {
+        if (!PatternAndReplacement.NONE.equals(action)) {
             actions.add(action);
         }
         return this;
@@ -87,7 +88,26 @@ public class FileContentReplacer {
         // -------------------- LOGIC --------------------
 
         public static PatternAndReplacement of(String pattern, String replacement) {
+            if (StringUtils.EMPTY.equals(pattern) && StringUtils.EMPTY.equals(replacement)) {
+                return PatternAndReplacement.NONE;
+            }
             return new PatternAndReplacement(pattern, replacement);
+        }
+
+        // -------------------- equals & hashCode --------------------
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PatternAndReplacement that = (PatternAndReplacement) o;
+            return Objects.equals(pattern, that.pattern) &&
+                    Objects.equals(replacement, that.replacement);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(pattern, replacement);
         }
     }
 }

@@ -70,17 +70,13 @@ public class XdsSupplyMissingValuesStep extends FilesystemAccessingWorkflowStep 
 
     private Map<String, String> readReplacementValues(WorkflowExecutionContext executionContext) {
         return findVersion(executionContext)
-                .map(DatasetVersion::getDatasetFields)
+                .map(v -> v.getDatasetFieldsByTypeName(MxrdrMetadataField.DATA_COLLECTION.getValue()))
                 .orElse(Collections.emptyList()).stream()
-                .filter(f -> MxrdrMetadataField.DATA_COLLECTION.getValue()
-                        .equals(extractFieldName(f)))
                 .findFirst()
                 .map(DatasetField::getDatasetFieldsChildren)
                 .orElse(Collections.emptyList()).stream()
-                .filter(f -> PATTERNS.keySet().contains(extractFieldName(f)))
-                .collect(HashMap::new,
-                        (m, f) -> m.put(extractFieldName(f), f.getValue()),
-                        HashMap::putAll);
+                .filter(f -> PATTERNS.containsKey(extractFieldName(f)) && f.getValue() != null)
+                .collect(Collectors.toMap(this::extractFieldName, DatasetField::getValue));
     }
 
     private String extractFieldName(DatasetField field) {
