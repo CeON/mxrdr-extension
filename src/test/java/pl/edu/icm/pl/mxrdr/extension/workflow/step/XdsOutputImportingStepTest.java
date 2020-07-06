@@ -1,17 +1,19 @@
-package pl.edu.icm.pl.mxrdr.extension.workflow;
+package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.StubJpaPersistence;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldTypeRepository;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.test.WithTestClock;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
+import pl.edu.icm.pl.mxrdr.extension.xds.output.XdsOutputFileParser;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,35 +22,36 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
-import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDataset;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
 import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
-import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static pl.edu.icm.pl.mxrdr.extension.workflow.XdsOutputImportStep.XDS_DATASET_FIELD_SOURCE;
+import static pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsOutputImportingStep.XDS_DATASET_FIELD_SOURCE;
 
-public class XdsOutputImportStepTest implements WithTestClock {
+public class XdsOutputImportingStepTest implements WithTestClock {
 
-    DatasetVersionServiceBean datasetVersions = mock(DatasetVersionServiceBean.class);
-    DatasetFieldServiceBean datasetFieldService = mock(DatasetFieldServiceBean.class);
-    XdsOutputImportStep step = new XdsOutputImportStep(emptyMap(), datasetVersions, datasetFieldService);
+    StubJpaPersistence persistence = new StubJpaPersistence();
+    DatasetFieldTypeRepository fieldTypes = persistence.stub(DatasetFieldTypeRepository.class);
+    XdsOutputImportingStep step = new XdsOutputImportingStep(new WorkflowStepParams(), fieldTypes);
 
-    Dataset dataset = givenDataset(1L);
-    WorkflowExecutionContext context = givenWorkflowExecutionContext(dataset, givenWorkflow(1L));
+    WorkflowExecutionContext context = givenWorkflowExecutionContext(1L, givenWorkflow(1L));
     Path workDir;
 
     @BeforeEach
     public void setUp() throws Exception {
         workDir = Files.createTempDirectory("xds-test-import");
         File xdsFile = new File(getClass().getClassLoader().getResource("xds/CORRECT.LP").toURI());
-        Files.copy(Paths.get(xdsFile.getPath()), workDir.resolve(XdsOutputImportStep.XDS_OUTPUT_FILE_NAME));
+        Files.copy(Paths.get(xdsFile.getPath()), workDir.resolve(XdsOutputFileParser.XDS_OUTPUT_FILE_NAME));
 
-        doAnswer(invocation -> new DatasetFieldType(invocation.getArgument(0), FieldType.TEXT, false))
-                .when(datasetFieldService).findByName(any(String.class));
+        Stream.of(MxrdrMetadataField.values())
+                .map(field -> new DatasetFieldType(field.getValue(), FieldType.TEXT, false))
+                .forEach(fieldTypes::save);
+        doAnswer(invocation -> persistence.of(DatasetFieldType.class)
+                .findOne(f -> f.getName().equals(invocation.getArgument(0))))
+                .when(fieldTypes).findByName(anyString());
     }
 
     @AfterEach
@@ -62,7 +65,7 @@ public class XdsOutputImportStepTest implements WithTestClock {
         // when
         step.runInternal(context, workDir);
         // then
-        List<DatasetField> fields = dataset.getEditVersion().getDatasetFields();
+        List<DatasetField> fields = context.getDatasetVersion().getDatasetFields();
         assertThat(fields).hasSize(41);
         // and
         assertThat(fields).anyMatch(xdsField("unitCellParameterA", "78.45"));
@@ -112,7 +115,7 @@ public class XdsOutputImportStepTest implements WithTestClock {
     @Test
     public void shouldRollbackImport() {
         // given
-        List<DatasetField> fields = dataset.getEditVersion().getDatasetFields();
+        List<DatasetField> fields = context.getDatasetVersion().getDatasetFields();
         fields.add(primaryField("unitCellParameterA", "90.00"));
         // when
         step.runInternal(context, workDir);

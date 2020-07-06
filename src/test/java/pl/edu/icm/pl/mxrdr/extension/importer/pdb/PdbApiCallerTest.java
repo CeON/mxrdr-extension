@@ -79,7 +79,7 @@ public class PdbApiCallerTest {
                 .isInstanceOf(RuntimeException.class)
                 .getCause()
                 .isInstanceOf(HttpResponseException.class)
-                .hasMessage("Request failed with status: 500 and message: Server Error");
+                .hasMessageEndingWith("Request failed with status: 500 and message: Server Error");
     }
 
     @Test

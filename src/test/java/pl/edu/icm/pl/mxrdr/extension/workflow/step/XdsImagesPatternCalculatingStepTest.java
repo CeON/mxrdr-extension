@@ -1,5 +1,6 @@
-package pl.edu.icm.pl.mxrdr.extension.workflow;
+package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -8,18 +9,18 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import java.util.stream.Stream;
 
-import static java.util.Collections.singletonMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static pl.edu.icm.pl.mxrdr.extension.workflow.XdsImagesPatternStep.FILE_NAMES_PARAM_NAME;
-import static pl.edu.icm.pl.mxrdr.extension.workflow.XdsImagesPatternStep.FILE_NAMES_SEPARATOR;
+import static pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsImagesPatternCalculatingStep.FILE_NAMES_PARAM_NAME;
+import static pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsImagesPatternCalculatingStep.FILE_NAMES_SEPARATOR;
 
-public class XdsImagesPatternStepTest implements ArgumentsProvider {
+public class XdsImagesPatternCalculatingStepTest implements ArgumentsProvider {
 
     @ParameterizedTest(name = "[{index}] \"{1}\" pattern")
-    @ArgumentsSource(XdsImagesPatternStepTest.class)
+    @ArgumentsSource(XdsImagesPatternCalculatingStepTest.class)
     void shouldCalculatePatterns(String names, String expected) {
         // given
-        XdsImagesPatternStep step = new XdsImagesPatternStep(singletonMap(FILE_NAMES_PARAM_NAME, names));
+        XdsImagesPatternCalculatingStep step = new XdsImagesPatternCalculatingStep(
+                new WorkflowStepParams(FILE_NAMES_PARAM_NAME, names));
         // when
         String actual = step.calculatePattern();
         // then

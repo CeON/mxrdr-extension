@@ -1,9 +1,12 @@
-package pl.edu.icm.pl.mxrdr.extension.workflow;
+package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsInputAdjustingStep;
+import pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsInputAdjustingStep.ResolutionParameterExtractor;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,19 +17,22 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor.XDS_INPUT_FILE_NAME;
+import static pl.edu.icm.pl.mxrdr.extension.xds.output.XdsOutputFileParser.XDS_OUTPUT_FILE_NAME;
 
-public class XdsAdjustResultStepTest {
-    private static final String JOB_LIST = "TEST_JOB_LIST";
-    private static final String TEST_PATH_PREFIX = "xds/xar-test-";
-    private Path workDir;
+public class XdsInputAdjustingStepTest {
+
+    static final String JOB_LIST = "TEST_JOB_LIST";
+
+    Path workDir;
 
     @BeforeEach
     public void setUp() throws IOException {
         workDir = Files.createTempDirectory("xds-test-temp");
-        String correctionFileSourcePath = getFileFromResources(XdsAdjustResultStep.CORRECT_LP);
-        String inputFileSourcePath = getFileFromResources(XdsAdjustResultStep.XDS_INP);
-        Files.copy(Paths.get(correctionFileSourcePath), workDir.resolve(XdsAdjustResultStep.CORRECT_LP));
-        Files.copy(Paths.get(inputFileSourcePath), workDir.resolve(XdsAdjustResultStep.XDS_INP));
+        String correctionFileSourcePath = getFileFromResources(XDS_OUTPUT_FILE_NAME);
+        String inputFileSourcePath = getFileFromResources(XDS_INPUT_FILE_NAME);
+        Files.copy(Paths.get(correctionFileSourcePath), workDir.resolve(XDS_OUTPUT_FILE_NAME));
+        Files.copy(Paths.get(inputFileSourcePath), workDir.resolve(XDS_INPUT_FILE_NAME));
     }
 
     @AfterEach
@@ -40,15 +46,15 @@ public class XdsAdjustResultStepTest {
     public void shouldUpdateParametersInFile() throws Exception {
         // given
         Map<String, String> input = new HashMap<>();
-        input.put(XdsAdjustResultStep.XDS_JOB_LIST_PARAM, JOB_LIST);
-        input.put(XdsAdjustResultStep.COMPUTE_AND_UPDATE_RESOLUTION_RANGE_PARAM, "true");
-        XdsAdjustResultStep step = new XdsAdjustResultStep(input);
+        input.put(XdsInputAdjustingStep.JOBS_PARAM_NAME, JOB_LIST);
+        input.put(XdsInputAdjustingStep.ADJUST_RESOLUTION_PARAM_NAME, "true");
+        XdsInputAdjustingStep step = new XdsInputAdjustingStep(new WorkflowStepParams(input));
 
         // when
         step.runInternal(null, workDir);
 
         // then
-        List<String> lines = Files.readAllLines(workDir.resolve(XdsAdjustResultStep.XDS_INP));
+        List<String> lines = Files.readAllLines(workDir.resolve(XDS_INPUT_FILE_NAME));
 
         assertThat(lines).anyMatch(s -> s.contains(JOB_LIST));
         assertThat(lines).anyMatch(s -> s.contains("INCLUDE_RESOLUTION_RANGE=50"))
@@ -57,9 +63,9 @@ public class XdsAdjustResultStepTest {
 
     @Test
     @DisplayName("Should correctly extract value for INCLUDE_RESOLUTION_RANGE")
-    public void shouldExtractProperValueForResolution() {
+    public void shouldExtractProperValueForResolution() throws IOException {
         // given
-        XdsAdjustResultStep.ResolutionParameterExtractor extractor = XdsAdjustResultStep.ResolutionParameterExtractor.of(workDir);
+        ResolutionParameterExtractor extractor = new ResolutionParameterExtractor(workDir);
 
         // when
         String value = extractor.extract();
@@ -71,6 +77,6 @@ public class XdsAdjustResultStepTest {
     // -------------------- PRIVATE --------------------
 
     private String getFileFromResources(String name) {
-        return getClass().getClassLoader().getResource(TEST_PATH_PREFIX + name).getPath();
+        return getClass().getClassLoader().getResource("xds/xar-test-" + name).getPath();
     }
 }

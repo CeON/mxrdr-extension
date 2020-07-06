@@ -1,9 +1,11 @@
 package pl.edu.icm.pl.mxrdr.extension.importer.xds;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import edu.harvard.iq.dataverse.importer.metadata.ImporterData;
+import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldKey;
+import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldType;
+import edu.harvard.iq.dataverse.importer.metadata.ImporterRegistry;
+import edu.harvard.iq.dataverse.importer.metadata.ResultField;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -13,17 +15,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import org.junit.jupiter.api.Test;
-
-import edu.harvard.iq.dataverse.importer.metadata.ImporterData;
-import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldKey;
-import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldType;
-import edu.harvard.iq.dataverse.importer.metadata.ImporterRegistry;
-import edu.harvard.iq.dataverse.importer.metadata.ResultField;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class XdsImporterTest {
 
-    private final XdsImporter xdsImporter = new XdsImporter(new ImporterRegistry(), new XdsFileParser());
+    private final XdsImporter xdsImporter = new XdsImporter(new ImporterRegistry());
 
     // -------------------- TESTS --------------------
 

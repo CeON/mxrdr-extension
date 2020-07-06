@@ -1,10 +1,13 @@
-package pl.edu.icm.pl.mxrdr.extension.workflow;
+package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -15,7 +18,6 @@ import java.util.function.BiFunction;
 
 import static edu.harvard.iq.dataverse.workflow.internalspi.SystemProcessStep.ARGUMENTS_PARAM_NAME;
 import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
-import static java.util.Arrays.asList;
 
 /**
  * Computes file name pattern to pass to <code>generate_XDS.INP</code> script.
@@ -39,9 +41,11 @@ import static java.util.Arrays.asList;
  * the dataset did not conform with our assumptions, we expect the author to correct the dataset in accordance to them
  * and retry the process on the next dataset version.
  */
-class XdsImagesPatternStep extends FilesystemAccessingWorkflowStep {
+public class XdsImagesPatternCalculatingStep extends FilesystemAccessingWorkflowStep {
 
-    static final String STEP_ID = "xds-images-pattern";
+    private static final Logger log = LoggerFactory.getLogger(XdsImagesPatternCalculatingStep.class);
+
+    public static final String STEP_ID = "xds-calculate-images-pattern";
 
     /**
      * Input parameter containing {@value #FILE_NAMES_SEPARATOR} separated list of file names to compute pattern for.
@@ -57,9 +61,9 @@ class XdsImagesPatternStep extends FilesystemAccessingWorkflowStep {
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public XdsImagesPatternStep(Map<String, String> inputParams) {
+    public XdsImagesPatternCalculatingStep(WorkflowStepParams inputParams) {
         super(inputParams);
-        this.fileNames = asList(inputParams.getOrDefault(FILE_NAMES_PARAM_NAME, "").split(FILE_NAMES_SEPARATOR));
+        this.fileNames = inputParams.getList(FILE_NAMES_PARAM_NAME, FILE_NAMES_SEPARATOR);
     }
 
     // -------------------- LOGIC --------------------
@@ -67,7 +71,7 @@ class XdsImagesPatternStep extends FilesystemAccessingWorkflowStep {
     @Override
     protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) {
         String namePattern = calculatePattern();
-
+        log.trace("Calculated XDS images name pattern: {}", namePattern);
         return successWith(outputParams ->
                 outputParams.put(ARGUMENTS_PARAM_NAME, "\"" + namePattern + "\"")
         );
