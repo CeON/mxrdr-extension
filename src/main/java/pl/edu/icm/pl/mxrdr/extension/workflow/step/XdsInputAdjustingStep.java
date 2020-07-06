@@ -1,14 +1,16 @@
-package pl.edu.icm.pl.mxrdr.extension.workflow;
+package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
+import com.google.common.io.InputSupplier;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.Success;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.edu.icm.pl.mxrdr.extension.workflow.utils.FileContentReplacer;
+import pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,8 +18,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+
+import static java.util.Collections.singletonList;
+import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor.XDS_INPUT_FILE_NAME;
+import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputParameterProcessor.replaceAnyValue;
+import static pl.edu.icm.pl.mxrdr.extension.xds.output.XdsOutputFileParser.XDS_OUTPUT_FILE_NAME;
 
 /**
  * This step allows to replace JOBS and INCLUDE_RESOLUTION_RANGE parameter values in XDS.INP file.
@@ -30,55 +38,48 @@ import java.util.stream.Stream;
  * Should be set to {@code true} or {@code false} or not included at all.
  * </ul>
  */
-public class XdsAdjustResultStep extends FilesystemAccessingWorkflowStep {
+public class XdsInputAdjustingStep extends FilesystemAccessingWorkflowStep {
 
-    private static final Logger logger = LoggerFactory.getLogger(XdsAdjustResultStep.class);
+    private static final Logger log = LoggerFactory.getLogger(XdsInputAdjustingStep.class);
 
-    public static final String STEP_ID = "xds-adjust-result";
+    public static final String STEP_ID = "xds-adjust-input";
 
-    static final String XDS_JOB_LIST_PARAM = "xdsJobList";
-    static final String COMPUTE_AND_UPDATE_RESOLUTION_RANGE_PARAM = "computeAndUpdateResolutionRange";
+    /**
+     * Input parameter containing semicolon (;) separated list of XDS jobs to configure.
+     * Default value is a single job of <code>CORRECT</code>.
+     */
+    static final String JOBS_PARAM_NAME = "jobs";
+    /**
+     * Boolean input parameter deciding if <code>INCLUDE_RESOLUTION_RANGE</code> parameter should be adjusted
+     * based on results of previous execution from <code>CORRECT.LP</code> file present in the working directory.
+     * Default value is <code>false</code>.
+     */
+    static final String ADJUST_RESOLUTION_PARAM_NAME = "adjustResolution";
 
-    static final String XDS_INP = "XDS.INP";
-    static final String CORRECT_LP = "CORRECT.LP";
-
-    private static final String DELIMITERS_REGEX = "[;,]";
-    private static final String JOB_PARAM_REGEX = "^.*JOB=.*$";
-    private static final String JOB_PARAM_REPLACEMENT = "JOB= ";
-    private static final String RESOLUTION_PARAM_REGEX = "^.*INCLUDE_RESOLUTION_RANGE=50.*$";
-    private static final String RESOLUTION_PARAM_REPLACEMENT = "INCLUDE_RESOLUTION_RANGE=50 ";
-
-    private String jobs;
-    private boolean shouldProcessResolutionRange;
+    private final List<String> jobs;
+    private final boolean adjustResolution;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public XdsAdjustResultStep(Map<String, String> inputParams) {
+    public XdsInputAdjustingStep(WorkflowStepParams inputParams) {
         super(inputParams);
-        this.jobs = inputParams.getOrDefault(XDS_JOB_LIST_PARAM, StringUtils.EMPTY);
-        this.shouldProcessResolutionRange
-                = Boolean.TRUE.toString()
-                .equalsIgnoreCase(inputParams.getOrDefault(COMPUTE_AND_UPDATE_RESOLUTION_RANGE_PARAM, Boolean.FALSE.toString()));
+        jobs = inputParams.getListOrDefault(JOBS_PARAM_NAME, ";", singletonList("CORRECT"));
+        adjustResolution = inputParams.getBoolean(ADJUST_RESOLUTION_PARAM_NAME);
     }
 
     // -------------------- LOGIC --------------------
 
     @Override
-    protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext workflowExecutionContext, Path workDir) throws Exception {
-        try {
-            FileContentReplacer.of(XDS_INP, workDir)
-                    .add(FileContentReplacer.PatternAndReplacement.of(
-                            JOB_PARAM_REGEX, JOB_PARAM_REPLACEMENT + sanitizeJobList(jobs)))
-                    .add(shouldProcessResolutionRange
-                            ? FileContentReplacer.PatternAndReplacement.of(RESOLUTION_PARAM_REGEX,
-                            RESOLUTION_PARAM_REPLACEMENT + ResolutionParameterExtractor.of(workDir).extract())
-                            : FileContentReplacer.PatternAndReplacement.NONE)
-                    .replace();
-            return Success::new;
-        } catch (RuntimeException re) {
-            logger.warn("Exception during step execution: ", re);
-            return output -> new Failure(re.getMessage());
-        }
+    protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) throws Exception {
+        log.trace("Adjusting {} with JOB={}", XDS_INPUT_FILE_NAME, jobsValue());
+        new XdsInputFileProcessor(workDir)
+                .with(replaceAnyValue("JOB", this::jobsValue)
+                        .matchingWholeLine())
+                .with(replaceAnyValue("INCLUDE_RESOLUTION_RANGE", includeResolutionRangeValue(workDir))
+                        .matchingWholeLine()
+                        .processWhen(adjustResolution))
+                .process();
+        return Success::new;
     }
 
     @Override
@@ -91,37 +92,35 @@ public class XdsAdjustResultStep extends FilesystemAccessingWorkflowStep {
 
     // -------------------- PRIVATE --------------------
 
-    private String sanitizeJobList(String jobList) {
-        return jobList.replaceAll(DELIMITERS_REGEX, " ")
-                .replaceAll("\\s+", " ");
+    private String jobsValue() {
+        return String.join(" ", jobs);
+    }
+
+    private InputSupplier<String> includeResolutionRangeValue(Path workDir) {
+        return () -> "50 " + new ResolutionParameterExtractor(workDir).extract();
     }
 
     // -------------------- INNER CLASSES --------------------
 
     static class ResolutionParameterExtractor {
+
         public static final String NUMBER_REGEX = "[0-9.\\-+Ee]+";
         public static final String NON_NUMERIC_CHARACTERS_REGEX = "[^0-9.\\-+Ee]";
 
-        private Path workDir;
+        private final Path workDir;
 
         // -------------------- CONSTRUCTORS --------------------
 
-        private ResolutionParameterExtractor(Path workDir) {
+        public ResolutionParameterExtractor(Path workDir) {
             this.workDir = workDir;
         }
 
         // -------------------- LOGIC --------------------
 
-        public static ResolutionParameterExtractor of(Path workDir) {
-            return new ResolutionParameterExtractor(workDir);
-        }
-
-        public String extract() {
-            File correctionFile = workDir.resolve(CORRECT_LP).toFile();
+        public String extract() throws IOException {
+            File correctionFile = workDir.resolve(XDS_OUTPUT_FILE_NAME).toFile();
             try (BufferedReader reader = new BufferedReader(new FileReader(correctionFile))) {
                 return extractResolutionParameter(reader.lines());
-            } catch (IOException ioe) {
-                throw new RuntimeException(ioe);
             }
         }
 

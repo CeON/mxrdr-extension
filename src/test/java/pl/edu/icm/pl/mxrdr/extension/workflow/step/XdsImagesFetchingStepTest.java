@@ -1,24 +1,23 @@
-package pl.edu.icm.pl.mxrdr.extension.workflow;
+package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.edu.icm.pl.mxrdr.extension.workflow.XdsImagesFetchingStep.Storage;
-import pl.edu.icm.pl.mxrdr.extension.workflow.XdsImagesFetchingStep.StorageSource;
+import pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsImagesFetchingStep;
+import pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsImagesFetchingStep.Storage;
+import pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsImagesFetchingStep.StorageSource;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import static java.lang.Thread.currentThread;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 public class XdsImagesFetchingStepTest {
 
@@ -32,12 +31,9 @@ public class XdsImagesFetchingStepTest {
             "sth-master.h5"
     };
 
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    Map<String, String> inputParams = new HashMap<>();
-    DatasetVersionServiceBean datasetVersions = mock(DatasetVersionServiceBean.class);
-    StorageSource storageSource = new ClasspathStorageSource(classLoader);
+    StorageSource storageSource = new ClasspathStorageSource();
 
-    XdsImagesFetchingStep step = new XdsImagesFetchingStep(inputParams, datasetVersions, storageSource);
+    XdsImagesFetchingStep step = new XdsImagesFetchingStep(new WorkflowStepParams(), storageSource);
 
     Path tmpDir;
 
@@ -60,7 +56,7 @@ public class XdsImagesFetchingStepTest {
     }
 
     private List<FileMetadata> filesMetadataFromPath(String dirPath) throws IOException, URISyntaxException {
-        return Files.list(Paths.get(classLoader.getResource(dirPath).toURI()))
+        return Files.list(Paths.get(currentThread().getContextClassLoader().getResource(dirPath).toURI()))
                     .map(filePath -> {
                         FileMetadata metadata = new FileMetadata();
                         metadata.setLabel(filePath.getFileName().toString());
@@ -71,17 +67,11 @@ public class XdsImagesFetchingStepTest {
 
     static class ClasspathStorageSource implements StorageSource {
 
-        private final ClassLoader classLoader;
-
-        ClasspathStorageSource(ClassLoader classLoader) {
-            this.classLoader = classLoader;
-        }
-
         @Override
         public Storage getStorage(FileMetadata metadata) {
             return () -> {
                 String fileName = metadata.getLabel();
-                return classLoader.getResourceAsStream("xds/" + fileName);
+                return currentThread().getContextClassLoader().getResourceAsStream("xds/" + fileName);
             };
         }
     }

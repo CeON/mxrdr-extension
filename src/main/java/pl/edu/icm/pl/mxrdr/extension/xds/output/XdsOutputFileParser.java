@@ -1,49 +1,57 @@
-package pl.edu.icm.pl.mxrdr.extension.importer.xds;
+package pl.edu.icm.pl.mxrdr.extension.xds.output;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Singleton;
-
+import com.google.common.io.InputSupplier;
+import edu.harvard.iq.dataverse.importer.metadata.ResultField;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
 import pl.edu.icm.pl.mxrdr.extension.importer.SymmetryStructureMapper;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Class designed to parse XDS output file.
+ * Extracts metadataFields from String lines taken from XDS output file (usually {@value XDS_OUTPUT_FILE_NAME}).
  */
-@Singleton
-public class XdsFileParser {
+public class XdsOutputFileParser {
 
-    private static final Logger logger = LoggerFactory.getLogger(XdsFileParser.class);
+    private static final Logger log = LoggerFactory.getLogger(XdsOutputFileParser.class);
 
-    private final String OVERALL_RESOLUTION_INDICATOR = "STANDARD ERROR OF REFLECTION INTENSITIES AS FUNCTION OF RESOLUTION";
+    public static final String XDS_OUTPUT_FILE_NAME = "CORRECT.LP";
 
+    public static final Charset XDS_OUTPUT_FILE_CHARSET = Charset.forName("windows-1252");
+
+    private static final String OVERALL_RESOLUTION_INDICATOR = "STANDARD ERROR OF REFLECTION INTENSITIES AS FUNCTION OF RESOLUTION";
+
+    private final InputSupplier<InputStream> dataSupplier;
+    private final Charset dataCharset;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public XdsOutputFileParser(File dataFile) {
+        this(() -> new FileInputStream(dataFile));
+    }
+
+    public XdsOutputFileParser(InputSupplier<InputStream> dataSupplier) {
+        this(dataSupplier, XDS_OUTPUT_FILE_CHARSET);
+    }
+
+    public XdsOutputFileParser(InputSupplier<InputStream> dataSupplier, Charset dataCharset) {
+        this.dataSupplier = dataSupplier;
+        this.dataCharset = dataCharset;
+    }
 
     // -------------------- LOGIC --------------------
 
-    
-    public List<ResultField> parse(File xdsOutput) {
-        return parse(readXdsMetadata(xdsOutput));
-    }
-    
-    
-    /**
-     * Extracts metadataFields from String lines taken from XDS output file (usually
-     * "CORRECT.LP").
-     * 
-     * @return list with extracted fields, or empty if none was extracted.
-     */
-    List<ResultField> parse(List<String> dataLines) {
+    public List<ResultField> asResultFields() {
 
         List<ResultField> results = new ArrayList<>();
         List<ResultField> dataCollectionChildren = new ArrayList<>();
@@ -62,7 +70,7 @@ public class XdsFileParser {
 
         String overallDataResolutionRangeLow = "";
 
-        for (String dataLine : dataLines) {
+        for (String dataLine : readDataLines()) {
 
             addExtractedValue(MxrdrMetadataField.DATA_COLLECTION_DETECTOR_DISTANCE, "DETECTOR_DISTANCE", dataLine,
                     dataCollectionChildren, collectedFields);
@@ -179,7 +187,7 @@ public class XdsFileParser {
                 sigma = Float.valueOf(clearNonDigits(values[8]));
                 cc = Float.valueOf(clearNonDigits(values[10]));
             } catch (NumberFormatException e) {
-                logger.info(e.getMessage());
+                log.info(e.getMessage());
             }
 
             if (resolution > 0.3 && resolution < 5.0 && sigma > 1.19 && sigma <= 100 && cc > 50.0
@@ -347,21 +355,11 @@ public class XdsFileParser {
         return value.replaceAll("[^\\d.+-]", "");
     }
 
-    private List<String> readXdsMetadata(File dataFile) {
-        List<String> lines = new ArrayList<>();
-
-        try (BufferedReader reader = Files.newBufferedReader(dataFile.toPath(), Charset.forName("windows-1252"))) {
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-            }
-
+    private List<String> readDataLines() {
+        try (InputStream in = new BufferedInputStream(dataSupplier.getInput())) {
+            return IOUtils.readLines(in, dataCharset);
         } catch (IOException e) {
-            throw new IllegalStateException("There was a problem with reading XDS file", e);
+            throw new IllegalStateException("There was a problem with reading XDS input", e);
         }
-
-        return lines;
     }
-
 }
