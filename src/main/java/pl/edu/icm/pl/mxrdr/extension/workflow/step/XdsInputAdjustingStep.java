@@ -4,7 +4,6 @@ import com.google.common.io.InputSupplier;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
-import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
 import static java.util.Collections.singletonList;
 import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor.XDS_INPUT_FILE_NAME;
 import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputParameterProcessor.replaceAnyValue;
@@ -72,6 +72,7 @@ public class XdsInputAdjustingStep extends FilesystemAccessingWorkflowStep {
     @Override
     protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) throws Exception {
         log.trace("Adjusting {} with JOB={}", XDS_INPUT_FILE_NAME, jobsValue());
+        addFailureArtifacts(XDS_INPUT_FILE_NAME);
         new XdsInputFileProcessor(workDir)
                 .with(replaceAnyValue("JOB", this::jobsValue)
                         .matchingWholeLine())
@@ -79,7 +80,9 @@ public class XdsInputAdjustingStep extends FilesystemAccessingWorkflowStep {
                         .matchingWholeLine()
                         .processWhen(adjustResolution))
                 .process();
-        return Success::new;
+        return successWith(data ->
+                data.put(FAILURE_ARTIFACTS_PARAM_NAME, XDS_INPUT_FILE_NAME)
+        );
     }
 
     @Override

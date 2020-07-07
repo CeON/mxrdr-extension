@@ -18,10 +18,12 @@ public class XdsValidateMetadataStep implements WorkflowStep {
     @Override
     public WorkflowStepResult run(WorkflowExecutionContext context) {
         long dataCollectionFieldsCount = countDataCollectionFields(context);
-        return dataCollectionFieldsCount == 1L
-                ? new Success()
-                : new Failure("Dataset version should have exactly one dataCollection field. " +
-                "Current version has: " + dataCollectionFieldsCount + ".");
+        if (dataCollectionFieldsCount == 1L) {
+            return new Success();
+        } else {
+            return new Failure("Dataset version should have exactly one dataCollection field. " +
+                    "Current version has: " + dataCollectionFieldsCount + ".");
+        }
     }
 
     @Override

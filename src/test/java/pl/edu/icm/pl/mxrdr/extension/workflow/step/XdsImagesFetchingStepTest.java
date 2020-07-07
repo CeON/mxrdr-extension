@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static java.lang.Thread.currentThread;
 import static java.util.stream.Collectors.toList;
@@ -30,6 +31,9 @@ public class XdsImagesFetchingStepTest {
             "sth-12.h5",
             "sth-master.h5"
     };
+
+    private static final String[] EXPECTED_PATHS = Stream.of(IMAGES_NAMES)
+            .map(name -> "img/" + name).toArray(String[]::new);
 
     StorageSource storageSource = new ClasspathStorageSource();
 
@@ -51,7 +55,7 @@ public class XdsImagesFetchingStepTest {
         List<String> fetchedNames = step.fetchInto(metadatas, tmpDir);
         List<String> listedNames = Files.list(tmpDir).map(Path::getFileName).map(Path::toString).collect(toList());
         // then
-        assertThat(fetchedNames).containsOnly(IMAGES_NAMES);
+        assertThat(fetchedNames).containsOnly(EXPECTED_PATHS);
         assertThat(listedNames).containsOnly(IMAGES_NAMES);
     }
 

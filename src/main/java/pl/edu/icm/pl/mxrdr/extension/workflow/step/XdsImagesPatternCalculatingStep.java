@@ -18,6 +18,7 @@ import java.util.function.BiFunction;
 
 import static edu.harvard.iq.dataverse.workflow.internalspi.SystemProcessStep.ARGUMENTS_PARAM_NAME;
 import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
+import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor.XDS_INPUT_FILE_NAME;
 
 /**
  * Computes file name pattern to pass to <code>generate_XDS.INP</code> script.
@@ -72,9 +73,10 @@ public class XdsImagesPatternCalculatingStep extends FilesystemAccessingWorkflow
     protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) {
         String namePattern = calculatePattern();
         log.trace("Calculated XDS images name pattern: {}", namePattern);
-        return successWith(outputParams ->
-                outputParams.put(ARGUMENTS_PARAM_NAME, "\"" + namePattern + "\"")
-        );
+        return successWith(data -> {
+            data.put(ARGUMENTS_PARAM_NAME, "\"" + namePattern + "\"");
+            data.put(FAILURE_ARTIFACTS_PARAM_NAME, XDS_INPUT_FILE_NAME);
+        });
     }
 
     @Override

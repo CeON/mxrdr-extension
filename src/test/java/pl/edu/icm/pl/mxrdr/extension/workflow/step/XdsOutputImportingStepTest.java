@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
 import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
+import static edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep.WORK_DIR_PARAM_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
@@ -43,6 +44,8 @@ public class XdsOutputImportingStepTest implements WithTestClock {
     @BeforeEach
     public void setUp() throws Exception {
         workDir = Files.createTempDirectory("xds-test-import");
+        step = new XdsOutputImportingStep(new WorkflowStepParams(WORK_DIR_PARAM_NAME, workDir.toString()), fieldTypes);
+
         File xdsFile = new File(getClass().getClassLoader().getResource("xds/CORRECT.LP").toURI());
         Files.copy(Paths.get(xdsFile.getPath()), workDir.resolve(XdsOutputFileParser.XDS_OUTPUT_FILE_NAME));
 
@@ -63,7 +66,7 @@ public class XdsOutputImportingStepTest implements WithTestClock {
     @Test
     public void shouldImportFile() {
         // when
-        step.runInternal(context, workDir);
+        step.run(context);
         // then
         List<DatasetField> fields = context.getDatasetVersion().getDatasetFields();
         assertThat(fields).hasSize(41);
@@ -118,7 +121,7 @@ public class XdsOutputImportingStepTest implements WithTestClock {
         List<DatasetField> fields = context.getDatasetVersion().getDatasetFields();
         fields.add(primaryField("unitCellParameterA", "90.00"));
         // when
-        step.runInternal(context, workDir);
+        step.run(context);
         // then
         assertThat(fields).hasSize(42);
         // when

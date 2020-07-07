@@ -17,12 +17,15 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
+import edu.harvard.iq.dataverse.persistence.workflow.WorkflowArtifactRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.test.WithTestClock;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepSPI;
+import edu.harvard.iq.dataverse.workflow.artifacts.DiskWorkflowArtifactStorage;
+import edu.harvard.iq.dataverse.workflow.artifacts.WorkflowArtifactServiceBean;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContextFactory;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionScheduler;
@@ -42,7 +45,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
 import pl.edu.icm.pl.mxrdr.extension.workflow.MxrdrWorkflowStepSPI;
-import pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsImagesFetchingStep.StorageSource;
 
 import javax.enterprise.inject.Instance;
 import javax.naming.NamingException;
@@ -52,7 +54,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDataset;
@@ -83,16 +84,18 @@ public class XdsAnalysisWorkflowTest extends WorkflowJMSTestBase implements Work
     static final Logger log = LoggerFactory.getLogger(XdsAnalysisWorkflowTest.class);
 
     static final Duration TIMEOUT = ofMinutes(5);
-    static final String FILES_PATH = "/home/darek/Downloads/Maciupkin/raw";
+    static final String INPUT_PATH = "/home/darek/Downloads/xds-images/input";
+    static final String OUTPUT_PATH = "/home/darek/Downloads/xds-images/output";
 
     SettingsServiceBean settings = new TestSettingsServiceBean();
-    LocalDirStorageSource storageSource = new LocalDirStorageSource(FILES_PATH);
+    LocalDirStorageSource storageSource = new LocalDirStorageSource(INPUT_PATH);
 
     StubJpaPersistence persistence = new StubJpaPersistence();
     DatasetRepository datasets = persistence.stub(DatasetRepository.class);
     DatasetFieldTypeRepository fieldTypes = persistence.stub(DatasetFieldTypeRepository.class);
     WorkflowRepository workflows = persistence.stub(WorkflowRepository.class);
     WorkflowExecutionRepository executions = persistence.stub(WorkflowExecutionRepository.class);
+    WorkflowArtifactRepository artifacts = persistence.stub(WorkflowArtifactRepository.class);
 
     WorkflowStepRegistry steps = new WorkflowStepRegistry() {{ init(); }};
     MxrdrWorkflowStepSPI mxrdrSteps = new MxrdrWorkflowStepSPI(steps, fieldTypes);
@@ -106,10 +109,13 @@ public class XdsAnalysisWorkflowTest extends WorkflowJMSTestBase implements Work
         setQueue(queue); setFactory(factory); }};
     WorkflowExecutionStepRunner runner = new WorkflowExecutionStepRunner(steps, clock);
 
-    WorkflowExecutionServiceBean service = new WorkflowExecutionServiceBean(
+    WorkflowArtifactServiceBean artifactsService = new WorkflowArtifactServiceBean(
+            artifacts, new DiskWorkflowArtifactStorage(Paths.get(OUTPUT_PATH)), clock);
+    WorkflowExecutionServiceBean executionService = new WorkflowExecutionServiceBean(
             datasets, executions, contextFactory, scheduler, clock);
+
     WorkflowExecutionWorker worker = new WorkflowExecutionWorker(
-            datasets, executions, contextFactory, scheduler, runner, executionListeners, clock);
+            datasets, executions, contextFactory, scheduler, runner, artifactsService, executionListeners, clock);
 
     Dataset dataset = givenDataset();
 
@@ -168,7 +174,7 @@ public class XdsAnalysisWorkflowTest extends WorkflowJMSTestBase implements Work
         WorkflowContext context = givenWorkflowExecutionContext(dataset.getId(), workflow);
         // when
         givenMessageConsumer(worker)
-                .callProducer(() -> service.start(workflow, context))
+                .callProducer(() -> executionService.start(workflow, context))
                 .andAwaitMessages(workflow.getSteps().size() + 1, TIMEOUT);
         // then
         List<DatasetField> fields = dataset.getLatestVersion().getDatasetFields()
@@ -192,7 +198,7 @@ public class XdsAnalysisWorkflowTest extends WorkflowJMSTestBase implements Work
         }
     }
 
-    static class LocalDirStorageSource implements StorageSource {
+    static class LocalDirStorageSource implements XdsImagesFetchingStep.StorageSource {
 
         private final Path dir;
 

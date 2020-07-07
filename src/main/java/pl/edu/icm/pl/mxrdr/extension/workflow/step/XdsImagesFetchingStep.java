@@ -65,8 +65,8 @@ public class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
         log.trace("Fetching images into {}", imgDir);
         List<String> fileNames = fetchInto(context.getDatasetVersion().getFileMetadatas(), imgDir);
         log.trace("Fetched {} images into {}", fileNames.size(), imgDir);
-        return successWith(outputParams ->
-                outputParams.put(FILE_NAMES_PARAM_NAME, String.join(FILE_NAMES_SEPARATOR, fileNames))
+        return successWith(data ->
+                data.put(FILE_NAMES_PARAM_NAME, String.join(FILE_NAMES_SEPARATOR, fileNames))
         );
     }
 
