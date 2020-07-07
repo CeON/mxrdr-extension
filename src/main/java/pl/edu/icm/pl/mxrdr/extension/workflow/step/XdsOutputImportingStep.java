@@ -7,10 +7,8 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldTypeRepository;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
-import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
-import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult.Source;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +21,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
+import static java.util.Arrays.asList;
+import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor.XDS_INPUT_FILE_NAME;
+import static pl.edu.icm.pl.mxrdr.extension.xds.output.XdsOutputFileParser.XDS_OUTPUT_FILE_CHARSET;
 import static pl.edu.icm.pl.mxrdr.extension.xds.output.XdsOutputFileParser.XDS_OUTPUT_FILE_NAME;
 
 public class XdsOutputImportingStep extends FilesystemAccessingWorkflowStep {
@@ -45,14 +47,20 @@ public class XdsOutputImportingStep extends FilesystemAccessingWorkflowStep {
     // -------------------- LOGIC --------------------
 
     @Override
-    protected Source runInternal(WorkflowExecutionContext context, Path workDir) {
+    protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) {
+        addFailureArtifacts(XDS_INPUT_FILE_NAME, XDS_OUTPUT_FILE_NAME);
+
         log.trace("Reading {} file", XDS_OUTPUT_FILE_NAME);
         List<DatasetField> datasetFields = context.getDatasetVersion().getDatasetFields();
+
         log.trace("Adding {} read metadata fields", datasetFields.size());
         parseXdsOutputFrom(workDir)
                 .flatMap(this::asDatasetFields)
                 .forEach(datasetFields::add);
-        return Success::new;
+
+        return successWith(
+                workDirArtifacts(asList(XDS_INPUT_FILE_NAME, XDS_OUTPUT_FILE_NAME), XDS_OUTPUT_FILE_CHARSET)
+        );
     }
 
     @Override

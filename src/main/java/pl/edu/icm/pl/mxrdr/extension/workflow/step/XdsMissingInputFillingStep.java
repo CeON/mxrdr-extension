@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
+import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor.XDS_INPUT_FILE_NAME;
 import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputParameterProcessor.replaceUndefinedValue;
 
 /**
@@ -59,12 +61,15 @@ public class XdsMissingInputFillingStep extends FilesystemAccessingWorkflowStep 
 
     @Override
     protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) throws Exception {
+        addFailureArtifacts(XDS_INPUT_FILE_NAME);
         List<XdsInputLineProcessor> processors = prepareProcessors(context);
         log.trace("Potentially adjusting values for {} XDS input parameters", processors.size());
         new XdsInputFileProcessor(workDir)
                 .withAll(processors)
                 .process();
-        return Success::new;
+        return successWith(data ->
+                data.put(FAILURE_ARTIFACTS_PARAM_NAME, XDS_INPUT_FILE_NAME)
+        );
     }
 
     @Override
