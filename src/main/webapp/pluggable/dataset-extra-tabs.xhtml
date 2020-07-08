@@ -1,0 +1,62 @@
+<ui:composition
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:jsf="http://xmlns.jcp.org/jsf"
+        xmlns:dv="http://dataverse.org/facelets"
+        xmlns:o="http://omnifaces.org/ui">
+
+    <f:loadBundle var="mxrdrBundle" basename="MxrdrBundle"/>
+
+    <ui:param name="workflowExecution" value="#{datasetAnalysisTab.getWorkflowExecution(DatasetPage.workingVersion)}" />
+
+    <ui:param name="failureReason" value="#{datasetAnalysisTab.getAnalysisFailureReason(DatasetPage.workingVersion, workflowExecution)}" />
+    
+    <p:tab id="analysisTab" title="#{mxrdrBundle['analysisTab.title']}">
+        <ui:fragment rendered="#{failureReason == null}">
+            <h:panelGroup id="analysisContent">
+                <p:dataTable id="analysisTable" class="no-alternating-row-colors"
+                         value="#{datasetAnalysisTab.getAnalysisFields(DatasetPage.workingVersion)}" var="analysisField" widgetVar="analysisTable">
+
+                    <p:column headerText="#{mxrdrBundle['analysisTab.header.field']}" class="col-sm-3">
+                        <h:outputText value="#{analysisField.fieldLabel}"/>
+                    </p:column>
+                    <p:column headerText="#{mxrdrBundle['analysisTab.header.inMetadata']}" class="col-sm-3">
+                        <h:outputText value="#{analysisField.primaryValue}"/>
+                    </p:column>
+                    <p:column headerText="#{mxrdrBundle['analysisTab.header.inAnalysis']}" class="col-sm-3">
+                        <h:outputText value="#{analysisField.secondaryValue}"/>
+                    </p:column>
+
+                </p:dataTable>
+            </h:panelGroup>
+        </ui:fragment>
+
+        <ui:fragment rendered="#{failureReason != null}">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="col-sm-9">
+                        <p class="text-block">
+                            <h:outputFormat value="#{mxrdrBundle[failureReason]}">
+                                <f:param value="#{datasetAnalysisTab.getEmbargoDateForDisplay(DatasetPage.workingVersion.dataset)}"/>
+                            </h:outputFormat>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </ui:fragment>
+        <div class="col-sm-9">
+            <h:outputText value="#{mxrdrBundle['dataset.analysisTab.artifacts.message']}" />
+        </div>
+        
+        <ui:repeat value="#{datasetAnalysisTab.getArtifacts(DatasetPage.workingVersion, workflowExecution)}" var="artifact">
+            <div class="col-sm-9">
+                <p:commandLink action="#{datasetAnalysisTab.downloadArtifact(artifact.getName(), artifact.getStorageLocation())}">
+                    <h:outputText value="#{artifact.getName()}" />
+                </p:commandLink>
+            </div>
+        </ui:repeat>
+    </p:tab>
+</ui:composition>
