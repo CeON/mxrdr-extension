@@ -1,0 +1,94 @@
+<ui:composition
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:jsf="http://xmlns.jcp.org/jsf"
+        xmlns:dv="http://dataverse.org/facelets"
+        xmlns:o="http://omnifaces.org/ui">
+
+    <o:importConstants type="pl.edu.icm.pl.mxrdr.extension.importer.xds.XdsAnalysisField" />
+    <f:loadBundle var="mxrdrBundle" basename="MxrdrBundle"/>
+
+    <ui:fragment rendered="#{datasetAnalysisTab.showAnalysisResults()}">
+
+        <h:panelGroup id="analysisContent">
+            <p:dataTable id="analysisTable" class="no-alternating-row-colors"
+                         value="#{XdsAnalysisField.values()}" var="analysisField" widgetVar="analysisTable">
+
+                <p:column headerText="#{bundle['file.dataFilesTab.analysisResults.header.field']}" class="col-sm-3">
+                    <h:outputText value="#{datasetAnalysisTab.getDatasetFieldName(analysisField.getName())}"/>
+                </p:column>
+                <p:column headerText="#{bundle['file.dataFilesTab.analysisResults.header.inMetadata']}" class="col-sm-3">
+                    <h:outputText value="#{datasetAnalysisTab.getDatasetFieldValue(analysisField.getName(), 'PRIMARY')}"/>
+                </p:column>
+                <p:column headerText="#{bundle['file.dataFilesTab.analysisResults.header.inAnalysis']}" class="col-sm-3">
+                    <h:outputText value="#{datasetAnalysisTab.getDatasetFieldValue(analysisField.getName(), 'XDS')}"/>
+                </p:column>
+
+            </p:dataTable>
+            
+            <div class="col-sm-9">
+                <h:outputText value="#{mxrdrBundle['dataset.analysisTab.artifacts.message']}" />
+            </div>
+            <p:dataTable id="artifactsTable"
+                         value="#{datasetAnalysisTab.getArtifacts()}" var="artifact" widgetVar="artifactsTable">
+                         
+                <p:column class="col-sm-9">
+                    
+                    <p:commandLink action="#{datasetAnalysisTab.downloadArtifact(artifact.getName(), artifact.getStorageLocation())}">
+                        <h:outputText value="#{artifact.getName()}" />
+                    </p:commandLink>
+                </p:column>
+            </p:dataTable>
+            
+        </h:panelGroup>
+    </ui:fragment>
+
+    <ui:fragment rendered="#{!datasetAnalysisTab.showAnalysisResults()}">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="col-sm-9">
+                    <ui:fragment rendered="#{datasetAnalysisTab.isDatasetInDraft()}">
+                        <p>
+                            <h:outputText value="#{mxrdrBundle['dataset.analysisTab.dataset.in.draft.message']}" />
+                        </p>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{datasetAnalysisTab.isDatasetUnderEmbargo() and !datasetAnalysisTab.isPermissionToViewFiles()}">
+                        <p>
+                            <h:outputFormat value="#{mxrdrBundle['dataset.analysisTab.embargo.message']}">
+                                <f:param value="#{datasetAnalysisTab.getEmbargoDateForDisplay()}"/>
+                            </h:outputFormat>
+                        </p>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{!datasetAnalysisTab.isDatasetInDraft() and
+                                              (!datasetAnalysisTab.isDatasetUnderEmbargo() or
+                                              (datasetAnalysisTab.isDatasetUnderEmbargo() and datasetAnalysisTab.isPermissionToViewFiles()) and
+                                              datasetAnalysisTab.isAnalysisInProgress())}">
+                        <p>
+                            <h:outputText value="#{mxrdrBundle['dataset.analysisTab.analysis.in.progress.message']}" />
+                        </p>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{!datasetAnalysisTab.isDatasetInDraft() and
+                                              (!datasetAnalysisTab.isDatasetUnderEmbargo() or
+                                              (datasetAnalysisTab.isDatasetUnderEmbargo() and datasetAnalysisTab.isPermissionToViewFiles()) and
+                                              datasetAnalysisTab.isAnalysisNotPerformed())}">
+                        <p>
+                            <h:outputText value="#{mxrdrBundle['dataset.analysisTab.analysis.not.performed.message']}" />
+                        </p>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{!datasetAnalysisTab.isDatasetInDraft() and
+                                              (!datasetAnalysisTab.isDatasetUnderEmbargo() or
+                                              (datasetAnalysisTab.isDatasetUnderEmbargo() and datasetAnalysisTab.isPermissionToViewFiles()) and
+                                              datasetAnalysisTab.isAnalysisFailure())}">
+                        <p>
+                            <h:outputText value="#{mxrdrBundle['dataset.analysisTab.analysis.failed.message']}" />
+                        </p>
+                    </ui:fragment>
+                </div>
+            </div>
+        </div>
+    </ui:fragment>
+
+</ui:composition>
