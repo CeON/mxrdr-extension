@@ -1,38 +1,25 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
-import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.engine.TestSettingsServiceBean;
-import edu.harvard.iq.dataverse.mocks.MockAuthenticatedUser;
-import edu.harvard.iq.dataverse.mocks.MockAuthenticationServiceBean;
-import edu.harvard.iq.dataverse.mocks.MockRoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.persistence.StubJpaPersistence;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldTypeRepository;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowArtifactRepository;
-import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
-import edu.harvard.iq.dataverse.persistence.workflow.WorkflowRepository;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.test.WithTestClock;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepSPI;
 import edu.harvard.iq.dataverse.workflow.artifacts.DiskWorkflowArtifactStorage;
 import edu.harvard.iq.dataverse.workflow.artifacts.WorkflowArtifactServiceBean;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContextFactory;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionJMSTestBase;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionScheduler;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionServiceBean;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepRunner;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionWorker;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowJMSTestBase;
 import edu.harvard.iq.dataverse.workflow.internalspi.SystemProcessStep;
 import edu.harvard.iq.dataverse.workflow.listener.WorkflowExecutionListener;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
@@ -60,7 +47,6 @@ import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDa
 import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDatasetFiled;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowStep;
-import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
 import static edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSPI.INTERNAL_PROVIDER_ID;
 import static edu.harvard.iq.dataverse.workflow.internalspi.SystemProcessStep.COMMAND_PARAM_NAME;
 import static java.nio.file.StandardOpenOption.READ;
@@ -79,7 +65,7 @@ import static pl.edu.icm.pl.mxrdr.extension.workflow.MxrdrWorkflowStepSPI.MXRDR_
 import static pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsInputAdjustingStep.ADJUST_RESOLUTION_PARAM_NAME;
 import static pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsInputAdjustingStep.JOBS_PARAM_NAME;
 
-public class XdsAnalysisWorkflowTest extends WorkflowJMSTestBase implements WorkflowStepSPI, WithTestClock {
+public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implements WorkflowStepSPI {
 
     static final Logger log = LoggerFactory.getLogger(XdsAnalysisWorkflowTest.class);
 
@@ -87,35 +73,26 @@ public class XdsAnalysisWorkflowTest extends WorkflowJMSTestBase implements Work
     static final String INPUT_PATH = "/home/darek/Downloads/xds-images/input";
     static final String OUTPUT_PATH = "/home/darek/Downloads/xds-images/output";
 
-    SettingsServiceBean settings = new TestSettingsServiceBean();
     LocalDirStorageSource storageSource = new LocalDirStorageSource(INPUT_PATH);
 
-    StubJpaPersistence persistence = new StubJpaPersistence();
-    DatasetRepository datasets = persistence.stub(DatasetRepository.class);
     DatasetFieldTypeRepository fieldTypes = persistence.stub(DatasetFieldTypeRepository.class);
-    WorkflowRepository workflows = persistence.stub(WorkflowRepository.class);
-    WorkflowExecutionRepository executions = persistence.stub(WorkflowExecutionRepository.class);
     WorkflowArtifactRepository artifacts = persistence.stub(WorkflowArtifactRepository.class);
 
     WorkflowStepRegistry steps = new WorkflowStepRegistry() {{ init(); }};
     MxrdrWorkflowStepSPI mxrdrSteps = new MxrdrWorkflowStepSPI(steps, fieldTypes);
-    RoleAssigneeServiceBean roleAssignees = new MockRoleAssigneeServiceBean() {{ add(new MockAuthenticatedUser()); }};
-    AuthenticationServiceBean authentication = new MockAuthenticationServiceBean(clock);
     Instance<WorkflowExecutionListener> executionListeners = mock(Instance.class);
 
-    WorkflowExecutionContextFactory contextFactory = new WorkflowExecutionContextFactory(
-            settings, datasets, workflows, executions, roleAssignees, authentication);
     WorkflowExecutionScheduler scheduler = new WorkflowExecutionScheduler() {{
         setQueue(queue); setFactory(factory); }};
-    WorkflowExecutionStepRunner runner = new WorkflowExecutionStepRunner(steps, clock);
+    WorkflowExecutionStepRunner runner = new WorkflowExecutionStepRunner(steps);
 
     WorkflowArtifactServiceBean artifactsService = new WorkflowArtifactServiceBean(
             artifacts, new DiskWorkflowArtifactStorage(Paths.get(OUTPUT_PATH)), clock);
     WorkflowExecutionServiceBean executionService = new WorkflowExecutionServiceBean(
-            datasets, executions, contextFactory, scheduler, clock);
+            datasets, executions, contextFactory, scheduler);
 
     WorkflowExecutionWorker worker = new WorkflowExecutionWorker(
-            datasets, executions, contextFactory, scheduler, runner, artifactsService, executionListeners, clock);
+            datasets, contextFactory, scheduler, runner, artifactsService, executionListeners);
 
     Dataset dataset = givenDataset();
 

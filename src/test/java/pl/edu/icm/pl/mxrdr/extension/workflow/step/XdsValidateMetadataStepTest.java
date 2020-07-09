@@ -3,8 +3,8 @@ package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetMother;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionTestBase;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -21,9 +21,9 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class XdsValidateMetadataStepTest implements ArgumentsProvider {
+class XdsValidateMetadataStepTest extends WorkflowExecutionTestBase implements ArgumentsProvider {
 
-    WorkflowExecutionContext context = WorkflowContextMother.givenWorkflowExecutionContext(
+    WorkflowExecutionContext context = givenWorkflowExecutionContext(
             1L, WorkflowMother.givenWorkflow(1L));
 
     @ParameterizedTest(name = "[{index}] When {0} fields, then success is {1}")

@@ -1,12 +1,11 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
-import edu.harvard.iq.dataverse.persistence.StubJpaPersistence;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldTypeRepository;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
-import edu.harvard.iq.dataverse.test.WithTestClock;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionTestBase;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import org.junit.jupiter.api.AfterEach;
@@ -25,16 +24,14 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
-import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
 import static edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep.WORK_DIR_PARAM_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsOutputImportingStep.XDS_DATASET_FIELD_SOURCE;
 
-public class XdsOutputImportingStepTest implements WithTestClock {
+public class XdsOutputImportingStepTest extends WorkflowExecutionTestBase {
 
-    StubJpaPersistence persistence = new StubJpaPersistence();
     DatasetFieldTypeRepository fieldTypes = persistence.stub(DatasetFieldTypeRepository.class);
     XdsOutputImportingStep step = new XdsOutputImportingStep(new WorkflowStepParams(), fieldTypes);
 
