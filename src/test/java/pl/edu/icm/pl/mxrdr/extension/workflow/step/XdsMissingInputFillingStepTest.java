@@ -1,8 +1,8 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionTestBase;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,11 +20,11 @@ import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDa
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor.XDS_INPUT_FILE_NAME;
 
-class XdsMissingInputFillingStepTest {
+class XdsMissingInputFillingStepTest extends WorkflowExecutionTestBase {
 
     Path workDir;
 
-    WorkflowExecutionContext context = WorkflowContextMother.givenWorkflowExecutionContext(
+    WorkflowExecutionContext context = givenWorkflowExecutionContext(
             1L, WorkflowMother.givenWorkflow(1L));
 
     @BeforeEach
