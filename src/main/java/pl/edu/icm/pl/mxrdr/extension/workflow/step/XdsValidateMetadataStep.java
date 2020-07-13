@@ -1,5 +1,7 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Success;
@@ -13,11 +15,21 @@ public class XdsValidateMetadataStep implements WorkflowStep {
 
     public static final String STEP_ID = "xds-validate-metadata";
 
+    private final DatasetVersionServiceBean versionsService;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public XdsValidateMetadataStep(DatasetVersionServiceBean versionsService) {
+        this.versionsService = versionsService;
+    }
+
     // -------------------- LOGIC --------------------
 
     @Override
     public WorkflowStepResult run(WorkflowExecutionContext context) {
-        long dataCollectionFieldsCount = countDataCollectionFields(context);
+        long dataCollectionFieldsCount = versionsService
+                .withDatasetVersion(context, this::countDataCollectionFields)
+                .orElse(0L);
         if (dataCollectionFieldsCount == 1L) {
             return new Success();
         } else {
@@ -36,8 +48,8 @@ public class XdsValidateMetadataStep implements WorkflowStep {
 
     // -------------------- PRIVATE --------------------
 
-    private long countDataCollectionFields(WorkflowExecutionContext context) {
-        return context.getDatasetVersion()
+    private long countDataCollectionFields(DatasetVersion datasetVersion) {
+        return datasetVersion
                 .getDatasetFieldsByTypeName(MxrdrMetadataField.DATA_COLLECTION.getValue())
                 .size();
     }

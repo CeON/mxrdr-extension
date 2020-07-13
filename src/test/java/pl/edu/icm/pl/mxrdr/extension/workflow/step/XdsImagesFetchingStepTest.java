@@ -37,7 +37,7 @@ public class XdsImagesFetchingStepTest {
 
     StorageSource storageSource = new ClasspathStorageSource();
 
-    XdsImagesFetchingStep step = new XdsImagesFetchingStep(new WorkflowStepParams(), storageSource);
+    XdsImagesFetchingStep step = new XdsImagesFetchingStep(new WorkflowStepParams(), null, storageSource);
 
     Path tmpDir;
 

@@ -1,11 +1,12 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
 import com.google.common.io.InputSupplier;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
-import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.slf4j.Logger;
@@ -55,8 +56,11 @@ public class XdsMissingInputFillingStep extends FilesystemAccessingWorkflowStep 
                 replaceUndefinedValue("ORGY", value));
     }};
 
-    public XdsMissingInputFillingStep(WorkflowStepParams inputParams) {
+    private final DatasetVersionServiceBean versionsService;
+
+    public XdsMissingInputFillingStep(WorkflowStepParams inputParams, DatasetVersionServiceBean versionsService) {
         super(inputParams);
+        this.versionsService = versionsService;
     }
 
     @Override
@@ -83,7 +87,13 @@ public class XdsMissingInputFillingStep extends FilesystemAccessingWorkflowStep 
     // -------------------- PRIVATE --------------------
 
     private List<XdsInputLineProcessor> prepareProcessors(WorkflowExecutionContext context) {
-        return context.getDatasetVersion()
+        return versionsService
+                .withDatasetVersion(context,this::prepareProcessors)
+                .orElseGet(Collections::emptyList);
+    }
+
+    private List<XdsInputLineProcessor> prepareProcessors(DatasetVersion datasetVersion) {
+        return datasetVersion
                 .getDatasetFieldByTypeName(MxrdrMetadataField.DATA_COLLECTION.getValue())
                 .map(DatasetField::getDatasetFieldsChildren)
                 .orElseGet(Collections::emptyList).stream()
