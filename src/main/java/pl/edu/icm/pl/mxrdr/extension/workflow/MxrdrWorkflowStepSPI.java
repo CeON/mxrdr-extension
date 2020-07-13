@@ -1,5 +1,6 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow;
 
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldTypeRepository;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepSPI;
@@ -24,13 +25,17 @@ public class MxrdrWorkflowStepSPI implements WorkflowStepSPI {
     public static final String MXRDR_PROVIDER_ID = "mxrdr";
 
     private final WorkflowStepRegistry stepRegistry;
+    private final DatasetVersionServiceBean datasetVersions;
     private final DatasetFieldTypeRepository fieldTypes;
 
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
-    public MxrdrWorkflowStepSPI(WorkflowStepRegistry stepRegistry, DatasetFieldTypeRepository fieldTypes) {
+    public MxrdrWorkflowStepSPI(WorkflowStepRegistry stepRegistry,
+                                DatasetVersionServiceBean datasetVersions,
+                                DatasetFieldTypeRepository fieldTypes) {
         this.stepRegistry = stepRegistry;
+        this.datasetVersions = datasetVersions;
         this.fieldTypes = fieldTypes;
     }
 
@@ -45,17 +50,17 @@ public class MxrdrWorkflowStepSPI implements WorkflowStepSPI {
     public WorkflowStep getStep(String stepType, WorkflowStepParams stepParameters) {
         switch (stepType) {
             case XdsValidateMetadataStep.STEP_ID:
-                return new XdsValidateMetadataStep();
+                return new XdsValidateMetadataStep(datasetVersions);
             case XdsImagesFetchingStep.STEP_ID:
-                return new XdsImagesFetchingStep(stepParameters);
+                return new XdsImagesFetchingStep(stepParameters, datasetVersions);
             case XdsImagesPatternCalculatingStep.STEP_ID:
                 return new XdsImagesPatternCalculatingStep(stepParameters);
             case XdsMissingInputFillingStep.STEP_ID:
-                return new XdsMissingInputFillingStep(stepParameters);
+                return new XdsMissingInputFillingStep(stepParameters, datasetVersions);
             case XdsInputAdjustingStep.STEP_ID:
                 return new XdsInputAdjustingStep(stepParameters);
             case XdsOutputImportingStep.STEP_ID:
-                return new XdsOutputImportingStep(stepParameters, fieldTypes);
+                return new XdsOutputImportingStep(stepParameters, datasetVersions, fieldTypes);
             default:
                 throw new IllegalArgumentException("Unsupported step type: '" + stepType + "'.");
         }

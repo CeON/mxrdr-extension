@@ -1,5 +1,6 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.listener;
 
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.listener.WorkflowExecutionListener;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
@@ -14,28 +15,34 @@ import static pl.edu.icm.pl.mxrdr.extension.notification.MxrdrNotificationType.M
 @Singleton
 public class MxrdrWorkflowListener implements WorkflowExecutionListener {
 
+    private final DatasetVersionServiceBean versionsService;
     private final MxrdrNotificationSender notificationSender;
 
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
-    public MxrdrWorkflowListener(MxrdrNotificationSender notificationSender) {
+    public MxrdrWorkflowListener(DatasetVersionServiceBean versionsService, MxrdrNotificationSender notificationSender) {
+        this.versionsService = versionsService;
         this.notificationSender = notificationSender;
     }
 
     // -------------------- LOGIC --------------------
 
     @Override
-    public void onSuccess(WorkflowExecutionContext executionContext) {
-        notificationSender.sendNotification(MXRDR_WORKFLOW_SUCCESS,
-                executionContext.getDataset(),
-                executionContext.getRequest().getAuthenticatedUser());
+    public void onSuccess(WorkflowExecutionContext context) {
+        versionsService.withDatasetVersion(context,
+                datasetVersion -> notificationSender.sendNotification(MXRDR_WORKFLOW_SUCCESS,
+                        datasetVersion.getDataset(),
+                        context.getRequest().getAuthenticatedUser())
+        );
     }
 
     @Override
-    public void onFailure(WorkflowExecutionContext executionContext, Failure failure) {
-        notificationSender.sendNotification(MXRDR_WORKFLOW_FAIL,
-                executionContext.getDataset(),
-                executionContext.getRequest().getAuthenticatedUser());
+    public void onFailure(WorkflowExecutionContext context, Failure failure) {
+        versionsService.withDatasetVersion(context,
+                datasetVersion -> notificationSender.sendNotification(MXRDR_WORKFLOW_FAIL,
+                        datasetVersion.getDataset(),
+                        context.getRequest().getAuthenticatedUser())
+        );
     }
 }

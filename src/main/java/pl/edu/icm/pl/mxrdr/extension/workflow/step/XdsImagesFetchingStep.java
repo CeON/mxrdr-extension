@@ -2,8 +2,10 @@ package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
@@ -60,17 +62,19 @@ public class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
     };
 
     private final String imgDirName;
+    private final DatasetVersionServiceBean versionsService;
     private final StorageSource storageSource;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public XdsImagesFetchingStep(WorkflowStepParams inputParams) {
-        this(inputParams, DEFAULT_STORAGE_SOURCE);
+    public XdsImagesFetchingStep(WorkflowStepParams inputParams, DatasetVersionServiceBean versionsService) {
+        this(inputParams, versionsService, DEFAULT_STORAGE_SOURCE);
     }
 
-    public XdsImagesFetchingStep(WorkflowStepParams inputParams, StorageSource storageSource) {
+    public XdsImagesFetchingStep(WorkflowStepParams inputParams, DatasetVersionServiceBean versionsService, StorageSource storageSource) {
         super(inputParams);
         this.imgDirName = inputParams.getOrDefault(IMAGES_DIR_PARAM_NAME, IMAGES_DIR_PARAM_DEFAULT);
+        this.versionsService = versionsService;
         this.storageSource = storageSource;
     }
 
@@ -78,7 +82,10 @@ public class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
 
     @Override
     protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) throws Exception {
-        fetchInto(context.getDatasetVersion().getFileMetadatas(), workDir);
+        List<FileMetadata> fileMetadata = versionsService
+                .withDatasetVersion(context, DatasetVersion::getFileMetadatas)
+                .orElseGet(Collections::emptyList);
+        fetchInto(fileMetadata, workDir);
         return successWith(data ->
                 data.put(IMAGES_DIR_PARAM_NAME, imgDirName)
         );
