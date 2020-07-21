@@ -14,6 +14,8 @@
 
     <ui:param name="failureReason" value="#{datasetAnalysisTab.getAnalysisFailureReason(DatasetPage.workingVersion, workflowExecution)}" />
     
+    <ui:param name="artifacts" value="#{datasetAnalysisTab.getArtifacts(DatasetPage.workingVersion, workflowExecution)}" />
+
     <p:tab id="analysisTab" title="#{mxrdrBundle['analysisTab.title']}">
         <ui:fragment rendered="#{failureReason == null}">
             <h:panelGroup id="analysisContent">
@@ -21,7 +23,7 @@
                          value="#{datasetAnalysisTab.getAnalysisFields(DatasetPage.workingVersion)}" var="analysisField" widgetVar="analysisTable">
 
                     <p:column headerText="#{mxrdrBundle['analysisTab.header.field']}" class="col-sm-3">
-                        <h:outputText value="#{analysisField.fieldLabel}"/>
+                        <h:outputText value="#{analysisField.fieldLabel}" escape="false"/>
                     </p:column>
                     <p:column headerText="#{mxrdrBundle['analysisTab.header.inMetadata']}" class="col-sm-3">
                         <h:outputText value="#{analysisField.primaryValue}"/>
@@ -47,16 +49,19 @@
                 </div>
             </div>
         </ui:fragment>
-        <div class="col-sm-9">
-            <h:outputText value="#{mxrdrBundle['dataset.analysisTab.artifacts.message']}" />
-        </div>
+        <ui:fragment rendered="#{!artifacts.isEmpty() && (failureReason == null || datasetAnalysisTab.isAnalysisFailure(workflowExecution)}">
         
-        <ui:repeat value="#{datasetAnalysisTab.getArtifacts(DatasetPage.workingVersion, workflowExecution)}" var="artifact">
             <div class="col-sm-9">
-                <p:commandLink action="#{datasetAnalysisTab.downloadArtifact(artifact.getName(), artifact.getStorageLocation())}">
-                    <h:outputText value="#{artifact.getName()}" />
-                </p:commandLink>
+                <h:outputText value="#{mxrdrBundle['dataset.analysisTab.artifacts.message']}" />
             </div>
-        </ui:repeat>
+        
+            <ui:repeat value="#{artifacts}" var="artifact">
+                <div class="col-sm-9">
+                    <p:commandLink action="#{datasetAnalysisTab.downloadArtifact(artifact.getName(), artifact.getStorageLocation())}">
+                        <h:outputText value="#{artifact.getName()}" />
+                    </p:commandLink>
+                </div>
+            </ui:repeat>
+        </ui:fragment>
     </p:tab>
 </ui:composition>

@@ -29,7 +29,7 @@ import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.artifacts.WorkflowArtifactServiceBean;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.TriggerType;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionServiceBean;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionService;
 
 @ViewScoped
 @Named("datasetAnalysisTab")
@@ -45,13 +45,13 @@ public class DatasetAnalysisTab implements Serializable {
 
     private DataverseRequestServiceBean dvRequestService;
     
-    private WorkflowExecutionServiceBean workflowServiceBean;
+    private WorkflowExecutionService workflowServiceBean;
     
     private WorkflowArtifactServiceBean workflowArfifactService;
 
     @Inject
     public DatasetAnalysisTab(SettingsServiceBean settingsService, PermissionsWrapper permissionsWrapper,
-            DataverseRequestServiceBean dvRequestService, WorkflowExecutionServiceBean workflowServiceBean,
+            DataverseRequestServiceBean dvRequestService, WorkflowExecutionService workflowServiceBean,
             WorkflowArtifactServiceBean workflowArtifactService, DatasetFieldServiceBean datasetFields) {
         this.settingsService = settingsService;
         this.permissionsWrapper = permissionsWrapper;
@@ -70,13 +70,11 @@ public class DatasetAnalysisTab implements Serializable {
         for (XdsAnalysisField field:XdsAnalysisField.values()) {
             AnalysisResultDTO res = new AnalysisResultDTO();
             DatasetFieldType type = datasetFields.findByName(field.getName());
-            res.setFieldLabel(type != null ? type.getLocaleTitle() : field.getName());
+            res.setFieldLabel(type != null ? type.getDisplayName() : field.getName());
 
-            Optional<DatasetField> optional = datasetVersion.getDatasetFieldByTypeName(field.getName());
-            if (optional.isPresent()) {
-                DatasetField datasetField = optional.get();
-                res.setPrimaryValue(datasetField.getValue());
-            }
+            datasetVersion.getDatasetFieldByTypeName(field.getName())
+            .map(DatasetField::getDisplayValue)
+            .ifPresent(res::setPrimaryValue);
             
             for (DatasetField dsf : datasetVersion.getDatasetFieldsOptional()) {
                 if (dsf.getDatasetFieldType().getName().equals(field.getName())) {
@@ -151,21 +149,23 @@ public class DatasetAnalysisTab implements Serializable {
         }
     }
     
+    private boolean canViewDataset(DatasetVersion datasetVersion) {
+        return !datasetVersion.getDataset().hasActiveEmbargo() 
+                || (datasetVersion.getDataset().hasActiveEmbargo() && isPermissionToViewFiles(datasetVersion.getDataset()));
+    }
+    
     public String getAnalysisFailureReason(DatasetVersion datasetVersion, WorkflowExecution workflowExecution) {
         if (datasetVersion.isDraft()) {
             return "dataset.analysisTab.dataset.in.draft.message";
         } else if (datasetVersion.getDataset().hasActiveEmbargo() && !isPermissionToViewFiles(datasetVersion.getDataset())) {
             return "dataset.analysisTab.dataset.embargo.message";
-        } else if ((!datasetVersion.getDataset().hasActiveEmbargo() 
-                    || (datasetVersion.getDataset().hasActiveEmbargo() && isPermissionToViewFiles(datasetVersion.getDataset())))
+        } else if (canViewDataset(datasetVersion)
                     && isAnalysisInProgress(workflowExecution)) {
             return "dataset.analysisTab.analysis.in.progress.message";
-        } else if ((!datasetVersion.getDataset().hasActiveEmbargo() 
-                || (datasetVersion.getDataset().hasActiveEmbargo() && isPermissionToViewFiles(datasetVersion.getDataset())))
+        } else if (canViewDataset(datasetVersion)
                 && isAnalysisNotPerformed(workflowExecution)) {
             return "dataset.analysisTab.analysis.not.performed.message";
-        } else if ((!datasetVersion.getDataset().hasActiveEmbargo() 
-                || (datasetVersion.getDataset().hasActiveEmbargo() && isPermissionToViewFiles(datasetVersion.getDataset())))
+        } else if (canViewDataset(datasetVersion)
                 && isAnalysisFailure(workflowExecution)) {
             return "dataset.analysisTab.analysis.failed.message";
         }
