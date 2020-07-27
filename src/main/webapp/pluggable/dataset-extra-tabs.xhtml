@@ -49,7 +49,7 @@
                 </div>
             </div>
         </ui:fragment>
-        <ui:fragment rendered="#{!artifacts.isEmpty() && (failureReason == null || datasetAnalysisTab.isAnalysisFailure(workflowExecution)}">
+        <ui:fragment rendered="#{!artifacts.isEmpty() and (failureReason == null or datasetAnalysisTab.isAnalysisFailure(workflowExecution))}">
         
             <div class="col-sm-9">
                 <h:outputText value="#{mxrdrBundle['dataset.analysisTab.artifacts.message']}" />
