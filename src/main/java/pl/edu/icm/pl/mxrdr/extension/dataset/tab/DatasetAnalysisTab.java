@@ -20,6 +20,7 @@ import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
+import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
@@ -73,12 +74,12 @@ public class DatasetAnalysisTab implements Serializable {
             res.setFieldLabel(type != null ? type.getDisplayName() : field.getName());
 
             datasetVersion.getDatasetFieldByTypeName(field.getName())
-            .map(DatasetField::getDisplayValue)
+            .map(this::getSimpleValue)
             .ifPresent(res::setPrimaryValue);
             
             for (DatasetField dsf : datasetVersion.getDatasetFieldsOptional()) {
                 if (dsf.getDatasetFieldType().getName().equals(field.getName())) {
-                    res.setSecondaryValue(dsf.getValue());
+                    res.setSecondaryValue(getSimpleValue(dsf));
                 }
             }
             
@@ -88,6 +89,27 @@ public class DatasetAnalysisTab implements Serializable {
         return resultList;
     }
     
+    private String getSimpleValue(DatasetField datasetField) {
+        StringBuilder returnString = new StringBuilder();
+        List<String> valuesList = new ArrayList<>();
+        if (!datasetField.getFieldValue().isEmpty()) {
+            valuesList.add(datasetField.getFieldValue().get());
+        } else {
+            for (ControlledVocabularyValue cvv : datasetField.getControlledVocabularyValues()) {
+                if (cvv != null && cvv.getLocaleStrValue() != null) {
+                    valuesList.add(cvv.getLocaleStrValue());
+                }
+            }
+        }
+        for (String value : valuesList) {
+            if (value == null) {
+                value = "";
+            }
+            returnString.append((returnString.length() == 0) ? "" : "; ").append(value.trim());
+        }
+        return returnString.toString();
+
+    }
     
     // -------------------- LOGIC --------------------
 
