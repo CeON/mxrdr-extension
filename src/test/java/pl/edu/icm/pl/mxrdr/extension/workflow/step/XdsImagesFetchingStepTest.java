@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsImagesFetchingStep;
 import pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsImagesFetchingStep.Storage;
 import pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsImagesFetchingStep.StorageSource;
 
@@ -19,10 +18,11 @@ import java.util.stream.Stream;
 import static java.lang.Thread.currentThread;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsImagesFetchingStep.IMAGES_DIR_PARAM_DEFAULT;
 
 public class XdsImagesFetchingStepTest {
 
-    private static final String[] IMAGES_NAMES = {
+    static final String[] IMAGES_NAMES = {
             "match001.cbf",
             "match002.cbf",
             "match020.cbf",
@@ -37,7 +37,7 @@ public class XdsImagesFetchingStepTest {
 
     StorageSource storageSource = new ClasspathStorageSource();
 
-    XdsImagesFetchingStep step = new XdsImagesFetchingStep(new WorkflowStepParams(), storageSource);
+    XdsImagesFetchingStep step = new XdsImagesFetchingStep(new WorkflowStepParams(), null, storageSource);
 
     Path tmpDir;
 
@@ -53,9 +53,12 @@ public class XdsImagesFetchingStepTest {
         List<FileMetadata> metadatas = filesMetadataFromPath("xds");
         // when
         List<String> fetchedNames = step.fetchInto(metadatas, tmpDir);
-        List<String> listedNames = Files.list(tmpDir).map(Path::getFileName).map(Path::toString).collect(toList());
         // then
         assertThat(fetchedNames).containsOnly(EXPECTED_PATHS);
+        // when
+        List<String> listedNames = Files.list(tmpDir.resolve(IMAGES_DIR_PARAM_DEFAULT))
+                .map(Path::getFileName).map(Path::toString).collect(toList());
+        // then
         assertThat(listedNames).containsOnly(IMAGES_NAMES);
     }
 

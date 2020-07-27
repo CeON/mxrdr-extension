@@ -1,9 +1,11 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldTypeRepository;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
@@ -23,6 +25,7 @@ import java.util.stream.Stream;
 
 import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor.XDS_INPUT_FILE_NAME;
 import static pl.edu.icm.pl.mxrdr.extension.xds.output.XdsOutputFileParser.XDS_OUTPUT_FILE_CHARSET;
 import static pl.edu.icm.pl.mxrdr.extension.xds.output.XdsOutputFileParser.XDS_OUTPUT_FILE_NAME;
@@ -35,12 +38,17 @@ public class XdsOutputImportingStep extends FilesystemAccessingWorkflowStep {
 
     public static final String XDS_DATASET_FIELD_SOURCE = "XDS";
 
+    private final DatasetVersionServiceBean versionsService;
+
     private final DatasetFieldTypeRepository fieldTypes;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public XdsOutputImportingStep(WorkflowStepParams inputParams, DatasetFieldTypeRepository fieldTypes) {
+    public XdsOutputImportingStep(WorkflowStepParams inputParams,
+                                  DatasetVersionServiceBean versionsService,
+                                  DatasetFieldTypeRepository fieldTypes) {
         super(inputParams);
+        this.versionsService = versionsService;
         this.fieldTypes = fieldTypes;
     }
 
@@ -50,13 +58,9 @@ public class XdsOutputImportingStep extends FilesystemAccessingWorkflowStep {
     protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) {
         addFailureArtifacts(XDS_INPUT_FILE_NAME, XDS_OUTPUT_FILE_NAME);
 
-        log.trace("Reading {} file", XDS_OUTPUT_FILE_NAME);
-        List<DatasetField> datasetFields = context.getDatasetVersion().getDatasetFields();
-
-        log.trace("Adding {} read metadata fields", datasetFields.size());
-        parseXdsOutputFrom(workDir)
-                .flatMap(this::asDatasetFields)
-                .forEach(datasetFields::add);
+        versionsService.withDatasetVersion(context,
+                datasetVersion -> addXdsMetadata(datasetVersion, workDir)
+        );
 
         return successWith(
                 workDirArtifacts(asList(XDS_INPUT_FILE_NAME, XDS_OUTPUT_FILE_NAME), XDS_OUTPUT_FILE_CHARSET)
@@ -70,11 +74,24 @@ public class XdsOutputImportingStep extends FilesystemAccessingWorkflowStep {
 
     @Override
     public void rollback(WorkflowExecutionContext context, Failure failure) {
-        context.getDatasetVersion().getDatasetFields()
-                .removeIf(XdsOutputImportingStep::isXdsDatasetField);
+        versionsService.withDatasetVersion(context,
+                datasetVersion -> datasetVersion.getDatasetFields()
+                        .removeIf(XdsOutputImportingStep::isXdsDatasetField)
+        );
     }
 
     // -------------------- PRIVATE --------------------
+
+    private List<DatasetField> addXdsMetadata(DatasetVersion datasetVersion, Path workDir) {
+        log.trace("Reading {} file", XDS_OUTPUT_FILE_NAME);
+        List<DatasetField> datasetFields = parseXdsOutputFrom(workDir)
+                .flatMap(resultField -> asDatasetFields(datasetVersion, resultField))
+                .collect(toList());
+
+        log.trace("Adding {} read metadata fields", datasetFields.size());
+        datasetVersion.getDatasetFields().addAll(datasetFields);
+        return datasetFields;
+    }
 
     private Stream<ResultField> parseXdsOutputFrom(Path workDir) {
         File dataFile = workDir.resolve(XDS_OUTPUT_FILE_NAME).toFile();
@@ -82,10 +99,10 @@ public class XdsOutputImportingStep extends FilesystemAccessingWorkflowStep {
                 .asResultFields().stream();
     }
 
-    private Stream<DatasetField> asDatasetFields(ResultField resultField) {
+    private Stream<DatasetField> asDatasetFields(DatasetVersion datasetVersion, ResultField resultField) {
         return fieldTypes.findByName(resultField.getName())
                 .map(fieldType -> resultField.stream().map(field ->
-                        asDatasetField(field, getFieldTypeOrDefault(field, fieldType))))
+                        asDatasetField(datasetVersion, field, getFieldTypeOrDefault(field, fieldType))))
                 .orElseThrow(() -> new IllegalArgumentException(
                         String.format("Unknown field '%s'", resultField)));
     }
@@ -97,8 +114,9 @@ public class XdsOutputImportingStep extends FilesystemAccessingWorkflowStep {
                 .orElse(fallbackFieldType);
     }
 
-    private DatasetField asDatasetField(ResultField resultField, DatasetFieldType fieldType) {
+    private DatasetField asDatasetField(DatasetVersion datasetVersion, ResultField resultField, DatasetFieldType fieldType) {
         DatasetField datasetField = new DatasetField();
+        datasetField.setDatasetVersion(datasetVersion);
         datasetField.setDatasetFieldType(fieldType);
         datasetField.setSource(XDS_DATASET_FIELD_SOURCE);
         datasetField.setFieldValue(resultField.getValue());

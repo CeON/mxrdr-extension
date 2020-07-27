@@ -9,6 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +20,10 @@ import java.util.function.BiFunction;
 
 import static edu.harvard.iq.dataverse.workflow.internalspi.SystemProcessStep.ARGUMENTS_PARAM_NAME;
 import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
+import static pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsImagesFetchingStep.IMAGES_DIR_PARAM_DEFAULT;
+import static pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsImagesFetchingStep.IMAGES_DIR_PARAM_NAME;
 import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor.XDS_INPUT_FILE_NAME;
 
 /**
@@ -48,30 +54,22 @@ public class XdsImagesPatternCalculatingStep extends FilesystemAccessingWorkflow
 
     public static final String STEP_ID = "xds-calculate-images-pattern";
 
-    /**
-     * Input parameter containing {@value #FILE_NAMES_SEPARATOR} separated list of file names to compute pattern for.
-     */
-    static final String FILE_NAMES_PARAM_NAME = "fileNames";
-
-    /**
-     * Values separator for {@value #FILE_NAMES_PARAM_NAME} input parameter.
-     */
-    static final String FILE_NAMES_SEPARATOR = ";";
-
-    private final List<String> fileNames;
+    private final String imgDirName;
 
     // -------------------- CONSTRUCTORS --------------------
 
     public XdsImagesPatternCalculatingStep(WorkflowStepParams inputParams) {
         super(inputParams);
-        this.fileNames = inputParams.getList(FILE_NAMES_PARAM_NAME, FILE_NAMES_SEPARATOR);
+        this.imgDirName = inputParams.getOrDefault(IMAGES_DIR_PARAM_NAME, IMAGES_DIR_PARAM_DEFAULT);
     }
 
     // -------------------- LOGIC --------------------
 
     @Override
-    protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) {
-        String namePattern = calculatePattern();
+    protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) throws IOException {
+        List<String> fileNames = readFileNamesIn(workDir);
+        log.trace("Calculating XDS images name pattern for {} files", fileNames.size());
+        String namePattern = calculatePattern(fileNames);
         log.trace("Calculated XDS images name pattern: {}", namePattern);
         return successWith(data -> {
             data.put(ARGUMENTS_PARAM_NAME, "\"" + namePattern + "\"");
@@ -90,7 +88,18 @@ public class XdsImagesPatternCalculatingStep extends FilesystemAccessingWorkflow
 
     // -------------------- PRIVATE --------------------
 
-    String calculatePattern() {
+    List<String> readFileNamesIn(Path workDir) throws IOException {
+        Path imgDir = workDir.resolve(imgDirName);
+        if (!Files.exists(imgDir)) {
+            return emptyList();
+        }
+        return Files.list(imgDir)
+                .map(workDir::relativize)
+                .map(Path::toString)
+                .collect(toList());
+    }
+
+    String calculatePattern(List<String> fileNames) {
         WithCommonSubstring prefix = new MostCommonLongestSubstringFinder(this::prefixOf)
                 .findIn(fileNames);
 

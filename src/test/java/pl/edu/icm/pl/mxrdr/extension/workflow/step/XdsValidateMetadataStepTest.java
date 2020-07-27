@@ -1,10 +1,10 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetMother;
-import edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionTestBase;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -19,20 +19,24 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDataset;
+import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
+import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class XdsValidateMetadataStepTest implements ArgumentsProvider {
+class XdsValidateMetadataStepTest extends WorkflowExecutionTestBase implements ArgumentsProvider {
 
-    WorkflowExecutionContext context = WorkflowContextMother.givenWorkflowExecutionContext(
-            1L, WorkflowMother.givenWorkflow(1L));
+    Dataset dataset = givenDataset(1L);
+    WorkflowExecutionContext context = givenWorkflowExecutionContext(dataset.getId(), givenWorkflow(1L));
 
     @ParameterizedTest(name = "[{index}] When {0} fields, then success is {1}")
     @ArgumentsSource(XdsValidateMetadataStepTest.class)
     public void shouldReturnSuccessWhenExactlyOneDataCollectionField(Integer size, boolean isSuccess) {
         // given
-        context.getDatasetVersion().getDatasetFields().addAll(createFields(size));
+        dataset.getLatestVersion().getDatasetFields().addAll(createFields(size));
+        datasetVersions.save(dataset.getLatestVersion());
 
-        XdsValidateMetadataStep step = new XdsValidateMetadataStep();
+        XdsValidateMetadataStep step = new XdsValidateMetadataStep(versionsService);
 
         // when
         WorkflowStepResult result = step.run(context);

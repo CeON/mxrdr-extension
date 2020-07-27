@@ -1,6 +1,11 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
@@ -9,7 +14,6 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -27,8 +31,6 @@ import java.util.zip.ZipInputStream;
 
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.dataAccess;
 import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
-import static pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsImagesPatternCalculatingStep.FILE_NAMES_PARAM_NAME;
-import static pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsImagesPatternCalculatingStep.FILE_NAMES_SEPARATOR;
 
 /**
  * Fetches dataset version files into local directory filtering images only.
@@ -39,21 +41,40 @@ public class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
 
     public static final String STEP_ID = "xds-fetch-images";
 
-    static final String IMG_DIR = "img";
+    /**
+     * Input parameter containing the name of images directory within current working directory.
+     * Defaults to {@value IMAGES_DIR_PARAM_DEFAULT}.
+     */
+    static final String IMAGES_DIR_PARAM_NAME = "imgDir";
 
-    static final StorageSource DEFAULT_STORAGE_SOURCE = metadata ->
-            () -> dataAccess().getStorageIO(metadata.getDataFile()).getInputStream();
+    /**
+     * Default value for {@value IMAGES_DIR_PARAM_NAME} input parameter.
+     */
+    static final String IMAGES_DIR_PARAM_DEFAULT = "img";
 
+    /**
+     * Default files storage source using {@link StorageIO} API.
+     */
+    static final StorageSource DEFAULT_STORAGE_SOURCE = metadata -> () -> {
+        StorageIO<DataFile> storage = dataAccess().getStorageIO(metadata.getDataFile());
+        storage.open(DataAccessOption.READ_ACCESS);
+        return storage.getInputStream();
+    };
+
+    private final String imgDirName;
+    private final DatasetVersionServiceBean versionsService;
     private final StorageSource storageSource;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public XdsImagesFetchingStep(WorkflowStepParams inputParams) {
-        this(inputParams, DEFAULT_STORAGE_SOURCE);
+    public XdsImagesFetchingStep(WorkflowStepParams inputParams, DatasetVersionServiceBean versionsService) {
+        this(inputParams, versionsService, DEFAULT_STORAGE_SOURCE);
     }
 
-    public XdsImagesFetchingStep(WorkflowStepParams inputParams, StorageSource storageSource) {
+    public XdsImagesFetchingStep(WorkflowStepParams inputParams, DatasetVersionServiceBean versionsService, StorageSource storageSource) {
         super(inputParams);
+        this.imgDirName = inputParams.getOrDefault(IMAGES_DIR_PARAM_NAME, IMAGES_DIR_PARAM_DEFAULT);
+        this.versionsService = versionsService;
         this.storageSource = storageSource;
     }
 
@@ -61,22 +82,26 @@ public class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
 
     @Override
     protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) throws Exception {
-        Path imgDir = imagesDir(workDir);
-        log.trace("Fetching images into {}", imgDir);
-        List<String> fileNames = fetchInto(context.getDatasetVersion().getFileMetadatas(), imgDir);
-        log.trace("Fetched {} images into {}", fileNames.size(), imgDir);
+        List<FileMetadata> fileMetadata = versionsService
+                .withDatasetVersion(context, DatasetVersion::getFileMetadatas)
+                .orElseGet(Collections::emptyList);
+        fetchInto(fileMetadata, workDir);
         return successWith(data ->
-                data.put(FILE_NAMES_PARAM_NAME, String.join(FILE_NAMES_SEPARATOR, fileNames))
+                data.put(IMAGES_DIR_PARAM_NAME, imgDirName)
         );
     }
 
-    List<String> fetchInto(List<FileMetadata> metadatas, Path imgDir) throws IOException {
+    List<String> fetchInto(List<FileMetadata> metadatas, Path workDir) throws IOException {
+        Path imgDir = Files.createDirectories(workDir.resolve(imgDirName));
+        log.trace("Fetching images into {}", imgDir);
+        Path relativeImgDir = workDir.relativize(imgDir);
         List<String> fileNames = new ArrayList<>();
         for (FileMetadata metadata : metadatas) {
             new ImageFetcher(metadata, storageSource).fetchInto(imgDir).stream()
-                    .map(fileName -> IMG_DIR + File.separator + fileName)
+                    .map(fileName -> relativeImgDir.resolve(fileName).toString())
                     .forEach(fileNames::add);
         }
+        log.trace("Fetched {} images into {}", fileNames.size(), imgDir);
         return fileNames;
     }
 
@@ -87,12 +112,6 @@ public class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
 
     @Override
     public void rollback(WorkflowExecutionContext context, Failure reason) {
-    }
-
-    // -------------------- PRIVATE --------------------
-
-    private Path imagesDir(Path workDir) throws IOException {
-        return Files.createDirectories(workDir.resolve(IMG_DIR));
     }
 
     // -------------------- INNER CLASSES --------------------
