@@ -79,27 +79,26 @@ public class CifFileMapper {
     /**
      * Mapping definition in the form of list of mappers to be used on input file.
      */
-    @SuppressWarnings("unchecked")
     private static final List<CategoryMapper<?>> CATEGORY_MAPPERS = Arrays.asList(
-            new CategoryMapper<>(MmCifBlock::getEntry,
+            new CategoryMapper<Entry>(MmCifBlock::getEntry,
                     new BasicColumnMapper<>(MxrdrMetadataField.PDB_ID, Entry::getId)),
-            new CategoryMapper<>(MmCifBlock::getDiffrnDetector,
+            new CategoryMapper<DiffrnDetector>(MmCifBlock::getDiffrnDetector,
                     new BasicColumnMapper<>(MxrdrMetadataField.DETECTOR_TYPE, DiffrnDetector::getDetector)),
-            new CategoryMapper<>(MmCifBlock::getDiffrnSource,
+            new CategoryMapper<DiffrnSource>(MmCifBlock::getDiffrnSource,
                     new BasicColumnMapper<>(MxrdrMetadataField.BEAMLINE, DiffrnSource::getPdbxSynchrotronBeamline)
                             .withValueSource(joiningSource())),
-            new CategoryMapper<>(mergedCategory(MmCifBlock::getDiffrnSource, MmCifBlock::getDiffrn),
+            new CategoryMapper<MergedCategory>(mergedCategory(MmCifBlock::getDiffrnSource, MmCifBlock::getDiffrn),
                     new NestedColumnMapper<>(MxrdrMetadataField.DATA_COLLECTION,
                             new BasicColumnMapper<>(MxrdrMetadataField.DATA_COLLECTION_WAVE_LENGTH,
                                     columnFrom(MmCifBlock::getDiffrnSource, DiffrnSource::getPdbxWavelengthList)),
                             new BasicColumnMapper<>(MxrdrMetadataField.DATA_COLLECTION_TEMPERATURE,
                                     columnFrom(MmCifBlock::getDiffrn, Diffrn::getAmbientTemp)))
                             .withCategoryMapper(MergedCategory::flatten)),
-            new CategoryMapper<>(MmCifBlock::getSymmetry,
+            new CategoryMapper<Symmetry>(MmCifBlock::getSymmetry,
                     new NestedColumnMapper<>(MxrdrMetadataField.SPACE_GROUP,
                             new ValueColumnMapper<>(Symmetry::getSpaceGroupNameH_M)
                                     .withValueMapper(SymmetryStructureMapper::mapToStream))),
-            new CategoryMapper<>(MmCifBlock::getCell,
+            new CategoryMapper<Cell>(MmCifBlock::getCell,
                     new NestedColumnMapper<>(MxrdrMetadataField.UNIT_CELL_PARAMETERS,
                             new BasicColumnMapper<>(MxrdrMetadataField.UNIT_CELL_PARAMETER_A, Cell::getLengthA),
                             new BasicColumnMapper<>(MxrdrMetadataField.UNIT_CELL_PARAMETER_B, Cell::getLengthB),
@@ -107,7 +106,7 @@ public class CifFileMapper {
                             new BasicColumnMapper<>(MxrdrMetadataField.UNIT_CELL_PARAMETER_ALPHA, Cell::getAngleAlpha),
                             new BasicColumnMapper<>(MxrdrMetadataField.UNIT_CELL_PARAMETER_BETA, Cell::getAngleBeta),
                             new BasicColumnMapper<>(MxrdrMetadataField.UNIT_CELL_PARAMETER_GAMMA, Cell::getAngleGamma))),
-            new CategoryMapper<>(mergedCategory(MmCifBlock::getReflns, MmCifBlock::getRefine),
+            new CategoryMapper<MergedCategory>(mergedCategory(MmCifBlock::getReflns, MmCifBlock::getRefine),
                     new NestedColumnMapper<>(MxrdrMetadataField.OVERALL,
                             new BasicColumnMapper<>(MxrdrMetadataField.OVERALL_COMPLETENESS,
                                     columnFrom(MmCifBlock::getReflns, Reflns::getPercentPossibleObs)),
@@ -119,20 +118,20 @@ public class CifFileMapper {
                                     columnFrom(MmCifBlock::getRefine, Refine::getLsDResLow)),
                             new BasicColumnMapper<>(MxrdrMetadataField.OVERALL_DATA_RESOLUTION_RANGE_HIGH,
                                     columnFrom(MmCifBlock::getRefine, Refine::getLsDResHigh)))),
-            new CategoryMapper<>(MmCifBlock::getReflnsShell,
+            new CategoryMapper<ReflnsShell>(MmCifBlock::getReflnsShell,
                     new NestedColumnMapper<>(MxrdrMetadataField.HRS,
                             new BasicColumnMapper<>(MxrdrMetadataField.HRS_COMPLETENESS, ReflnsShell::getPercentPossibleAll),
                             new BasicColumnMapper<>(MxrdrMetadataField.HRS_SIGMA, ReflnsShell::getMeanIOverSigIObs),
                             new BasicColumnMapper<>(MxrdrMetadataField.HRS_R_MERGE, ReflnsShell::getRmergeIObs))),
-            new CategoryMapper<>(MmCifBlock::getDiffrnRadiation,
+            new CategoryMapper<DiffrnRadiation>(MmCifBlock::getDiffrnRadiation,
                     new BasicColumnMapper<>(MxrdrMetadataField.MONOCHROMATOR, DiffrnRadiation::getMonochromator)),
-            new CategoryMapper<>(MmCifBlock::getSoftware,
+            new CategoryMapper<Software>(MmCifBlock::getSoftware,
                     new NestedColumnMapper<>(MxrdrMetadataField.PROCESSING_SOFTWARE,
                             new ValueColumnMapper<>(Software::getName)
                                     .withValueMapper(ProcessingSoftwareMapper::mapToStream))),
-            new CategoryMapper<>(MmCifBlock::getStruct,
+            new CategoryMapper<Struct>(MmCifBlock::getStruct,
                     new BasicColumnMapper<>(MxrdrMetadataField.PDB_TITLE, Struct::getTitle)),
-            new CategoryMapper<>(mergedCategory(MmCifBlock::getCitation),
+            new CategoryMapper<MergedCategory>(mergedCategory(MmCifBlock::getCitation),
                     new WrappingOnlyColumnMapper<>(
                             new InvisibleColumnMapper<>(columnFrom(MmCifBlock::getCitation, Citation::getId)),
                             new BasicColumnMapper<>(MxrdrMetadataField.PDB_DOI, columnFrom(MmCifBlock::getCitation, Citation::getPdbxDatabaseIdDOI)),
@@ -141,16 +140,16 @@ public class CifFileMapper {
                             new BasicColumnMapper<>(MxrdrMetadataField.CITATION_JOURNAL, columnFrom(MmCifBlock::getCitation, Citation::getJournalAbbrev)),
                             new BasicColumnMapper<>(MxrdrMetadataField.CITATION_YEAR, columnFrom(MmCifBlock::getCitation, Citation::getYear)))
                             .withCategoryMapper(filterByColumnValue(columnFrom(MmCifBlock::getCitation, Citation::getId), "primary"))),
-            new CategoryMapper<>(mergedCategory(MmCifBlock::getCitationAuthor),
+            new CategoryMapper<MergedCategory>(mergedCategory(MmCifBlock::getCitationAuthor),
                     new WrappingOnlyColumnMapper<>(
                             new InvisibleColumnMapper<>(columnFrom(MmCifBlock::getCitationAuthor, CitationAuthor::getCitationId)),
                             new BasicColumnMapper<>(MxrdrMetadataField.CITATION_AUTHOR, columnFrom(MmCifBlock::getCitationAuthor, CitationAuthor::getName)))
                             .withCategoryMapper(filterByColumnValue(columnFrom(MmCifBlock::getCitationAuthor, CitationAuthor::getCitationId), "primary"))),
-            new CategoryMapper<>(MmCifBlock::getAuditAuthor,
+            new CategoryMapper<AuditAuthor>(MmCifBlock::getAuditAuthor,
                     new BasicColumnMapper<>(MxrdrMetadataField.PDB_STRUCTURE_AUTHOR, AuditAuthor::getName)),
-            new CategoryMapper<>(MmCifBlock::getPdbxDatabaseStatus,
+            new CategoryMapper<PdbxDatabaseStatus>(MmCifBlock::getPdbxDatabaseStatus,
                     new BasicColumnMapper<>(MxrdrMetadataField.PDB_DEPOSIT_DATE, PdbxDatabaseStatus::getRecvdInitialDepositionDate)),
-            new CategoryMapper<>(MmCifBlock::getPdbxAuditRevisionHistory,
+            new CategoryMapper<PdbxAuditRevisionHistory>(MmCifBlock::getPdbxAuditRevisionHistory,
                     new BasicColumnMapper<>(MxrdrMetadataField.PDB_RELEASE_DATE, PdbxAuditRevisionHistory::getRevisionDate)
                             .withValueSource(dateSelectingSource(Stream::min)),
                     new BasicColumnMapper<>(MxrdrMetadataField.PDB_REVISION_DATE, PdbxAuditRevisionHistory::getRevisionDate)

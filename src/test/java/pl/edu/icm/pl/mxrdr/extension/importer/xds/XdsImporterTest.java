@@ -109,13 +109,13 @@ public class XdsImporterTest {
         assertTrue(containsNameAndValue("overallDataResolutionRangeHigh", "2.11", parentOfOverall));
         assertTrue(containsNameAndValue("overallNumberOfObservedReflections", "632938", parentOfOverall));
         assertTrue(containsNameAndValue("overallNumberOfUniqueReflections", "93289", parentOfOverall));
-        assertTrue(containsNameAndValue("overallNumberOfNumberOfPossibleReflections", "93791", parentOfOverall));
+        assertTrue(containsNameAndValue("overallNumberOfPossibleReflections", "93791", parentOfOverall));
         assertTrue(containsNameAndValue("overallAnomalousCorrelation", "5", parentOfOverall));
         assertTrue(containsNameAndValue("overallAnomalousSignal", "0.755", parentOfOverall));
 
         ResultField parentOfHrs = resultFields.get(3);
         assertTrue(containsNameAndValue("hrsCompleteness", "97.1", parentOfHrs));
-        assertTrue(containsNameAndValue("hrsSigma", "1.84", parentOfHrs));
+        assertTrue(containsNameAndValue("hrsISigma", "1.84", parentOfHrs));
         assertTrue(containsNameAndValue("hrsCc", "80.2", parentOfHrs));
         assertTrue(containsNameAndValue("hrsRMerge", "97.2", parentOfHrs));
         assertTrue(containsNameAndValue("hrsRMeas", "106.1", parentOfHrs));
@@ -123,7 +123,7 @@ public class XdsImporterTest {
         assertTrue(containsNameAndValue("hrsDataResolutionRangeHigh", "2.11", parentOfHrs));
         assertTrue(containsNameAndValue("hrsNumberOfObservedReflections", "92851", parentOfHrs));
         assertTrue(containsNameAndValue("hrsNumberOfUniqueReflections", "14747", parentOfHrs));
-        assertTrue(containsNameAndValue("hrsNumberOfNumberOfPossibleReflections", "15187", parentOfHrs));
+        assertTrue(containsNameAndValue("hrsNumberOfPossibleReflections", "15187", parentOfHrs));
         assertTrue(containsNameAndValue("hrsAnomalousCorrelation", "-3", parentOfHrs));
         assertTrue(containsNameAndValue("hrsAnomalousSignal", "0.639", parentOfHrs));
     }

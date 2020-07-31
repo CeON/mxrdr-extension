@@ -103,12 +103,12 @@ public class XdsOutputImportingStepTest extends WorkflowExecutionTestBase {
         assertThat(fields).anyMatch(xdsField("overallDataResolutionRangeHigh", "2.11"));
         assertThat(fields).anyMatch(xdsField("overallNumberOfObservedReflections", "632938"));
         assertThat(fields).anyMatch(xdsField("overallNumberOfUniqueReflections", "93289"));
-        assertThat(fields).anyMatch(xdsField("overallNumberOfNumberOfPossibleReflections", "93791"));
+        assertThat(fields).anyMatch(xdsField("overallNumberOfPossibleReflections", "93791"));
         assertThat(fields).anyMatch(xdsField("overallAnomalousCorrelation", "5"));
         assertThat(fields).anyMatch(xdsField("overallAnomalousSignal", "0.755"));
         // and
         assertThat(fields).anyMatch(xdsField("hrsCompleteness", "97.1"));
-        assertThat(fields).anyMatch(xdsField("hrsSigma", "1.84"));
+        assertThat(fields).anyMatch(xdsField("hrsISigma", "1.84"));
         assertThat(fields).anyMatch(xdsField("hrsCc", "80.2"));
         assertThat(fields).anyMatch(xdsField("hrsRMerge", "97.2"));
         assertThat(fields).anyMatch(xdsField("hrsRMeas", "106.1"));
@@ -116,7 +116,7 @@ public class XdsOutputImportingStepTest extends WorkflowExecutionTestBase {
         assertThat(fields).anyMatch(xdsField("hrsDataResolutionRangeHigh", "2.11"));
         assertThat(fields).anyMatch(xdsField("hrsNumberOfObservedReflections", "92851"));
         assertThat(fields).anyMatch(xdsField("hrsNumberOfUniqueReflections", "14747"));
-        assertThat(fields).anyMatch(xdsField("hrsNumberOfNumberOfPossibleReflections", "15187"));
+        assertThat(fields).anyMatch(xdsField("hrsNumberOfPossibleReflections", "15187"));
         assertThat(fields).anyMatch(xdsField("hrsAnomalousCorrelation", "-3"));
         assertThat(fields).anyMatch(xdsField("hrsAnomalousSignal", "0.639"));
     }
