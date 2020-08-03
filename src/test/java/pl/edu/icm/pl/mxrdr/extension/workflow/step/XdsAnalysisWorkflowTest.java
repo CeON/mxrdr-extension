@@ -68,8 +68,8 @@ public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implem
     static final Logger log = LoggerFactory.getLogger(XdsAnalysisWorkflowTest.class);
 
     static final Duration TIMEOUT = ofMinutes(5);
-    static final String INPUT_PATH = "/home/darek/Downloads/xds-images/input";
-    static final String OUTPUT_PATH = "/home/darek/Downloads/xds-images/output";
+    static final String INPUT_PATH = "/tmp/xds-images/input";
+    static final String OUTPUT_PATH = "/tmp/xds-images/output";
 
     LocalDirStorageSource storageSource = new LocalDirStorageSource(INPUT_PATH);
 
@@ -83,13 +83,11 @@ public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implem
     WorkflowExecutionScheduler scheduler = new WorkflowExecutionScheduler() {{
         setQueue(queue); setFactory(factory); }};
 
-    WorkflowArtifactServiceBean artifactsService = new WorkflowArtifactServiceBean(
-            artifacts, new DiskWorkflowArtifactStorage(Paths.get(OUTPUT_PATH)), clock);
+    WorkflowArtifactServiceBean artifactsService;
     DatasetLockServiceBean locksService = new DatasetLockServiceBean(datasets, locks);
-    WorkflowExecutionService executionService = new WorkflowExecutionService(
-            locksService, executions, stepExecutions, contextFactory, artifactsService, executionListeners);
-    WorkflowExecutionFacade executionFacade = new WorkflowExecutionFacade(executionService, scheduler);
-    WorkflowExecutionWorker worker = new WorkflowExecutionWorker(executionService, scheduler, steps);
+    WorkflowExecutionService executionService;
+    WorkflowExecutionFacade executionFacade;
+    WorkflowExecutionWorker worker;
 
     Dataset dataset = givenDataset();
 
@@ -120,6 +118,14 @@ public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implem
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
+        
+        artifactsService = new WorkflowArtifactServiceBean(
+                artifacts, new DiskWorkflowArtifactStorage(Paths.get(OUTPUT_PATH)), clock);
+        executionService = new WorkflowExecutionService(
+                locksService, executions, stepExecutions, contextFactory, artifactsService, executionListeners);
+        executionFacade = new WorkflowExecutionFacade(executionService, scheduler);
+        worker = new WorkflowExecutionWorker(executionService, scheduler, steps);
+        
         steps.register(MXRDR_PROVIDER_ID, this);
 
         datasets.save(dataset);
