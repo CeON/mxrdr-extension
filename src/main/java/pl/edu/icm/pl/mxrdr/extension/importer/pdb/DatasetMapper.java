@@ -28,7 +28,7 @@ public class DatasetMapper {
 
     private static final Logger log = LoggerFactory.getLogger(DatasetMapper.class);
 
-    private static final List<RecordMapper> RECORD_MAPPERS = Arrays.asList(
+    private final List<RecordMapper> RECORD_MAPPERS = Arrays.asList(
             new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.PDB_ID, Record::getStructureId)),
             new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.MOLECULAR_WEIGHT, Record::getStructureMolecularWeight)),
             new FirstRecordMapper(new NestedRecordMapper(MxrdrMetadataField.SPACE_GROUP,
