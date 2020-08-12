@@ -19,8 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static edu.harvard.iq.dataverse.common.BundleUtil.getStringFromBundle;
-import static edu.harvard.iq.dataverse.common.BundleUtil.getStringFromPropertyFile;
+import static edu.harvard.iq.dataverse.common.BundleUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static pl.edu.icm.pl.mxrdr.extension.notification.MxrdrEmailFactory.BUNDLE_NAME;
@@ -54,9 +53,9 @@ public class MxrdrEmailFactoryTest {
         // then
         assertThat(emailTemplate).isPresent();
         assertThat(emailTemplate.get().getSubject())
-                .isEqualTo(getStringFromPropertyFile("mail.subject.workflow.success.xds", BUNDLE_NAME));
+                .isEqualTo(getStringFromNonDefaultBundle("mail.subject.workflow.success.xds", BUNDLE_NAME));
         assertThat(emailTemplate.get().getMessageText())
-                .isEqualTo(getStringFromBundle("mail.content.workflow.success.xds",BUNDLE_NAME,
+                .isEqualTo(getStringFromNonDefaultBundle("mail.content.workflow.success.xds",BUNDLE_NAME,
                         dataset.getDisplayName(), expectedURL(repoURL, pid.asString()), testAddress));
     }
 
@@ -78,9 +77,9 @@ public class MxrdrEmailFactoryTest {
         // then
         assertThat(emailTemplate).isPresent();
         assertThat(emailTemplate.get().getSubject())
-                .isEqualTo(getStringFromPropertyFile("mail.subject.workflow.fail.xds", BUNDLE_NAME));
+                .isEqualTo(getStringFromNonDefaultBundle("mail.subject.workflow.fail.xds", BUNDLE_NAME));
         assertThat(emailTemplate.get().getMessageText())
-                .isEqualTo(getStringFromBundle("mail.content.workflow.fail.xds",BUNDLE_NAME,
+                .isEqualTo(getStringFromNonDefaultBundle("mail.content.workflow.fail.xds",BUNDLE_NAME,
                         dataset.getDisplayName(), expectedURL(repoURL, pid.asString()), testAddress));
     }
 

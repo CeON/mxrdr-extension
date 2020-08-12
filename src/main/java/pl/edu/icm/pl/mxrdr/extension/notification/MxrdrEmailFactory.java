@@ -21,7 +21,6 @@ public class MxrdrEmailFactory {
 
     static final String BUNDLE_NAME = "MxrdrBundle";
 
-    private final Locale repoLocale;
     private final MailService mailService;
     private final SettingsServiceBean settings;
 
@@ -29,7 +28,6 @@ public class MxrdrEmailFactory {
 
     @Inject
     public MxrdrEmailFactory(MailService mailService, SettingsServiceBean settings) {
-        this.repoLocale = Locale.ENGLISH;
         this.mailService = mailService;
         this.settings = settings;
     }
@@ -54,22 +52,22 @@ public class MxrdrEmailFactory {
 
     private EmailContent getWorkflowSuccessTemplate(DvObject dvObject) {
 
-        return new EmailContent(BundleUtil.getStringFromBundle("mail.subject.workflow.success.xds", BUNDLE_NAME),
-                         BundleUtil.getStringFromBundle("mail.content.workflow.success.xds", BUNDLE_NAME,
+        return new EmailContent(BundleUtil.getStringFromNonDefaultBundle("mail.subject.workflow.success.xds", BUNDLE_NAME),
+                         BundleUtil.getStringFromNonDefaultBundle("mail.content.workflow.success.xds", BUNDLE_NAME,
                                                         dvObject.getDisplayName(),
                                                         constructDatasetLink(dvObject.getGlobalId().asString()),
                                                         mailService.getSystemAddress()),
-                         mailService.getFooterMailMessage(repoLocale));
+                         mailService.getFooterMailMessage(BundleUtil.getCurrentLocale()));
     }
 
     private EmailContent getWorkflowFailureTemplate(DvObject dvObject) {
 
-        return new EmailContent(BundleUtil.getStringFromBundle("mail.subject.workflow.fail.xds", BUNDLE_NAME),
-                         BundleUtil.getStringFromBundle("mail.content.workflow.fail.xds", BUNDLE_NAME,
+        return new EmailContent(BundleUtil.getStringFromNonDefaultBundle("mail.subject.workflow.fail.xds", BUNDLE_NAME),
+                         BundleUtil.getStringFromNonDefaultBundle("mail.content.workflow.fail.xds", BUNDLE_NAME,
                                                         dvObject.getDisplayName(),
                                                         constructDatasetLink(dvObject.getGlobalId().asString()),
                                                         mailService.getSystemAddress()),
-                         mailService.getFooterMailMessage(repoLocale));
+                         mailService.getFooterMailMessage(BundleUtil.getCurrentLocale()));
     }
 
     private String constructDatasetLink(String datasetId) {
