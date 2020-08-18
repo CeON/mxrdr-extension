@@ -119,6 +119,8 @@ public class XdsOutputImportingStepTest extends WorkflowExecutionTestBase {
         assertThat(fields).anyMatch(xdsField("hrsNumberOfPossibleReflections", "15187"));
         assertThat(fields).anyMatch(xdsField("hrsAnomalousCorrelation", "-3"));
         assertThat(fields).anyMatch(xdsField("hrsAnomalousSignal", "0.639"));
+        
+        assertThat(fields).anyMatch(xdsField("processingSoftware", "XDS"));
     }
 
     @Test

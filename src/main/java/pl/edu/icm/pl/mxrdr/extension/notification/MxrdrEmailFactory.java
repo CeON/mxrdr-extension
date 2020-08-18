@@ -52,8 +52,8 @@ public class MxrdrEmailFactory {
 
     private EmailContent getWorkflowSuccessTemplate(DvObject dvObject) {
 
-        return new EmailContent(BundleUtil.getStringFromNonDefaultBundle("mail.subject.workflow.success.xds", BUNDLE_NAME),
-                         BundleUtil.getStringFromNonDefaultBundle("mail.content.workflow.success.xds", BUNDLE_NAME,
+        return new EmailContent(BundleUtil.getStringFromClasspathBundle("mail.subject.workflow.success.xds", BUNDLE_NAME),
+                         BundleUtil.getStringFromClasspathBundle("mail.content.workflow.success.xds", BUNDLE_NAME,
                                                         dvObject.getDisplayName(),
                                                         constructDatasetLink(dvObject.getGlobalId().asString()),
                                                         mailService.getSystemAddress()),
@@ -62,8 +62,8 @@ public class MxrdrEmailFactory {
 
     private EmailContent getWorkflowFailureTemplate(DvObject dvObject) {
 
-        return new EmailContent(BundleUtil.getStringFromNonDefaultBundle("mail.subject.workflow.fail.xds", BUNDLE_NAME),
-                         BundleUtil.getStringFromNonDefaultBundle("mail.content.workflow.fail.xds", BUNDLE_NAME,
+        return new EmailContent(BundleUtil.getStringFromClasspathBundle("mail.subject.workflow.fail.xds", BUNDLE_NAME),
+                         BundleUtil.getStringFromClasspathBundle("mail.content.workflow.fail.xds", BUNDLE_NAME,
                                                         dvObject.getDisplayName(),
                                                         constructDatasetLink(dvObject.getGlobalId().asString()),
                                                         mailService.getSystemAddress()),

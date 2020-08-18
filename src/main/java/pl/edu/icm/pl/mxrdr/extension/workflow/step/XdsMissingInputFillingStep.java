@@ -19,8 +19,10 @@ import pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputLineProcessor;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 
 import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
@@ -56,11 +58,21 @@ public class XdsMissingInputFillingStep extends FilesystemAccessingWorkflowStep 
                 replaceUndefinedValue("ORGY", value));
     }};
 
+    static final String XDS_INPUT_ADDITIONAL_PARAMS_PARAM_NAME = "xds_additional_params";
+
     private final DatasetVersionServiceBean versionsService;
+
+    private Map<String, String> xdsAdditionalParams;
 
     public XdsMissingInputFillingStep(WorkflowStepParams inputParams, DatasetVersionServiceBean versionsService) {
         super(inputParams);
         this.versionsService = versionsService;
+        
+        List<String> paramsKeyValueList = inputParams.getList(XDS_INPUT_ADDITIONAL_PARAMS_PARAM_NAME, ";");
+        xdsAdditionalParams = new HashMap<>();
+        for (String paramKeyValue: paramsKeyValueList) {
+            xdsAdditionalParams.put(paramKeyValue.split("\\|")[0], paramKeyValue.split("\\|")[1]);
+        }
     }
 
     @Override
@@ -68,9 +80,16 @@ public class XdsMissingInputFillingStep extends FilesystemAccessingWorkflowStep 
         addFailureArtifacts(XDS_INPUT_FILE_NAME);
         List<XdsInputLineProcessor> processors = prepareProcessors(context);
         log.trace("Potentially adjusting values for {} XDS input parameters", processors.size());
-        new XdsInputFileProcessor(workDir)
-                .withAll(processors)
-                .process();
+        XdsInputFileProcessor fileProcessor = new XdsInputFileProcessor(workDir)
+                .withAll(processors);
+        
+        for (Entry<String, String> paramKeyValue: xdsAdditionalParams.entrySet()) {
+            log.trace("Adding param {} to XDS input parameters", paramKeyValue.getKey());
+            fileProcessor.withNewParam(paramKeyValue.getKey(), paramKeyValue.getValue());
+        }
+        
+        fileProcessor.process();
+        
         return successWith(data ->
                 data.put(FAILURE_ARTIFACTS_PARAM_NAME, XDS_INPUT_FILE_NAME)
         );

@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,6 +113,13 @@ public class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
 
     @Override
     public void rollback(WorkflowExecutionContext context, Failure reason) {
+        Path imgPath = resolveWorkDir(context).resolve(imgDirName);
+        try {
+            FileUtils.deleteDirectory(imgPath.toFile());
+        } catch (IOException e) {
+            log.warn("Unable to remove temporary directory for xds images on step rollback: " + imgPath.toString());
+        }
+        
     }
 
     // -------------------- INNER CLASSES --------------------

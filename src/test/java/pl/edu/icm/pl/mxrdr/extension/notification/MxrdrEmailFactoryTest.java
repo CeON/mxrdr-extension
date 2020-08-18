@@ -53,9 +53,9 @@ public class MxrdrEmailFactoryTest {
         // then
         assertThat(emailTemplate).isPresent();
         assertThat(emailTemplate.get().getSubject())
-                .isEqualTo(getStringFromNonDefaultBundle("mail.subject.workflow.success.xds", BUNDLE_NAME));
+                .isEqualTo(getStringFromClasspathBundle("mail.subject.workflow.success.xds", BUNDLE_NAME));
         assertThat(emailTemplate.get().getMessageText())
-                .isEqualTo(getStringFromNonDefaultBundle("mail.content.workflow.success.xds",BUNDLE_NAME,
+                .isEqualTo(getStringFromClasspathBundle("mail.content.workflow.success.xds",BUNDLE_NAME,
                         dataset.getDisplayName(), expectedURL(repoURL, pid.asString()), testAddress));
     }
 
@@ -77,9 +77,9 @@ public class MxrdrEmailFactoryTest {
         // then
         assertThat(emailTemplate).isPresent();
         assertThat(emailTemplate.get().getSubject())
-                .isEqualTo(getStringFromNonDefaultBundle("mail.subject.workflow.fail.xds", BUNDLE_NAME));
+                .isEqualTo(getStringFromClasspathBundle("mail.subject.workflow.fail.xds", BUNDLE_NAME));
         assertThat(emailTemplate.get().getMessageText())
-                .isEqualTo(getStringFromNonDefaultBundle("mail.content.workflow.fail.xds",BUNDLE_NAME,
+                .isEqualTo(getStringFromClasspathBundle("mail.content.workflow.fail.xds",BUNDLE_NAME,
                         dataset.getDisplayName(), expectedURL(repoURL, pid.asString()), testAddress));
     }
 

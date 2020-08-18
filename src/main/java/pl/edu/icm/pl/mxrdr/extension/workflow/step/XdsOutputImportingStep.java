@@ -2,6 +2,7 @@ package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
+import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldTypeRepository;
@@ -21,6 +22,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
@@ -119,7 +121,14 @@ public class XdsOutputImportingStep extends FilesystemAccessingWorkflowStep {
         datasetField.setDatasetVersion(datasetVersion);
         datasetField.setDatasetFieldType(fieldType);
         datasetField.setSource(XDS_DATASET_FIELD_SOURCE);
-        datasetField.setFieldValue(resultField.getValue());
+        if (fieldType.isControlledVocabulary()) {
+            List<ControlledVocabularyValue> targetVocabularyValues = fieldType.getControlledVocabularyValues().stream()
+                    .filter(vocabValue -> vocabValue.getStrValue().equals(resultField.getValue()))
+                    .collect(Collectors.toList());
+            datasetField.setControlledVocabularyValues(targetVocabularyValues);
+        } else {
+            datasetField.setFieldValue(resultField.getValue());
+        }
         return datasetField;
     }
 

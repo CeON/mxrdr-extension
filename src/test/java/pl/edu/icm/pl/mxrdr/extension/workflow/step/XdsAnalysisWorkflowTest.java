@@ -1,5 +1,6 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
+import com.google.common.collect.ImmutableMap;
 import edu.harvard.iq.dataverse.dataset.DatasetLockServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -19,8 +20,10 @@ import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionJMSTestBase;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionScheduler;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionService;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionWorker;
+import edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSPI;
 import edu.harvard.iq.dataverse.workflow.internalspi.SystemProcessStep;
 import edu.harvard.iq.dataverse.workflow.listener.WorkflowExecutionListener;
+import edu.harvard.iq.dataverse.workflow.step.ClearWorkingDirWorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import org.apache.commons.lang3.StringUtils;
@@ -49,6 +52,8 @@ import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.given
 import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
 import static edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSPI.INTERNAL_PROVIDER_ID;
 import static edu.harvard.iq.dataverse.workflow.internalspi.SystemProcessStep.COMMAND_PARAM_NAME;
+import static edu.harvard.iq.dataverse.workflow.internalspi.SystemProcessStep.ARGUMENTS_PARAM_NAME;
+import static edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep.BASE_WORK_DIR_PARAM_NAME;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.time.Duration.ofMinutes;
 import static java.util.Collections.emptyMap;
@@ -70,6 +75,7 @@ public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implem
     static final Duration TIMEOUT = ofMinutes(5);
     static final String INPUT_PATH = "/tmp/xds-images/input";
     static final String OUTPUT_PATH = "/tmp/xds-images/output";
+    static final String PROCESSING_PATH = "/tmp/xds-images/processing";
 
     LocalDirStorageSource storageSource = new LocalDirStorageSource(INPUT_PATH);
 
@@ -93,7 +99,7 @@ public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implem
 
     Workflow workflow = givenWorkflow(
             givenWorkflowStep(MXRDR_PROVIDER_ID, XdsValidateMetadataStep.STEP_ID, emptyMap()),
-            givenWorkflowStep(MXRDR_PROVIDER_ID, XdsImagesFetchingStep.STEP_ID, emptyMap()),
+            givenWorkflowStep(MXRDR_PROVIDER_ID, XdsImagesFetchingStep.STEP_ID, ImmutableMap.of(BASE_WORK_DIR_PARAM_NAME, PROCESSING_PATH)),
             givenWorkflowStep(MXRDR_PROVIDER_ID, XdsImagesPatternCalculatingStep.STEP_ID, emptyMap()),
             givenWorkflowStep(INTERNAL_PROVIDER_ID, SystemProcessStep.STEP_ID,
                     singletonMap(COMMAND_PARAM_NAME, "generate_XDS.INP")),
@@ -110,7 +116,8 @@ public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implem
                     singletonMap(ADJUST_RESOLUTION_PARAM_NAME, "true")),
             givenWorkflowStep(INTERNAL_PROVIDER_ID, SystemProcessStep.STEP_ID,
                     singletonMap(COMMAND_PARAM_NAME, "xds_par")),
-            givenWorkflowStep(MXRDR_PROVIDER_ID, XdsOutputImportingStep.STEP_ID, emptyMap())
+            givenWorkflowStep(MXRDR_PROVIDER_ID, XdsOutputImportingStep.STEP_ID, emptyMap()),
+            givenWorkflowStep(INTERNAL_PROVIDER_ID, ClearWorkingDirWorkflowStep.STEP_ID, emptyMap())
     );
 
     public XdsAnalysisWorkflowTest() throws NamingException {}
@@ -127,6 +134,7 @@ public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implem
         worker = new WorkflowExecutionWorker(executionService, scheduler, steps);
         
         steps.register(MXRDR_PROVIDER_ID, this);
+        steps.register(INTERNAL_PROVIDER_ID, new InternalWorkflowStepSPI(steps, versionsService));
 
         datasets.save(dataset);
         dataset.getLatestVersion().getDatasetFields().add(

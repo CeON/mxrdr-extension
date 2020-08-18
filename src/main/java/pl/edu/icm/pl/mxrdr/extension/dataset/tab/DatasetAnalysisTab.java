@@ -11,6 +11,8 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.omnifaces.util.Faces;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.artifacts.WorkflowArtifactServiceBean;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionService;
+import edu.harvard.iq.dataverse.workflow.step.Failure;
 
 @ViewScoped
 @Named("datasetAnalysisTab")
@@ -158,6 +161,17 @@ public class DatasetAnalysisTab implements Serializable {
         return null;
     }
     
+    public String getWorkflowFailureReasonDetail(DatasetVersion datasetVersion) {
+        if (!datasetVersion.isDraft()) {
+            return workflowServiceBean.findLatestByTriggerTypeAndDatasetVersion(TriggerType.PostPublishDataset, datasetVersion.getDataset().getId(), datasetVersion.getVersionNumber(), datasetVersion.getMinorVersionNumber())
+                    .map(execution -> execution.getLastStep())
+                    .map(stepExecution -> stepExecution.getOutputParams())
+                    .map(outputParams -> outputParams.getOrDefault(Failure.REASON_PARAM_NAME, StringUtils.EMPTY))
+                    .orElse(StringUtils.EMPTY);
+        }
+        return StringUtils.EMPTY;
+    }
+    
     public List<WorkflowArtifact> getArtifacts(DatasetVersion datasetVersion, WorkflowExecution workflowExecution) {
         return workflowExecution != null ? workflowArfifactService.findAll(workflowExecution.getId()) : Lists.newArrayList();
     }
@@ -180,7 +194,7 @@ public class DatasetAnalysisTab implements Serializable {
         if (datasetVersion.isDraft()) {
             return "dataset.analysisTab.dataset.in.draft.message";
         } else if (datasetVersion.getDataset().hasActiveEmbargo() && !isPermissionToViewFiles(datasetVersion.getDataset())) {
-            return "dataset.analysisTab.dataset.embargo.message";
+            return "dataset.analysisTab.embargo.message";
         } else if (canViewDataset(datasetVersion)
                     && isAnalysisInProgress(workflowExecution)) {
             return "dataset.analysisTab.analysis.in.progress.message";

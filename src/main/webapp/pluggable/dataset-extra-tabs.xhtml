@@ -16,7 +16,8 @@
     
     <ui:param name="artifacts" value="#{datasetAnalysisTab.getArtifacts(DatasetPage.workingVersion, workflowExecution)}" />
 
-    <p:tab id="analysisTab" title="#{mxrdrBundle['analysisTab.title']}">
+    <p:tab id="analysisTab" title="#{mxrdrBundle['analysisTab.title']}" rendered="#{!DatasetPage.workingVersion.deaccessioned or
+                                                              (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())}">
         <ui:fragment rendered="#{failureReason == null}">
             <h:panelGroup id="analysisContent">
                 <p:dataTable id="analysisTable" class="no-alternating-row-colors"
@@ -43,6 +44,7 @@
                         <p class="text-block">
                             <h:outputFormat value="#{mxrdrBundle[failureReason]}">
                                 <f:param value="#{datasetAnalysisTab.getEmbargoDateForDisplay(DatasetPage.workingVersion.dataset)}"/>
+                                <f:param value="#{datasetAnalysisTab.getWorkflowFailureReasonDetail(DatasetPage.workingVersion)}" />
                             </h:outputFormat>
                         </p>
                     </div>
@@ -50,18 +52,22 @@
             </div>
         </ui:fragment>
         <ui:fragment rendered="#{!artifacts.isEmpty() and (failureReason == null or datasetAnalysisTab.isAnalysisFailure(workflowExecution))}">
-        
-            <div class="col-sm-9">
-                <h:outputText value="#{mxrdrBundle['dataset.analysisTab.artifacts.message']}" />
-            </div>
-        
-            <ui:repeat value="#{artifacts}" var="artifact">
+            
+            <div class="row" style="margin-top: 15px;">
                 <div class="col-sm-9">
-                    <p:commandLink action="#{datasetAnalysisTab.downloadArtifact(artifact.getName(), artifact.getStorageLocation())}">
-                        <h:outputText value="#{artifact.getName()}" />
-                    </p:commandLink>
+                    <p class="text-block">
+                        <h:outputText value="#{mxrdrBundle['dataset.analysisTab.artifacts.message']}" />
+                    </p>
                 </div>
-            </ui:repeat>
+            
+                <ui:repeat value="#{artifacts}" var="artifact">
+                    <div class="col-sm-9">
+                        <p:commandLink action="#{datasetAnalysisTab.downloadArtifact(artifact.getName(), artifact.getStorageLocation())}" ajax="false">
+                            <h:outputText value="#{artifact.getName()}" />
+                        </p:commandLink>
+                    </div>
+                </ui:repeat>
+            </div>
         </ui:fragment>
     </p:tab>
 </ui:composition>
