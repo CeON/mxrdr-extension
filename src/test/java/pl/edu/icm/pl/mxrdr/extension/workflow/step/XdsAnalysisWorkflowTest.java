@@ -73,9 +73,9 @@ public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implem
     static final Logger log = LoggerFactory.getLogger(XdsAnalysisWorkflowTest.class);
 
     static final Duration TIMEOUT = ofMinutes(5);
-    static final String INPUT_PATH = "/home/krzysztof/Dokumenty/mxrdr/dataset_do_xds/drugi_przyklad/raw1";
-    static final String OUTPUT_PATH = "/home/krzysztof/Dokumenty/mxrdr/dataset_do_xds/drugi_przyklad/out";
-    static final String PROCESSING_PATH = "/srv/data/xds/test_data";
+    static final String INPUT_PATH = "/tmp/xds-images/input";
+    static final String OUTPUT_PATH = "/tmp/xds-images/output";
+    static final String PROCESSING_PATH = "/tmp/xds-images/processing";
 
     LocalDirStorageSource storageSource = new LocalDirStorageSource(INPUT_PATH);
 
@@ -116,8 +116,8 @@ public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implem
                     singletonMap(ADJUST_RESOLUTION_PARAM_NAME, "true")),
             givenWorkflowStep(INTERNAL_PROVIDER_ID, SystemProcessStep.STEP_ID,
                     singletonMap(COMMAND_PARAM_NAME, "xds_par")),
-            givenWorkflowStep(MXRDR_PROVIDER_ID, XdsOutputImportingStep.STEP_ID, emptyMap())
-//            givenWorkflowStep(INTERNAL_PROVIDER_ID, ClearWorkingDirWorkflowStep.STEP_ID, emptyMap())
+            givenWorkflowStep(MXRDR_PROVIDER_ID, XdsOutputImportingStep.STEP_ID, emptyMap()),
+            givenWorkflowStep(INTERNAL_PROVIDER_ID, ClearWorkingDirWorkflowStep.STEP_ID, emptyMap())
     );
 
     public XdsAnalysisWorkflowTest() throws NamingException {}
@@ -153,7 +153,7 @@ public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implem
     }
 
     @Test
-//    @Disabled("for local testing only")
+    @Disabled("for local testing only")
     void shouldPassXdsAnalysis() throws Exception {
         // given
         WorkflowContext context = givenWorkflowExecutionContext(dataset.getId(), workflow);
