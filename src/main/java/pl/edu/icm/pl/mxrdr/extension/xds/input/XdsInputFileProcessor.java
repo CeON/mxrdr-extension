@@ -8,7 +8,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import static java.nio.file.Files.newBufferedReader;
 import static java.nio.file.Files.newBufferedWriter;
@@ -28,6 +31,7 @@ public class XdsInputFileProcessor {
     private final Clock clock;
 
     private final List<XdsInputLineProcessor> lineProcessors = new ArrayList<>();
+    private final Map<String, String> newParameters = new HashMap<>();
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -57,6 +61,11 @@ public class XdsInputFileProcessor {
         return this;
     }
 
+    public XdsInputFileProcessor withNewParam(String paramName, String paramValue) {
+        newParameters.put(paramName, paramValue);
+        return this;
+    }
+    
     public void process() throws IOException {
         Path source = workDir.resolve(XDS_INPUT_FILE_NAME);
         Path copy = workDir.resolve(XDS_INPUT_FILE_NAME +  "." + clock.millis());
@@ -64,6 +73,7 @@ public class XdsInputFileProcessor {
         try (BufferedReader reader = newBufferedReader(copy, charset);
              BufferedWriter writer = newBufferedWriter(source, charset)) {
             processLines(reader, writer);
+            processNewParams(writer);
         }
     }
 
@@ -76,6 +86,13 @@ public class XdsInputFileProcessor {
                 line = processor.process(line);
             }
             writer.write(line);
+            writer.newLine();
+        }
+    }
+
+    private void processNewParams(BufferedWriter writer) throws IOException {
+        for (Entry<String, String> param: newParameters.entrySet()) {
+            writer.write(param.getKey() + "=" + param.getValue());
             writer.newLine();
         }
     }

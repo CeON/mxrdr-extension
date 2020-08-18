@@ -121,6 +121,25 @@ class XdsMissingInputFillingStepTest extends WorkflowExecutionTestBase {
         assertThat(lines.get(5)).startsWith("X-RAY_WAVELENGTH= XXX");
     }
 
+    @Test
+    @DisplayName("Should add additional params to XDS.INP file")
+    public void shouldAddAdditionalParams() throws Exception {
+        // given
+        WorkflowStepParams stepParams = new WorkflowStepParams(
+                XdsMissingInputFillingStep.XDS_INPUT_ADDITIONAL_PARAMS_PARAM_NAME,
+                "MAXIMUM_NUMBER_OF_PROCESSORS|4;MAXIMUM_NUMBER_OF_JOBS|2");
+        XdsMissingInputFillingStep step = new XdsMissingInputFillingStep(stepParams, versionsService);
+
+        // when
+        step.runInternal(context, workDir);
+
+        // then
+        List<String> lines = Files.readAllLines(workDir.resolve(XDS_INPUT_FILE_NAME));
+
+        assertThat(lines.get(6)).isEqualTo("MAXIMUM_NUMBER_OF_PROCESSORS=4");
+        assertThat(lines.get(7)).isEqualTo("MAXIMUM_NUMBER_OF_JOBS=2");
+    }
+    
     // -------------------- PRIVATE --------------------
 
     private String getFileFromResources(String name) {
