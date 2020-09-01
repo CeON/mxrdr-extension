@@ -15,6 +15,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -183,8 +184,10 @@ public class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
                 Storage zipStorage = () -> new NonClosableInputStream(zip);
                 ZipEntry entry;
                 while ((entry = zip.getNextEntry()) != null) {
-                    fetchImage(entry.getName(), zipStorage, dir)
+                    if (!entry.isDirectory()) {
+                        fetchImage(entry.getName(), zipStorage, dir)
                             .ifPresent(names::add);
+                    }
                     zip.closeEntry();
                 }
                 return names;
@@ -193,6 +196,9 @@ public class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
 
         private Optional<String> fetchImage(String fileName, Storage storage, Path dir) throws IOException {
             if (isImage(fileName)) {
+                if (fileName.contains(File.separator)) {
+                    fileName = fileName.substring(fileName.lastIndexOf(File.separator) + 1, fileName.length());
+                }
                 Path filePath = dir.resolve(fileName);
                 if (Files.exists(filePath)) {
                     throw new IllegalArgumentException("Duplicate file: " + fileName);

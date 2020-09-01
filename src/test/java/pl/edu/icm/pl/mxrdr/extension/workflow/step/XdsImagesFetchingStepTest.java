@@ -25,6 +25,8 @@ public class XdsImagesFetchingStepTest {
     static final String[] IMAGES_NAMES = {
             "match001.cbf",
             "match002.cbf",
+            "match005.cbf",
+            "match010.cbf",
             "match020.cbf",
             "match920.cbf",
             "match5555.img",
