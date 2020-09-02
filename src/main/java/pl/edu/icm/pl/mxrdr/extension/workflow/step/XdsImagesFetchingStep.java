@@ -1,21 +1,7 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
-import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
-import edu.harvard.iq.dataverse.workflow.step.Failure;
-import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
-import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
-import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.amazonaws.thirdparty.apache.codec.digest.DigestUtils;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.dataAccess;
+import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,8 +19,22 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static edu.harvard.iq.dataverse.dataaccess.DataAccess.dataAccess;
-import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.step.Failure;
+import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
 /**
  * Fetches dataset version files into local directory filtering images only.
