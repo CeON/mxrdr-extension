@@ -149,7 +149,7 @@ public class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
     static class ImageFetcher {
 
         static final Predicate<String> IMAGES_PATTERNS =
-                Stream.of(".+\\d+\\.cbf", ".+\\d+\\.img", ".+\\d+\\.mccd", ".+\\d+\\.h5", ".+master\\.h5")
+                Stream.of(".+\\d+\\.cbf", ".+\\d+\\.img", ".+\\d+\\.mccd", ".+\\d+\\.h5", ".+master\\.h5", ".+\\.\\d+")
                         .map(Pattern::compile)
                         .map(Pattern::asPredicate)
                         .reduce(x -> false, Predicate::or);
