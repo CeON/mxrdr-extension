@@ -15,6 +15,8 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.amazonaws.thirdparty.apache.codec.digest.DigestUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -201,7 +203,13 @@ public class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
                 }
                 Path filePath = dir.resolve(fileName);
                 if (Files.exists(filePath)) {
-                    throw new IllegalArgumentException("Duplicate file: " + fileName);
+                    String newSum = DigestUtils.md5Hex(storage.getInputStream());
+                    String existingSum = DigestUtils.md5Hex(Files.newInputStream(filePath));
+                    if (!existingSum.equals(newSum)) {
+                        throw new IllegalArgumentException("Duplicate file: " + fileName);
+                    } else {
+                        return Optional.empty();
+                    }
                 }
                 try (InputStream in = storage.getInputStream()) {
                     Files.copy(in, filePath);
