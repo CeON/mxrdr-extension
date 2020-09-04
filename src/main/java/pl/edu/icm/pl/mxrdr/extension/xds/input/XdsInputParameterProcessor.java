@@ -82,7 +82,7 @@ public class XdsInputParameterProcessor implements XdsInputLineProcessor {
     }
 
     private static String undefinedValueOf(String paramName) {
-        return paramName + "\\s*=\\s*(XXX|0[^.]?)";
+        return paramName + "\\s*=\\s*XXX";
     }
 
     private static InputSupplier<String> valueReplacementOf(String paramName, InputSupplier<String> paramValue) {
