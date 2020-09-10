@@ -71,7 +71,7 @@ class XdsMissingInputFillingStepTest extends WorkflowExecutionTestBase {
         assertThat(lines.get(0)).contains("ORGY=45.6");
         assertThat(lines.get(2)).startsWith("DETECTOR_DISTANCE=78.9");
         assertThat(lines.get(3)).startsWith("OSCILLATION_RANGE= 2345.0");
-        assertThat(lines.get(4)).startsWith("STARTING_ANGLE=98.7");
+        assertThat(lines.get(4)).startsWith("STARTING_ANGLE= 0");
         assertThat(lines.get(5)).startsWith("X-RAY_WAVELENGTH=65.4");
     }
 

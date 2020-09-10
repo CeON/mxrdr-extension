@@ -81,13 +81,13 @@ public class CbfImporterTest {
         assertTrue(containsName("dataCollectionOrgY", parentOfMultiple));
         assertTrue(containsValue("1257.86", parentOfMultiple));
         assertTrue(containsName("dataCollectionDetectorDistance", parentOfMultiple));
-        assertTrue(containsValue("0.19050", parentOfMultiple));
+        assertTrue(containsValue("190.5", parentOfMultiple));
         assertTrue(containsName("dataCollectionWavelength", parentOfMultiple));
         assertTrue(containsValue("0.72932", parentOfMultiple));
         assertTrue(containsName("dataCollectionDetectorOverload", parentOfMultiple));
         assertTrue(containsValue("152194", parentOfMultiple));
         assertTrue(containsName("dataCollectionDetectorThickness", parentOfMultiple));
-        assertTrue(containsValue("0.000450", parentOfMultiple));
+        assertTrue(containsValue("0.45", parentOfMultiple));
     }
 
     @Test
