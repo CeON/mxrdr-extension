@@ -34,7 +34,7 @@ public class XdsImagesFetchingStepTest {
             "match5555.img",
             "sth-12.h5",
             "sth-master.h5",
-            "ZD-3_Pn7.0001"
+            "ZD-3_Pn7.0001",
             "duplicated1234.img"
     };
 
