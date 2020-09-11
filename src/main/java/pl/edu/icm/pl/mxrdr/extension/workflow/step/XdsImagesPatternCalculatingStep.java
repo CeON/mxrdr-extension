@@ -121,10 +121,26 @@ public class XdsImagesPatternCalculatingStep extends FilesystemAccessingWorkflow
         if (".h5".equals(suffix.substring)) {
             return prefix.substring + "master.h5";
         } else {
-            int questionMarkCount = suffix.elements.get(0).length() - prefix.length() - suffix.length();
+            String prefixString = removeLastDigits(prefix.substring);
+            String suffixString = removeFirstDigits(suffix.substring);
+            int questionMarkCount = suffix.elements.get(0).length() - prefixString.length() - suffixString.length();
             String questionMarks = StringUtils.repeat('?', questionMarkCount);
-            return prefix.substring + questionMarks + suffix.substring;
+            return prefixString + questionMarks + suffixString;
         }
+    }
+    
+    private String removeLastDigits(String input) {
+        while (StringUtils.isNotEmpty(input) && Character.isDigit(input.charAt(input.length() - 1))) {
+            input = input.substring(0, input.length() - 1);
+        }
+        return input;
+    }
+
+    private String removeFirstDigits(String input) {
+        while (StringUtils.isNotEmpty(input) && Character.isDigit(input.charAt(0))) {
+            input = input.substring(1);
+        }
+        return input;
     }
 
     // -------------------- INNER CLASSES --------------------

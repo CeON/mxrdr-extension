@@ -28,7 +28,25 @@ public class XdsImagesPatternCalculatingStepTest implements ArgumentsProvider {
         return Stream.of(
                 Arguments.of(asList("sample1.img", "test1.img", "test2.img", "test3.img"), "test?.img"),
                 Arguments.of(asList("abc-master.h5", "abc-1.h5", "abc-2.h5", "abc-3.h5"), "abc-master.h5"),
-                Arguments.of(asList("short1.cbf", "short2.cbf", "longer1.img", "longer2.img"), "longer?.img")
+                Arguments.of(asList("short1.cbf", "short2.cbf", "longer1.img", "longer2.img"), "longer?.img"),
+                Arguments.of(asList("pomiar08_1_00001.cbf", 
+                                    "pomiar08_1_00251.cbf", 
+                                    "pomiar08_1_00501.cbf", 
+                                    "pomiar08_1_00751.cbf", 
+                                    "pomiar08_1_01001.cbf", 
+                                    "pomiar08_1_01251.cbf", 
+                                    "pomiar08_1_01501.cbf", 
+                                    "pomiar08_1_01751.cbf"), "pomiar08_1_?????.cbf"),
+                Arguments.of(asList("ZD-3_Pn7.0001",
+                                    "ZD-3_Pn7.0021",
+                                    "ZD-3_Pn7.0031",
+                                    "ZD-3_Pn7.0401",
+                                    "ZD-3_Pn7.0451",
+                                    "ZD-3_Pn7.0491",
+                                    "ZD-3_Pn7.0501",
+                                    "ZD-3_Pn7.0661",
+                                    "ZD-3_Pn7.0771",
+                                    "ZD-3_Pn7.0891"), "ZD-3_Pn7.????") 
         );
     }
 
