@@ -73,13 +73,17 @@ public class XdsInputAdjustingStep extends FilesystemAccessingWorkflowStep {
     protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) throws Exception {
         log.trace("Adjusting {} with JOB={}", XDS_INPUT_FILE_NAME, jobsValue());
         addFailureArtifacts(XDS_INPUT_FILE_NAME);
+        
+        ResolutionParameterExtractor resolutionParameterExtractor = new ResolutionParameterExtractor(workDir);
+        
         new XdsInputFileProcessor(workDir)
                 .with(replaceAnyValue("JOB", this::jobsValue)
                         .matchingWholeLine())
-                .with(replaceAnyValue("INCLUDE_RESOLUTION_RANGE", includeResolutionRangeValue(workDir))
+                .with(replaceAnyValue("INCLUDE_RESOLUTION_RANGE", includeResolutionRangeValue(resolutionParameterExtractor))
                         .matchingWholeLine()
-                        .processWhen(adjustResolution))
+                        .processWhen(adjustResolution && resolutionParameterExtractor.hasValidParameter()))
                 .process();
+        
         return successWith(data ->
                 data.put(FAILURE_ARTIFACTS_PARAM_NAME, XDS_INPUT_FILE_NAME)
         );
@@ -99,8 +103,8 @@ public class XdsInputAdjustingStep extends FilesystemAccessingWorkflowStep {
         return String.join(" ", jobs);
     }
 
-    private InputSupplier<String> includeResolutionRangeValue(Path workDir) {
-        return () -> "50 " + new ResolutionParameterExtractor(workDir).extract();
+    private InputSupplier<String> includeResolutionRangeValue(ResolutionParameterExtractor extractor) {
+        return () -> "50 " + extractor.extract();
     }
 
     // -------------------- INNER CLASSES --------------------
@@ -112,6 +116,8 @@ public class XdsInputAdjustingStep extends FilesystemAccessingWorkflowStep {
 
         private final Path workDir;
 
+        private String extractedResolution;
+
         // -------------------- CONSTRUCTORS --------------------
 
         public ResolutionParameterExtractor(Path workDir) {
@@ -121,10 +127,19 @@ public class XdsInputAdjustingStep extends FilesystemAccessingWorkflowStep {
         // -------------------- LOGIC --------------------
 
         public String extract() throws IOException {
+            if (extractedResolution != null) {
+                return extractedResolution;
+            }
             File correctionFile = workDir.resolve(XDS_OUTPUT_FILE_NAME).toFile();
             try (BufferedReader reader = new BufferedReader(new FileReader(correctionFile))) {
-                return extractResolutionParameter(reader.lines());
+                extractedResolution = extractResolutionParameter(reader.lines());
+                return extractedResolution;
             }
+        }
+
+        public boolean hasValidParameter() throws IOException {
+            String extractedResolution = extract();
+            return StringUtils.isNotEmpty(extractedResolution);
         }
 
         // -------------------- PRIVATE --------------------
@@ -143,7 +158,7 @@ public class XdsInputAdjustingStep extends FilesystemAccessingWorkflowStep {
                     .map(d -> d[0])
                     .map(Object::toString)
                     .reduce((result, element) -> element)
-                    .orElseThrow(() -> new IllegalArgumentException("Incorrect data in CORRECT.LP file."));
+                    .orElse(StringUtils.EMPTY);
         }
 
         private static boolean recognizeRowWithResolution(String[] a) {
