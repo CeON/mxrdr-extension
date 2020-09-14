@@ -43,7 +43,14 @@ public class DatasetMapper {
                             .map(val -> ResultField.of(field.getValue(), val)))),
             new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.PDB_DEPOSIT_DATE, Record::getDepositionDate)),
             new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.PDB_RELEASE_DATE, Record::getReleaseDate)),
-            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.PDB_REVISION_DATE, Record::getRevisionDate)),
+            new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.PDB_REVISION_DATE, Record::getRevisionDate)
+                    .withValueMapper((field, value) -> { 
+                        String[] values = value.split("#");
+                        return Stream.of(values)
+                               .skip(values.length - 1)
+                               .map(val -> ResultField.of(field.getValue(), val));
+                     }
+            )),
             new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.CITATION_TITLE, Record::getTitle)),
             new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.CITATION_PUBMED_ID, Record::getPubmedId)),
             new FirstRecordMapper(new BasicRecordMapper(MxrdrMetadataField.CITATION_AUTHOR, Record::getCitationAuthor)
