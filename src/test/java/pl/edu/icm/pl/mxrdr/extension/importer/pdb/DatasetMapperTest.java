@@ -55,6 +55,39 @@ public class DatasetMapperTest {
     }
 
     @Test
+    public void parse_correctXmlWithHashSeparatedRevisionDate() throws URISyntaxException, IOException {
+        //given
+        File cbfFile = new File(getClass().getClassLoader().getResource("xml/pdbFromApiHashedRevisionDate.xml").toURI());
+        XmlMapper xmlMapper = new XmlMapper();
+        xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        Dataset dataset = xmlMapper.readValue(cbfFile, Dataset.class);
+        DatasetMapper datasetMapper = new DatasetMapper(dataset);
+
+        //when
+        List<ResultField> resultFields = datasetMapper.asResultFields();
+
+        //then
+        assertEquals("4IWR", retrieveFieldValue(MxrdrMetadataField.PDB_ID.getValue(), resultFields));
+        assertEquals("68792.63", retrieveFieldValue(MxrdrMetadataField.MOLECULAR_WEIGHT.getValue(), resultFields));
+        assertEquals("428", retrieveFieldValue(MxrdrMetadataField.RESIDUE_COUNT.getValue(), resultFields));
+        assertEquals("4513", retrieveFieldValue(MxrdrMetadataField.ATOM_SITE_COUNT.getValue(), resultFields));
+        assertEquals("428", retrieveFieldValue(MxrdrMetadataField.RESIDUE_COUNT.getValue(), resultFields));
+        assertEquals("C.Esp1396I bound to a 25 base pair operator site", retrieveFieldValue(MxrdrMetadataField.PDB_TITLE
+                                                                                                    .getValue(), resultFields));
+        assertEquals("10.2210/pdb4iwr/pdb", retrieveFieldValue(MxrdrMetadataField.PDB_DOI.getValue(), resultFields));
+        assertEquals("2013-01-24", retrieveFieldValue(MxrdrMetadataField.PDB_DEPOSIT_DATE.getValue(), resultFields));
+        assertEquals("2013-09-11", retrieveFieldValue(MxrdrMetadataField.PDB_RELEASE_DATE.getValue(), resultFields));
+        assertEquals("2019-12-18", retrieveFieldValue(MxrdrMetadataField.PDB_REVISION_DATE.getValue(), resultFields));
+        assertEquals("Structural analysis of DNA-protein complexes regulating the restriction-modification system Esp1396I.", retrieveFieldValue(MxrdrMetadataField.CITATION_TITLE
+                                                                                                                                                         .getValue(), resultFields));
+        assertEquals("23989141", retrieveFieldValue(MxrdrMetadataField.CITATION_PUBMED_ID.getValue(), resultFields));
+        assertEquals("Acta Crystallogr.,Sect.F", retrieveFieldValue(MxrdrMetadataField.CITATION_JOURNAL.getValue(), resultFields));
+        assertEquals("2013", retrieveFieldValue(MxrdrMetadataField.CITATION_YEAR.getValue(), resultFields));
+
+        checkFamilyFields(resultFields);
+    }
+
+    @Test
     public void parse_incorrectXml() {
         //given
         Dataset dataset = new Dataset();
