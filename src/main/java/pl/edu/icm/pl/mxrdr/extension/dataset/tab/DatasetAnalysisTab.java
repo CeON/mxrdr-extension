@@ -129,6 +129,10 @@ public class DatasetAnalysisTab implements Serializable {
         return permissionsWrapper.canViewUnpublishedDataset(dvRequestService.getDataverseRequest(), dataset);
     }
 
+    public boolean isAnalysisQueuedButNotStarted(WorkflowExecution workflowExecution) {
+        return workflowExecution != null && workflowExecution.getSteps().size() == 0;
+    }
+    
     public boolean isAnalysisInProgress(WorkflowExecution workflowExecution) {
         return workflowExecution != null && !workflowExecution.isFinished();
     }
@@ -161,17 +165,6 @@ public class DatasetAnalysisTab implements Serializable {
         return null;
     }
     
-    public String getWorkflowFailureReasonDetail(DatasetVersion datasetVersion) {
-        if (!datasetVersion.isDraft()) {
-            return workflowServiceBean.findLatestByTriggerTypeAndDatasetVersion(TriggerType.PostPublishDataset, datasetVersion.getDataset().getId(), datasetVersion.getVersionNumber(), datasetVersion.getMinorVersionNumber())
-                    .map(execution -> execution.getLastStep())
-                    .map(stepExecution -> stepExecution.getOutputParams())
-                    .map(outputParams -> outputParams.getOrDefault(Failure.REASON_PARAM_NAME, StringUtils.EMPTY))
-                    .orElse(StringUtils.EMPTY);
-        }
-        return StringUtils.EMPTY;
-    }
-    
     public List<WorkflowArtifact> getArtifacts(DatasetVersion datasetVersion, WorkflowExecution workflowExecution) {
         return workflowExecution != null ? workflowArfifactService.findAll(workflowExecution.getId()) : Lists.newArrayList();
     }
@@ -185,27 +178,36 @@ public class DatasetAnalysisTab implements Serializable {
         }
     }
     
-    private boolean canViewDataset(DatasetVersion datasetVersion) {
-        return !datasetVersion.getDataset().hasActiveEmbargo() 
-                || (datasetVersion.getDataset().hasActiveEmbargo() && isPermissionToViewFiles(datasetVersion.getDataset()));
-    }
-    
     public String getAnalysisFailureReason(DatasetVersion datasetVersion, WorkflowExecution workflowExecution) {
         if (datasetVersion.isDraft()) {
             return "dataset.analysisTab.dataset.in.draft.message";
         } else if (datasetVersion.getDataset().hasActiveEmbargo() && !isPermissionToViewFiles(datasetVersion.getDataset())) {
             return "dataset.analysisTab.embargo.message";
-        } else if (canViewDataset(datasetVersion)
-                    && isAnalysisInProgress(workflowExecution)) {
+        } else if (isAnalysisQueuedButNotStarted(workflowExecution)) {
+            return "dataset.analysisTab.analysis.in.queue.message";
+        } else if (isAnalysisInProgress(workflowExecution)) {
             return "dataset.analysisTab.analysis.in.progress.message";
-        } else if (canViewDataset(datasetVersion)
-                && isAnalysisNotPerformed(workflowExecution)) {
+        } else if (isAnalysisNotPerformed(workflowExecution)) {
             return "dataset.analysisTab.analysis.not.performed.message";
-        } else if (canViewDataset(datasetVersion)
-                && isAnalysisFailure(workflowExecution)) {
+        } else if (isAnalysisFailure(workflowExecution)) {
             return "dataset.analysisTab.analysis.failed.message";
         }
         
         return null;
+    }
+    
+    public String getAnalysisFailureReasonDetail(DatasetVersion datasetVersion, WorkflowExecution workflowExecution) {
+        if (datasetVersion.isDraft()) {
+            return StringUtils.EMPTY;
+        }
+        if (datasetVersion.getDataset().hasActiveEmbargo() && !isPermissionToViewFiles(datasetVersion.getDataset())) {
+            return StringUtils.EMPTY;
+        }
+        return Optional.ofNullable(workflowExecution)
+            .filter(execution -> execution.getSteps().size() > 0)
+            .map(execution -> execution.getLastStep())
+            .map(stepExecution -> stepExecution.getOutputParams())
+            .map(outputParams -> outputParams.getOrDefault(Failure.REASON_PARAM_NAME, StringUtils.EMPTY))
+            .orElse(StringUtils.EMPTY);
     }
 }

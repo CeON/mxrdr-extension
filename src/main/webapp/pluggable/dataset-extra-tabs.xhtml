@@ -44,7 +44,7 @@
                         <p class="text-block">
                             <h:outputFormat value="#{mxrdrBundle[failureReason]}">
                                 <f:param value="#{datasetAnalysisTab.getEmbargoDateForDisplay(DatasetPage.workingVersion.dataset)}"/>
-                                <f:param value="#{datasetAnalysisTab.getWorkflowFailureReasonDetail(DatasetPage.workingVersion)}" />
+                                <f:param value="#{datasetAnalysisTab.getAnalysisFailureReasonDetail(DatasetPage.workingVersion, workflowExecution)}" />
                             </h:outputFormat>
                         </p>
                     </div>
