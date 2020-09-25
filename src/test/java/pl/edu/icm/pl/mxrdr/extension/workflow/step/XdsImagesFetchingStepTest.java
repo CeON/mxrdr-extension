@@ -35,7 +35,10 @@ public class XdsImagesFetchingStepTest {
             "sth-12.h5",
             "sth-master.h5",
             "ZD-3_Pn7.0001",
-            "duplicated1234.img"
+            "duplicated1234.img",
+            "sample.tar.bz2",
+            "sample.tar.gz",
+            "sample.tar.xz"
     };
 
     private static final String[] EXPECTED_PATHS = Stream.of(IMAGES_NAMES)
