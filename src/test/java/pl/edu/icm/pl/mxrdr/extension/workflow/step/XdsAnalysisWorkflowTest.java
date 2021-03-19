@@ -1,6 +1,7 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
 import com.google.common.collect.ImmutableMap;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.dataset.DatasetLockServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -30,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
@@ -134,7 +136,7 @@ public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implem
         worker = new WorkflowExecutionWorker(executionService, scheduler, steps);
         
         steps.register(MXRDR_PROVIDER_ID, this);
-        steps.register(INTERNAL_PROVIDER_ID, new InternalWorkflowStepSPI(steps, versionsService));
+        steps.register(INTERNAL_PROVIDER_ID, new InternalWorkflowStepSPI(steps, versionsService, Mockito.mock(CitationFactory.class)));
 
         datasets.save(dataset);
         dataset.getLatestVersion().getDatasetFields().add(
