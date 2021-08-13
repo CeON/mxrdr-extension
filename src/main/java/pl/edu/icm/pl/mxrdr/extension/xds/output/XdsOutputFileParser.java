@@ -77,7 +77,7 @@ public class XdsOutputFileParser {
 
             addExtractedValue(MxrdrMetadataField.DATA_COLLECTION_OSCILLATION_STEP_SIZE, "OSCILLATION_RANGE", dataLine,
                     dataCollectionChildren, collectedFields);
-            addExtractedValue(MxrdrMetadataField.DATA_COLLECTION_WAVE_LENGTH, "X-RAY_WAVELENGTH", dataLine,
+            addExtractedValue(MxrdrMetadataField.DATA_COLLECTION_WAVELENGTH, "X-RAY_WAVELENGTH", dataLine,
                     dataCollectionChildren, collectedFields);
             addExtractedValue(MxrdrMetadataField.DATA_COLLECTION_NUMBER_OF_FRAMES, "DATA_RANGE", 1, dataLine,
                     dataCollectionChildren, collectedFields);
@@ -209,7 +209,7 @@ public class XdsOutputFileParser {
         String[] values = splitSpacesDelimited(dataLine);
         if (values.length == 14) {
             children.add(ResultField.of(MxrdrMetadataField.HRS_COMPLETENESS.getValue(), clearNonDigits(values[4])));
-            children.add(ResultField.of(MxrdrMetadataField.HRS_SIGMA.getValue(), clearNonDigits(values[8])));
+            children.add(ResultField.of(MxrdrMetadataField.HRS_I_SIGMA.getValue(), clearNonDigits(values[8])));
             children.add(ResultField.of(MxrdrMetadataField.HRS_CC.getValue(), clearNonDigits(values[10])));
             children.add(ResultField.of(MxrdrMetadataField.HRS_R_MERGE.getValue(), clearNonDigits(values[5])));
             children.add(ResultField.of(MxrdrMetadataField.HRS_R_MEAS.getValue(), clearNonDigits(values[9])));

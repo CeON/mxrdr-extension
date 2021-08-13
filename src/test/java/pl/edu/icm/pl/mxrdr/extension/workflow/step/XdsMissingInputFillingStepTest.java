@@ -57,7 +57,7 @@ class XdsMissingInputFillingStepTest extends WorkflowExecutionTestBase {
                 givenDatasetFiled(MxrdrMetadataField.DATA_COLLECTION_ORG_Y.getValue(), "45.6"),
                 givenDatasetFiled(MxrdrMetadataField.DATA_COLLECTION_DETECTOR_DISTANCE.getValue(), "78.9"),
                 givenDatasetFiled(MxrdrMetadataField.DATA_COLLECTION_STARTING_ANGLE.getValue(), "98.7"),
-                givenDatasetFiled(MxrdrMetadataField.DATA_COLLECTION_WAVE_LENGTH.getValue(), "65.4")));
+                givenDatasetFiled(MxrdrMetadataField.DATA_COLLECTION_WAVELENGTH.getValue(), "65.4")));
 
         XdsMissingInputFillingStep step = new XdsMissingInputFillingStep(new WorkflowStepParams(), versionsService);
 
@@ -139,7 +139,7 @@ class XdsMissingInputFillingStepTest extends WorkflowExecutionTestBase {
         assertThat(lines.get(6)).isEqualTo("MAXIMUM_NUMBER_OF_PROCESSORS=4");
         assertThat(lines.get(7)).isEqualTo("MAXIMUM_NUMBER_OF_JOBS=2");
     }
-    
+
     // -------------------- PRIVATE --------------------
 
     private String getFileFromResources(String name) {

@@ -1,0 +1,135 @@
+{
+  "audit_author": [
+    {
+      "name": "First, Author",
+      "pdbx_ordinal": 1
+    },
+    {
+      "name": "Second, Author",
+      "pdbx_ordinal": 2
+    },
+    {
+      "name": "Third, Author",
+      "pdbx_ordinal": 3
+    }
+  ],
+  "cell": {
+    "angle_alpha": 90.0,
+    "angle_beta": 117.21,
+    "angle_gamma": 90.0,
+    "length_a": 104.81,
+    "length_b": 138.62,
+    "length_c": 107.25
+  },
+  "diffrn_detector": [
+    {
+      "diffrn_id": "1",
+      "type": "ADSC QUANTUM 315r"
+    }
+  ],
+  "diffrn_radiation": [
+    {
+      "diffrn_id": "1",
+      "monochromator": "Si(111)"
+    }
+  ],
+  "diffrn_source": [
+    {
+      "diffrn_id": "1",
+      "pdbx_synchrotron_beamline": "19-ID",
+      "pdbx_synchrotron_site": "APS",
+      "pdbx_wavelength_list": "0.9793"
+    }
+  ],
+  "pdbx_vrpt_summary": {
+    "data_completeness": 99.46
+  },
+  "rcsb_accession_info": {
+    "deposit_date": "2019-01-30T00:00:00+0000",
+    "initial_release_date": "2019-03-27T00:00:00+0000",
+    "revision_date": "2020-02-19T00:00:00+0000"
+  },
+  "rcsb_entry_info": {
+    "deposited_atom_count": 19389,
+    "molecular_weight": 282.88,
+    "polymer_entity_count": 2,
+    "polymer_monomer_count_maximum": 261
+  },
+  "rcsb_primary_citation": {
+    "journal_abbrev": "Acta Crystallogr D Struct Biol",
+    "pdbx_database_id_pub_med": 32038047,
+    "rcsb_authors": [
+      "First, Author",
+      "Second, Author",
+      "Third, Author"
+    ],
+    "title": "3D domain swapping in the TIM barrel of the alpha subunit of Streptococcus pneumoniae tryptophan synthase.",
+    "year": 2020
+  },
+  "refine": [
+    {
+      "ls_rfactor_rfree": 0.23435,
+      "ls_rfactor_rwork": 0.19304
+    }
+  ],
+  "reflns": [
+    {
+      "number_obs": 171460,
+      "pdbx_rmerge_iobs": 0.056,
+      "pdbx_diffrn_id": [
+        "1"
+      ],
+      "pdbx_net_iover_sigma_i": 9.53,
+      "pdbx_ordinal": 1,
+      "dresolution_high": 2.54,
+      "dresolution_low": 48.99
+    }
+  ],
+  "reflns_shell": [
+    {
+      "rmerge_iobs": 0.968,
+      "mean_iover_sig_iobs": 1.26,
+      "pdbx_diffrn_id": [
+        "1"
+      ],
+      "pdbx_ordinal": 1,
+      "dres_high": 2.54,
+      "dres_low": 2.68
+    }
+  ],
+  "software": [
+    {
+      "classification": "refinement",
+      "name": "REFMAC",
+      "pdbx_ordinal": 1,
+      "version": "5.8.0222"
+    },
+    {
+      "classification": "data reduction",
+      "name": "XDS",
+      "pdbx_ordinal": 2
+    },
+    {
+      "classification": "data scaling",
+      "name": "XSCALE",
+      "pdbx_ordinal": 3
+    },
+    {
+      "classification": "phasing",
+      "name": "CRANK2",
+      "pdbx_ordinal": 4
+    },
+    {
+      "classification": "data collection",
+      "name": "SBC-Collect",
+      "pdbx_ordinal": 5
+    }
+  ],
+  "struct": {
+    "title": "Tryptophan synthase subunit alpha from Streptococcus pneumoniae with 3D domain swap in the core of TIM barrel"
+  },
+  "symmetry": {
+    "int_tables_number": 4
+  },
+  "rcsb_id": "1ZZZ"
+}

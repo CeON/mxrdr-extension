@@ -1,6 +1,5 @@
 package pl.edu.icm.pl.mxrdr.extension.importer.cbf;
 
-import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
 
@@ -42,7 +41,7 @@ public class CbfFileParser {
                     convertToMilimeters(extractField(cbfLine.toLowerCase(), cbfLine, "thickness", 4)), dataCollectionChildren);
             addIfPresentWithResultAdd(MxrdrMetadataField.DATA_COLLECTION_STARTING_ANGLE.getValue(),
                     extractField(cbfLine.toLowerCase(), cbfLine, "start_angle", 2), dataCollectionChildren);
-            addIfPresentWithResultAdd(MxrdrMetadataField.DATA_COLLECTION_WAVE_LENGTH.getValue(),
+            addIfPresentWithResultAdd(MxrdrMetadataField.DATA_COLLECTION_WAVELENGTH.getValue(),
                     extractField(cbfLine.toLowerCase(), cbfLine, "wavelength", 2), dataCollectionChildren);
             addIfPresentWithResultAdd(MxrdrMetadataField.DATA_COLLECTION_ORG_X.getValue(),
                     extractOrgX(cbfLine.toLowerCase(), cbfLine), dataCollectionChildren);
@@ -61,7 +60,7 @@ public class CbfFileParser {
     // -------------------- PRIVATE --------------------
 
     /**
-     * Some fields in .cbf files in their headers have respective values in meters, 
+     * Some fields in .cbf files in their headers have respective values in meters,
      * while in metadata we expect it to be in milimeters. (#48)
      * @param parsedValue Value parsed from file in meters
      * @return Value in milimeters
@@ -73,7 +72,7 @@ public class CbfFileParser {
             return "";
         }
     }
-    
+
 
     private String extractDetectorType(String normalizedCbfLine, String originalCbfLine) {
         if (normalizedCbfLine.contains("detector:")) {
