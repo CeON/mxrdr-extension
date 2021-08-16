@@ -13,7 +13,7 @@
     <ui:param name="workflowExecution" value="#{datasetAnalysisTab.getWorkflowExecution(DatasetPage.workingVersion)}" />
 
     <ui:param name="failureReason" value="#{datasetAnalysisTab.getAnalysisFailureReason(DatasetPage.workingVersion, workflowExecution)}" />
-    
+
     <ui:param name="artifacts" value="#{datasetAnalysisTab.getArtifacts(DatasetPage.workingVersion, workflowExecution)}" />
 
     <p:tab id="analysisTab" title="#{mxrdrBundle['analysisTab.title']}" rendered="#{!DatasetPage.workingVersion.deaccessioned or
@@ -51,15 +51,17 @@
                 </div>
             </div>
         </ui:fragment>
-        <ui:fragment rendered="#{!artifacts.isEmpty() and (failureReason == null or datasetAnalysisTab.isAnalysisFailure(workflowExecution))}">
-            
+        <ui:fragment rendered="#{!artifacts.isEmpty()
+            and (failureReason == null or datasetAnalysisTab.isAnalysisFailure(workflowExecution))
+            and (!DatasetPage.workingVersion.dataset.hasActiveEmbargo() or DatasetPage.canUpdateDataset())}">
+
             <div class="row" style="margin-top: 15px;">
                 <div class="col-sm-9">
                     <p class="text-block">
                         <h:outputText value="#{mxrdrBundle['dataset.analysisTab.artifacts.message']}" />
                     </p>
                 </div>
-            
+
                 <ui:repeat value="#{artifacts}" var="artifact">
                     <div class="col-sm-9">
                         <p:commandLink action="#{datasetAnalysisTab.downloadArtifact(artifact.getName(), artifact.getStorageLocation())}" ajax="false">
