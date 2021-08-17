@@ -46,20 +46,23 @@ public class PdbApiCaller {
     public StructureData getStructureData(String structureId) {
 
         URI entryEndpointUri = buildUri(baseUrl, ENTRY_PATH, structureId);
-        EntryData entryData = getAndMap(entryEndpointUri, EntryData.class);
+        EntryData entryData = requestDataAndDeserialize(entryEndpointUri, EntryData.class);
         StructureData structureData = new StructureData(entryData);
 
+        // Extract the number of polymer entities
         Integer polymerEntityCount = structureData.getEntryData()
                 .getRcsbEntryInfo()
                 .getPolymerEntityCount();
 
+        // If the number is not present or is zero, return existing data
         if (polymerEntityCount == null || polymerEntityCount < 1) {
             return structureData;
         }
 
+        // In other case call polymer service to fetch additional data
         for (int polymerEntityId = 1; polymerEntityId <= polymerEntityCount; polymerEntityId++) {
             URI polymerEndpointUri = buildUri(baseUrl, POLYMER_ENTITY_PATH, structureId, String.valueOf(polymerEntityId));
-            PolymerEntityData polymerEntityData = getAndMap(polymerEndpointUri, PolymerEntityData.class);
+            PolymerEntityData polymerEntityData = requestDataAndDeserialize(polymerEndpointUri, PolymerEntityData.class);
             structureData.getPolymerEntities().add(polymerEntityData);
         }
         PdbDataContainer pdbDataContainer = new PdbDataContainer();
@@ -69,7 +72,7 @@ public class PdbApiCaller {
 
     // -------------------- PRIVATE --------------------
 
-    private <T> T getAndMap(URI uri, Class<T> resultType) {
+    private <T> T requestDataAndDeserialize(URI uri, Class<T> resultType) {
         try {
             return Request.Get(uri)
                     .connectTimeout(CONNECTION_TIMEOUT_MILLIS)
