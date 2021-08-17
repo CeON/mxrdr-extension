@@ -89,7 +89,7 @@ public class CifFileMapper {
                             .withValueSource(joiningSource())),
             new CategoryMapper<MergedCategory>(mergedCategory(MmCifBlock::getDiffrnSource, MmCifBlock::getDiffrn),
                     new NestedColumnMapper<>(MxrdrMetadataField.DATA_COLLECTION,
-                            new BasicColumnMapper<>(MxrdrMetadataField.DATA_COLLECTION_WAVE_LENGTH,
+                            new BasicColumnMapper<>(MxrdrMetadataField.DATA_COLLECTION_WAVELENGTH,
                                     columnFrom(MmCifBlock::getDiffrnSource, DiffrnSource::getPdbxWavelengthList)),
                             new BasicColumnMapper<>(MxrdrMetadataField.DATA_COLLECTION_TEMPERATURE,
                                     columnFrom(MmCifBlock::getDiffrn, Diffrn::getAmbientTemp)))
@@ -121,7 +121,7 @@ public class CifFileMapper {
             new CategoryMapper<ReflnsShell>(MmCifBlock::getReflnsShell,
                     new NestedColumnMapper<>(MxrdrMetadataField.HRS,
                             new BasicColumnMapper<>(MxrdrMetadataField.HRS_COMPLETENESS, ReflnsShell::getPercentPossibleAll),
-                            new BasicColumnMapper<>(MxrdrMetadataField.HRS_SIGMA, ReflnsShell::getMeanIOverSigIObs),
+                            new BasicColumnMapper<>(MxrdrMetadataField.HRS_I_SIGMA, ReflnsShell::getMeanIOverSigIObs),
                             new BasicColumnMapper<>(MxrdrMetadataField.HRS_R_MERGE, ReflnsShell::getRmergeIObs))),
             new CategoryMapper<DiffrnRadiation>(MmCifBlock::getDiffrnRadiation,
                     new BasicColumnMapper<>(MxrdrMetadataField.MONOCHROMATOR, DiffrnRadiation::getMonochromator)),

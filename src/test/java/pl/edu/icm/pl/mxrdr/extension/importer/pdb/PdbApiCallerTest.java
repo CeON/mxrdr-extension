@@ -5,24 +5,25 @@ import org.apache.http.client.HttpResponseException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import pl.edu.icm.pl.mxrdr.extension.importer.pdb.model.Dataset;
+import pl.edu.icm.pl.mxrdr.extension.importer.pdb.model.StructureData;
 
-import java.util.Optional;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static pl.edu.icm.pl.mxrdr.extension.importer.pdb.PdbApiCaller.CUSTOM_REPORT_COLUMNS_PARAM_NAME;
-import static pl.edu.icm.pl.mxrdr.extension.importer.pdb.PdbApiCaller.PDB_IDS_PARAM_NAME;
-import static pl.edu.icm.pl.mxrdr.extension.importer.pdb.PdbApiCaller.PDB_REPORT_ENDPOINT;
-import static pl.edu.icm.pl.mxrdr.extension.importer.pdb.PdbApiCaller.PDB_REPORT_COLUMNS;
-import static pl.edu.icm.pl.mxrdr.extension.importer.pdb.PdbApiCaller.PRIMARY_ONLY_PARAM_NAME;
 
 public class PdbApiCallerTest {
 
@@ -47,34 +48,37 @@ public class PdbApiCallerTest {
         wireMockServer.stop();
     }
 
+    // -------------------- TESTS --------------------
+
     @Test
+    @DisplayName("Proper response should produce filled StructureData")
     public void fetchPdbData() {
         // given
-        String structureId = "x";
-        wireMockServer.stubFor(get(urlPathEqualTo(PDB_REPORT_ENDPOINT))
-                .withQueryParam(PDB_IDS_PARAM_NAME, equalTo(structureId))
-                .withQueryParam(PRIMARY_ONLY_PARAM_NAME, equalTo("1"))
-                .withQueryParam(CUSTOM_REPORT_COLUMNS_PARAM_NAME, equalTo(PDB_REPORT_COLUMNS))
-                .willReturn(aResponse().withBody(generateSampleXmlBody())));
+        String structureId = "1ZZZ";
+        wireMockServer.stubFor(get(urlPathEqualTo(generateUrl(PdbApiCaller.ENTRY_PATH, structureId)))
+                .willReturn(aResponse().withBody(loadResponse("pdb/entry.json"))));
+        wireMockServer.stubFor(get(urlPathEqualTo(generateUrl(PdbApiCaller.POLYMER_ENTITY_PATH, structureId, "1")))
+                .willReturn(aResponse().withBody(loadResponse("pdb/polymer_1.json"))));
+        wireMockServer.stubFor(get(urlPathEqualTo(generateUrl(PdbApiCaller.POLYMER_ENTITY_PATH, structureId, "2")))
+                .willReturn(aResponse().withBody(loadResponse("pdb/polymer_2.json"))));
+
         // when
-        Optional<Dataset> result = pdbApiCaller.getStructureData(structureId);
+        StructureData structureData = pdbApiCaller.getStructureData(structureId);
+
         // then
-        assertThat(result).isPresent();
-        result.map(d -> d.recordStream().collect(toList())).ifPresent(records -> {
-            assertThat(records.size()).isEqualTo(1);
-            assertThat(records.get(0).getPdbDoi()).isEqualTo("10.9999/testiwr/pdb");
-            assertThat(records.get(0).getPubmedId()).isEqualTo("23269141");
-        });
+        assertThat(structureData.getEntryData().getRcsbId()).isEqualTo(structureId);
+        assertThat(structureData.getPolymerEntities()).hasSize(2);
     }
 
     @Test
+    @DisplayName("Server error should cause an exception to be thrown")
     public void fetchPdbData_withNegativeStatusCode() {
         // given
-        String structureId = "y";
-        wireMockServer.stubFor(get(urlPathEqualTo(PDB_REPORT_ENDPOINT))
-                .withQueryParam(PDB_IDS_PARAM_NAME, equalTo(structureId))
+        String structureId = "YYYY";
+        wireMockServer.stubFor(get(urlPathEqualTo(generateUrl(PdbApiCaller.ENTRY_PATH, structureId)))
                 .willReturn(aResponse().withBody("").withStatus(500)));
-        // expect
+
+        // when & then
         assertThatThrownBy(() -> pdbApiCaller.getStructureData(structureId))
                 .isInstanceOf(RuntimeException.class)
                 .getCause()
@@ -83,45 +87,43 @@ public class PdbApiCallerTest {
     }
 
     @Test
-    public void fetchPdbData_withNoContentEntity() {
-        // given
-        String structureId = "z";
-        wireMockServer.stubFor(get(urlPathEqualTo(PDB_REPORT_ENDPOINT))
-                .withQueryParam(PDB_IDS_PARAM_NAME, equalTo(structureId))
-                .willReturn(aResponse().withHeader("Content-Length", "0").withBody("")));
-        // when
-        Optional<Dataset> result = pdbApiCaller.getStructureData(structureId);
-        // then
-        assertThat(result).isNotPresent();
-    }
-
-    @Test
+    @DisplayName("Error 404 should cause an exception to be thrown")
     public void fetchPdbData_withEmptyEntity() {
         // given
-        String structureId = "z";
-        wireMockServer.stubFor(get(urlPathEqualTo(PDB_REPORT_ENDPOINT))
-                .withQueryParam(PDB_IDS_PARAM_NAME, equalTo(structureId))
-                .willReturn(aResponse().withBody(generateEmptyXmlBody())));
-        // when
-        Optional<Dataset> result = pdbApiCaller.getStructureData(structureId);
-        // then
-        assertThat(result).isNotPresent();
+        String structureId = "QWERTY";
+        wireMockServer.stubFor(get(urlPathEqualTo(generateUrl(PdbApiCaller.ENTRY_PATH, structureId)))
+                .willReturn(aResponse().withBody(notFoundResponse()).withStatus(404)));
+
+        // when & then
+        assertThatThrownBy(() -> pdbApiCaller.getStructureData(structureId))
+                .isInstanceOf(RuntimeException.class)
+                .getCause()
+                .isInstanceOf(HttpResponseException.class)
+                .hasMessageEndingWith("Request failed with status: 404 and message: Not Found");
     }
 
     // -------------------- PRIVATE --------------------
 
-    private String generateSampleXmlBody() {
-        return "<?xml version='1.0' standalone='no' ?>\n" +
-                "<dataset>\n" +
-                "    <record>\n" +
-                "        <dimStructure.pdbDoi>10.9999/testiwr/pdb</dimStructure.pdbDoi>\n" +
-                "        <dimStructure.pubmedId>23269141</dimStructure.pubmedId>\n" +
-                "    </record>\n" +
-                "</dataset>\n";
+    private String generateUrl(String... segments) {
+        return Stream.concat(Stream.of(""), Arrays.stream(segments))
+                .collect(Collectors.joining("/"));
     }
 
-    private String generateEmptyXmlBody() {
-        return "<?xml version='1.0' standalone='no' ?>\n" +
-                "<dataset />\n";
+    private String loadResponse(String responseFileName) {
+        try {
+            URI fileUri = getClass().getClassLoader().getResource(responseFileName).toURI();
+            return Files.lines(Paths.get(fileUri))
+                    .collect(Collectors.joining());
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String notFoundResponse() {
+        return "{" +
+                    "\"status\":404," +
+                    "\"message\":\"No data found for entryId: QWERTY\"," +
+                    "\"link\":\"https://data.rcsb.org/redoc/index.html\"" +
+                "}";
     }
 }

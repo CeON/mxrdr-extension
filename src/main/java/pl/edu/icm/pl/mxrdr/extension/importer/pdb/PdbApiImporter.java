@@ -7,12 +7,13 @@ import edu.harvard.iq.dataverse.importer.metadata.ImporterRegistry;
 import edu.harvard.iq.dataverse.importer.metadata.MetadataImporter;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import pl.edu.icm.pl.mxrdr.extension.importer.MetadataBlock;
+import pl.edu.icm.pl.mxrdr.extension.importer.pdb.model.StructureData;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.inject.Inject;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -28,8 +29,7 @@ public class PdbApiImporter implements MetadataImporter {
     // -------------------- CONSTRUCTORS --------------------
 
     @Deprecated
-    public PdbApiImporter() {
-    }
+    public PdbApiImporter() { }
 
     @Inject
     public PdbApiImporter(ImporterRegistry registry, PdbApiCaller apiCaller) {
@@ -37,12 +37,12 @@ public class PdbApiImporter implements MetadataImporter {
         this.apiCaller = apiCaller;
     }
 
+    // -------------------- LOGIC --------------------
+
     @PostConstruct
     public void init() {
         registry.register(this);
     }
-
-    // -------------------- LOGIC --------------------
 
     @Override
     public String getMetadataBlockName() {
@@ -56,24 +56,20 @@ public class PdbApiImporter implements MetadataImporter {
 
     @Override
     public ImporterData getImporterData() {
-        return new ImporterData().addField(ImporterData.ImporterField.of(PdbApiForm.STRUCTURE_ID,
-                                                                  ImporterFieldType.INPUT,
-                                                                  true,
-                                                                  "importer.label.id",
-                                                                  "importer.label.description.id"));
+        return new ImporterData().addField(ImporterData.ImporterField.of(
+                PdbApiForm.STRUCTURE_ID, ImporterFieldType.INPUT, true, "importer.label.id", "importer.label.description.id"));
     }
 
     @Override
-    public List<ResultField> fetchMetadata(Map<ImporterFieldKey, Object> map) {
-        String structureId = (String) map.get(PdbApiForm.STRUCTURE_ID);
-        return apiCaller.getStructureData(structureId)
-                .map(DatasetMapper::new)
-                .map(DatasetMapper::asResultFields)
-                .orElseThrow(() -> new IllegalArgumentException("Structure with given ID not found"));
+    public List<ResultField> fetchMetadata(Map<ImporterFieldKey, Object> importerInput) {
+        String structureId = (String) importerInput.get(PdbApiForm.STRUCTURE_ID);
+        StructureData structureData = apiCaller.getStructureData(structureId);
+        return new PdbMapper(new PdbDataContainer().init(structureData))
+                .toResultFields();
     }
 
     @Override
     public Map<ImporterFieldKey, String> validate(Map<ImporterFieldKey, Object> importerInput) {
-        return new HashMap<>();
+        return Collections.emptyMap();
     }
 }
