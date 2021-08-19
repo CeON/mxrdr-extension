@@ -25,12 +25,20 @@
     {
       "diffrn_id": "1",
       "type": "ADSC QUANTUM 315r"
+    },
+    {
+      "diffrn_id": "2",
+      "type": "LADI-III"
     }
   ],
   "diffrn_radiation": [
     {
       "diffrn_id": "1",
       "monochromator": "Si(111)"
+    },
+    {
+      "diffrn_id": "2",
+      "monochromator": "NiTi"
     }
   ],
   "diffrn_source": [
@@ -39,6 +47,10 @@
       "pdbx_synchrotron_beamline": "19-ID",
       "pdbx_synchrotron_site": "APS",
       "pdbx_wavelength_list": "0.9793"
+    },
+    {
+      "diffrn_id": "2",
+      "pdbx_wavelength_list": "1.9793"
     }
   ],
   "pdbx_vrpt_summary": {
@@ -53,6 +65,7 @@
     "deposited_atom_count": 19389,
     "molecular_weight": 282.88,
     "polymer_entity_count": 2,
+    "polymer_entity_count_protein": 2,
     "polymer_monomer_count_maximum": 261
   },
   "rcsb_primary_citation": {
@@ -69,32 +82,62 @@
   "refine": [
     {
       "ls_rfactor_rfree": 0.23435,
-      "ls_rfactor_rwork": 0.19304
+      "ls_rfactor_rwork": 0.19304,
+      "pdbx_diffrn_id": ["1", "2"]
     }
   ],
   "reflns": [
     {
       "number_obs": 171460,
       "pdbx_rmerge_iobs": 0.056,
-      "pdbx_diffrn_id": [
-        "1"
-      ],
+      "pdbx_diffrn_id": ["1"],
       "pdbx_net_iover_sigma_i": 9.53,
       "pdbx_ordinal": 1,
       "dresolution_high": 2.54,
       "dresolution_low": 48.99
+    },
+    {
+      "number_obs": 271460,
+      "pdbx_rmerge_iobs": 1.056,
+      "pdbx_diffrn_id": ["2"],
+      "pdbx_net_iover_sigma_i": 10.53,
+      "pdbx_ordinal": 2,
+      "dresolution_high": 3.54,
+      "dresolution_low": 58.99
     }
   ],
   "reflns_shell": [
     {
       "rmerge_iobs": 0.968,
       "mean_iover_sig_iobs": 1.26,
-      "pdbx_diffrn_id": [
-        "1"
-      ],
+      "pdbx_diffrn_id": ["1"],
       "pdbx_ordinal": 1,
       "dres_high": 2.54,
       "dres_low": 2.68
+    },
+    {
+      "rmerge_iobs": 10.968,
+      "mean_iover_sig_iobs": 11.26,
+      "pdbx_diffrn_id": ["1"],
+      "pdbx_ordinal": 2,
+      "dres_high": 12.54,
+      "dres_low": 12.68
+    },
+    {
+      "rmerge_iobs": 1.968,
+      "mean_iover_sig_iobs": 2.26,
+      "pdbx_diffrn_id": ["2"],
+      "pdbx_ordinal": 3,
+      "dres_high": 3.54,
+      "dres_low": 3.68
+    },
+    {
+      "rmerge_iobs": 21.968,
+      "mean_iover_sig_iobs": 22.26,
+      "pdbx_diffrn_id": ["2"],
+      "pdbx_ordinal": 4,
+      "dres_high": 23.54,
+      "dres_low": 23.68
     }
   ],
   "software": [

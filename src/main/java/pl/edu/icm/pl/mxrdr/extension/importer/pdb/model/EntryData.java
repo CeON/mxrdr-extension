@@ -17,6 +17,9 @@ public class EntryData {
     @JsonProperty("cell")
     private Cell cell = new Cell();
 
+    @JsonProperty("diffrn")
+    private List<Diffrn> diffrn = new ArrayList<>();
+
     @JsonProperty("diffrn_source")
     private List<DiffrnSource> diffrnSource = new ArrayList<>();
 
@@ -68,6 +71,10 @@ public class EntryData {
 
     public Cell getCell() {
         return cell;
+    }
+
+    public List<Diffrn> getDiffrn() {
+        return diffrn;
     }
 
     public List<DiffrnSource> getDiffrnSource() {
@@ -176,6 +183,23 @@ public class EntryData {
 
         public String getAngleGamma() {
             return angleGamma;
+        }
+    }
+
+    public static class Diffrn {
+
+        @JsonProperty("id")
+        private Integer id;
+
+        @JsonProperty("ambient_temp")
+        private String ambientTemp;
+
+        public Integer getId() {
+            return id;
+        }
+
+        public String getAmbientTemp() {
+            return ambientTemp;
         }
     }
 
@@ -292,6 +316,20 @@ public class EntryData {
         @JsonProperty("deposited_atom_count")
         private String depositedAtomCount;
 
+        @JsonProperty("polymer_entity_count_dna")
+        private Integer polymerEntityCountDna;
+
+        @JsonProperty("polymer_entity_count_rna")
+        private Integer polymerEntityCountRna;
+
+        @JsonProperty("polymer_entity_count_nucleic_acid")
+        private Integer polymerEntityCountNucleicAcid;
+
+        @JsonProperty("polymer_entity_count_nucleic_acid_hybrid")
+        private Integer polymerEntityCountNucleicAcidHybrid;
+
+        @JsonProperty("polymer_entity_count_protein")
+        private Integer polymerEntityCountProtein;
 
         public Integer getPolymerEntityCount() {
             return polymerEntityCount;
@@ -307,6 +345,26 @@ public class EntryData {
 
         public String getDepositedAtomCount() {
             return depositedAtomCount;
+        }
+
+        public Integer getPolymerEntityCountDna() {
+            return polymerEntityCountDna;
+        }
+
+        public Integer getPolymerEntityCountRna() {
+            return polymerEntityCountRna;
+        }
+
+        public Integer getPolymerEntityCountNucleicAcid() {
+            return polymerEntityCountNucleicAcid;
+        }
+
+        public Integer getPolymerEntityCountNucleicAcidHybrid() {
+            return polymerEntityCountNucleicAcidHybrid;
+        }
+
+        public Integer getPolymerEntityCountProtein() {
+            return polymerEntityCountProtein;
         }
     }
 
@@ -356,12 +414,19 @@ public class EntryData {
         @JsonProperty("ls_rfactor_rfree")
         private String lsRFactorRFree;
 
+        @JsonProperty("pdbx_diffrn_id")
+        private List<Integer> pdbxDiffrnId = new ArrayList<>();
+
         public String getLsRFactorRWork() {
             return lsRFactorRWork;
         }
 
         public String getLsRFactorRFree() {
             return lsRFactorRFree;
+        }
+
+        public List<Integer> getPdbxDiffrnId() {
+            return pdbxDiffrnId;
         }
     }
 
@@ -384,6 +449,12 @@ public class EntryData {
 
         @JsonProperty("number_obs")
         private String numberObs;
+
+        @JsonProperty("pdbx_cc_half")
+        private String pdbxCcHalf;
+
+        @JsonProperty("pdbx_diffrn_id")
+        private List<Integer> pdbxDiffrnId = new ArrayList<>();
 
         public Integer getPdbxOrdinal() {
             return pdbxOrdinal;
@@ -408,6 +479,14 @@ public class EntryData {
         public String getNumberObs() {
             return numberObs;
         }
+
+        public String getPdbxCcHalf() {
+            return pdbxCcHalf;
+        }
+
+        public List<Integer> getPdbxDiffrnId() {
+            return pdbxDiffrnId;
+        }
     }
 
     public static class ReflnsShell {
@@ -427,6 +506,21 @@ public class EntryData {
         @JsonProperty("dres_low")
         private String dResLow;
 
+        @JsonProperty("pdbx_cc_half")
+        private String pdbxCcHalf;
+
+        @JsonProperty("number_measured_obs")
+        private String numberMeasuredObs;
+
+        @JsonProperty("number_unique_all")
+        private String numberUniqueAll;
+
+        @JsonProperty("number_possible")
+        private String numberPossible;
+
+        @JsonProperty("pdbx_diffrn_id")
+        private List<Integer> pdbxDiffrnId = new ArrayList<>();
+
         public Integer getPdbxOrdinal() {
             return pdbxOrdinal;
         }
@@ -445,6 +539,26 @@ public class EntryData {
 
         public String getdResLow() {
             return dResLow;
+        }
+
+        public String getPdbxCcHalf() {
+            return pdbxCcHalf;
+        }
+
+        public String getNumberMeasuredObs() {
+            return numberMeasuredObs;
+        }
+
+        public String getNumberUniqueAll() {
+            return numberUniqueAll;
+        }
+
+        public String getNumberPossible() {
+            return numberPossible;
+        }
+
+        public List<Integer> getPdbxDiffrnId() {
+            return pdbxDiffrnId;
         }
     }
 

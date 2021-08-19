@@ -65,8 +65,6 @@ public class PdbApiCaller {
             PolymerEntityData polymerEntityData = requestDataAndDeserialize(polymerEndpointUri, PolymerEntityData.class);
             structureData.getPolymerEntities().add(polymerEntityData);
         }
-        PdbDataContainer pdbDataContainer = new PdbDataContainer();
-        pdbDataContainer.init(structureData);
         return structureData;
     }
 

@@ -1,6 +1,7 @@
 package pl.edu.icm.pl.mxrdr.extension.importer.pdb;
 
 import edu.harvard.iq.dataverse.importer.metadata.ImporterData;
+import edu.harvard.iq.dataverse.importer.metadata.ImporterData.ImporterField;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldKey;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldType;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterRegistry;
@@ -56,15 +57,19 @@ public class PdbApiImporter implements MetadataImporter {
 
     @Override
     public ImporterData getImporterData() {
-        return new ImporterData().addField(ImporterData.ImporterField.of(
-                PdbApiForm.STRUCTURE_ID, ImporterFieldType.INPUT, true, "importer.label.id", "importer.label.description.id"));
+        return new ImporterData()
+                .addField(ImporterField.of(PdbApiForm.STRUCTURE_ID, ImporterFieldType.INPUT,
+                        true, "importer.label.id", "importer.label.description.id"))
+                .addField(ImporterField.of(PdbApiForm.DIFFRN_ID, ImporterFieldType.INPUT,
+                        false, "importer.diffrn.id", "importer.diffrn.description.id"));
     }
 
     @Override
     public List<ResultField> fetchMetadata(Map<ImporterFieldKey, Object> importerInput) {
         String structureId = (String) importerInput.get(PdbApiForm.STRUCTURE_ID);
+        String diffractionId = (String) importerInput.get(PdbApiForm.DIFFRN_ID);
         StructureData structureData = apiCaller.getStructureData(structureId);
-        return new PdbMapper(new PdbDataContainer().init(structureData))
+        return new PdbMapper(new PdbDataContainer().init(structureData, diffractionId))
                 .toResultFields();
     }
 

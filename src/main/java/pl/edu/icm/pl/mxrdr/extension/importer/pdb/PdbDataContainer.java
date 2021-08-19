@@ -1,6 +1,7 @@
 package pl.edu.icm.pl.mxrdr.extension.importer.pdb;
 
 import org.apache.commons.lang3.StringUtils;
+import pl.edu.icm.pl.mxrdr.extension.importer.MacromolleculeType;
 import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
 import pl.edu.icm.pl.mxrdr.extension.importer.ProcessingSoftwareMapper;
 import pl.edu.icm.pl.mxrdr.extension.importer.SymmetryStructureMapper;
@@ -12,9 +13,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -23,7 +27,6 @@ import java.util.stream.Stream;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 class PdbDataContainer {
-    private static final int FIRST_INDEX = 1;
     private static final String DATA_REDUCTION = "data reduction";
     private static final String PDB_DOI_TEMPLATE = "10.2210/pdb%s/pdb";
 
@@ -40,17 +43,29 @@ class PdbDataContainer {
      * (that indexed with one or first on the list) and assume that the
      * result will be consistent, which may not be necessarily true.
      */
-    public PdbDataContainer init(StructureData structureData) {
+    public PdbDataContainer init(StructureData structureData, String diffrnId) {
+        Integer diffractionSetId = Optional.ofNullable(diffrnId)
+                .filter(StringUtils::isNotBlank)
+                .map(Integer::valueOf)
+                .orElse(1);
         EntryData entry = structureData.getEntryData();
+        EntryData.ReflnsShell reflectionsShell = chooseReflectionsShell(diffractionSetId, entry);
         return add(MxrdrMetadataField.PDB_ID, entry.getRcsbId())
-                .add(MxrdrMetadataField.BEAMLINE_INSTITUTION, getFirst(EntryData::getDiffrnSource, EntryData.DiffrnSource::getDiffrnId, entry)
+                .add(MxrdrMetadataField.BEAMLINE_INSTITUTION,
+                        getIndexed(EntryData::getDiffrnSource, EntryData.DiffrnSource::getDiffrnId, diffractionSetId, entry)
                         .map(EntryData.DiffrnSource::getPdbxSynchrotronSite))
-                .add(MxrdrMetadataField.BEAMLINE, getFirst(EntryData::getDiffrnSource, EntryData.DiffrnSource::getDiffrnId, entry)
+                .add(MxrdrMetadataField.BEAMLINE,
+                        getIndexed(EntryData::getDiffrnSource, EntryData.DiffrnSource::getDiffrnId, diffractionSetId, entry)
                         .map(EntryData.DiffrnSource::getPdbxSynchrotronBeamline))
-                .add(MxrdrMetadataField.DETECTOR_TYPE, getFirst(EntryData::getDiffrnDetector, EntryData.DiffrnDetector::getDiffrnId, entry)
+                .add(MxrdrMetadataField.DETECTOR_TYPE,
+                        getIndexed(EntryData::getDiffrnDetector, EntryData.DiffrnDetector::getDiffrnId, diffractionSetId, entry)
                         .map(EntryData.DiffrnDetector::getType))
-                .addAll(MxrdrMetadataField.DATA_COLLECTION_WAVELENGTH, getAll(EntryData::getDiffrnSource, EntryData.DiffrnSource::getDiffrnId, entry).stream()
+                .add(MxrdrMetadataField.DATA_COLLECTION_WAVELENGTH,
+                        getIndexed(EntryData::getDiffrnSource, EntryData.DiffrnSource::getDiffrnId, diffractionSetId, entry)
                         .map(EntryData.DiffrnSource::getPdbxWavelengthList))
+                .add(MxrdrMetadataField.DATA_COLLECTION_TEMPERATURE,
+                        getIndexed(EntryData::getDiffrn, EntryData.Diffrn::getId, diffractionSetId, entry)
+                        .map(EntryData.Diffrn::getAmbientTemp))
                 .add(MxrdrMetadataField.SPACE_GROUP, SymmetryStructureMapper.mapSpaceGroupNumber(emptyForNull(entry.getSymmetry().getIntTablesNumber())))
                 .add(MxrdrMetadataField.UNIT_CELL_PARAMETER_A, entry.getCell().getLengthA())
                 .add(MxrdrMetadataField.UNIT_CELL_PARAMETER_B, entry.getCell().getLengthB())
@@ -59,36 +74,60 @@ class PdbDataContainer {
                 .add(MxrdrMetadataField.UNIT_CELL_PARAMETER_BETA, entry.getCell().getAngleBeta())
                 .add(MxrdrMetadataField.UNIT_CELL_PARAMETER_GAMMA, entry.getCell().getAngleGamma())
                 .add(MxrdrMetadataField.OVERALL_COMPLETENESS, entry.getPdbxVrptSummary().getDataCompleteness())
-                .add(MxrdrMetadataField.OVERALL_I_SIGMA, getFirst(EntryData::getReflns, EntryData.Reflns::getPdbxOrdinal, entry)
+                .add(MxrdrMetadataField.OVERALL_I_SIGMA,
+                        getIndexedForIndexOnList(EntryData::getReflns, EntryData.Reflns::getPdbxDiffrnId, diffractionSetId, entry)
                         .map(EntryData.Reflns::getPdbxNetIOverSigmaI))
-                .add(MxrdrMetadataField.OVERALL_R_MERGE, getFirst(EntryData::getReflns, EntryData.Reflns::getPdbxOrdinal, entry)
+                .add(MxrdrMetadataField.OVERALL_CC,
+                        getIndexedForIndexOnList(EntryData::getReflns, EntryData.Reflns::getPdbxDiffrnId, diffractionSetId, entry)
+                        .map(EntryData.Reflns::getPdbxCcHalf))
+                .add(MxrdrMetadataField.OVERALL_R_MERGE,
+                        getIndexedForIndexOnList(EntryData::getReflns, EntryData.Reflns::getPdbxDiffrnId, diffractionSetId, entry)
                         .map(EntryData.Reflns::getPdbxRMergeIObs))
-                .add(MxrdrMetadataField.OVERALL_DATA_RESOLUTION_RANGE_LOW, getFirst(EntryData::getReflns, EntryData.Reflns::getPdbxOrdinal, entry)
+                .add(MxrdrMetadataField.OVERALL_DATA_RESOLUTION_RANGE_LOW,
+                        getIndexedForIndexOnList(EntryData::getReflns, EntryData.Reflns::getPdbxDiffrnId, diffractionSetId, entry)
                         .map(EntryData.Reflns::getdResolutionLow))
-                .add(MxrdrMetadataField.OVERALL_DATA_RESOLUTION_RANGE_HIGH, getFirst(EntryData::getReflns, EntryData.Reflns::getPdbxOrdinal, entry)
+                .add(MxrdrMetadataField.OVERALL_DATA_RESOLUTION_RANGE_HIGH,
+                        getIndexedForIndexOnList(EntryData::getReflns, EntryData.Reflns::getPdbxDiffrnId, diffractionSetId, entry)
                         .map(EntryData.Reflns::getdResolutionHigh))
-                .add(MxrdrMetadataField.OVERALL_NUMBER_OBSERVED_REFLECTIONS, getFirst(EntryData::getReflns, EntryData.Reflns::getPdbxOrdinal, entry)
+                .add(MxrdrMetadataField.OVERALL_NUMBER_OBSERVED_REFLECTIONS,
+                        getIndexedForIndexOnList(EntryData::getReflns, EntryData.Reflns::getPdbxDiffrnId, diffractionSetId, entry)
                         .map(EntryData.Reflns::getNumberObs))
-                .add(MxrdrMetadataField.HRS_I_SIGMA, getFirst(EntryData::getReflnsShell, EntryData.ReflnsShell::getPdbxOrdinal, entry)
-                        .map(EntryData.ReflnsShell::getMeanIOverSigIObs))
-                .add(MxrdrMetadataField.HRS_R_MERGE, getFirst(EntryData::getReflnsShell, EntryData.ReflnsShell::getPdbxOrdinal, entry)
-                        .map(EntryData.ReflnsShell::getRMergeIObs))
-                .add(MxrdrMetadataField.HRS_DATA_RESOLUTION_RANGE_LOW, getFirst(EntryData::getReflnsShell, EntryData.ReflnsShell::getPdbxOrdinal, entry)
-                        .map(EntryData.ReflnsShell::getdResLow))
-                .add(MxrdrMetadataField.HRS_DATA_RESOLUTION_RANGE_HIGH, getFirst(EntryData::getReflnsShell, EntryData.ReflnsShell::getPdbxOrdinal, entry)
-                        .map(EntryData.ReflnsShell::getdResHigh))
-                .add(MxrdrMetadataField.MONOCHROMATOR, getFirst(EntryData::getDiffrnRadiation, EntryData.DiffrnRadiation::getDiffrnId, entry)
+                .add(MxrdrMetadataField.OVERALL_NUMBER_POSSIBLE_REFLECTIONS, get(MxrdrMetadataField.OVERALL_NUMBER_OBSERVED_REFLECTIONS)
+                        .filter(StringUtils::isNotBlank)
+                        .map(Double::valueOf)
+                        .flatMap(observed -> get(MxrdrMetadataField.OVERALL_COMPLETENESS)
+                                .filter(StringUtils::isNotBlank)
+                                .map(Double::valueOf)
+                                .map(completeness -> (100 / completeness) * observed)
+                                .map(Math::round)
+                                .map(String::valueOf)))
+                .add(MxrdrMetadataField.HRS_I_SIGMA, reflectionsShell.getMeanIOverSigIObs())
+                .add(MxrdrMetadataField.HRS_R_MERGE, reflectionsShell.getRMergeIObs())
+                .add(MxrdrMetadataField.HRS_DATA_RESOLUTION_RANGE_LOW, reflectionsShell.getdResLow())
+                .add(MxrdrMetadataField.HRS_DATA_RESOLUTION_RANGE_HIGH, reflectionsShell.getdResHigh())
+                .add(MxrdrMetadataField.HRS_CC, reflectionsShell.getPdbxCcHalf())
+                .add(MxrdrMetadataField.HRS_NUMBER_OBSERVED_REFLECTIONS, reflectionsShell.getNumberMeasuredObs())
+                .add(MxrdrMetadataField.HRS_NUMBER_UNIQUE_REFLECTIONS, reflectionsShell.getNumberUniqueAll())
+                .add(MxrdrMetadataField.HRS_NUMBER_POSSIBLE_REFLECTIONS, reflectionsShell.getNumberPossible())
+                .add(MxrdrMetadataField.MONOCHROMATOR,
+                        getIndexed(EntryData::getDiffrnRadiation, EntryData.DiffrnRadiation::getDiffrnId, diffractionSetId, entry)
                         .map(EntryData.DiffrnRadiation::getMonochromator))
                 .addAll(MxrdrMetadataField.PROCESSING_SOFTWARE, entry.getSoftware().stream()
                         .filter(s -> s.getClassification().equals(DATA_REDUCTION))
                         .map(EntryData.Software::getName)
                         .map(ProcessingSoftwareMapper::map))
-                // For the following two we do not have numeric id, so we use the order of encounter
-                .add(MxrdrMetadataField.REFINEMENT_FACTOR_R_WORK, getFirst(EntryData::getRefine, index -> 1, entry)
+                .add(MxrdrMetadataField.REFINEMENT_FACTOR_R_WORK,
+                        getIndexedForIndexOnList(EntryData::getRefine, EntryData.Refine::getPdbxDiffrnId, diffractionSetId, entry)
                         .map(EntryData.Refine::getLsRFactorRWork))
-                .add(MxrdrMetadataField.REFINEMENT_FACTOR_R_FREE, getFirst(EntryData::getRefine, index -> 1, entry)
+                .add(MxrdrMetadataField.REFINEMENT_FACTOR_R_FREE,
+                        getIndexedForIndexOnList(EntryData::getRefine, EntryData.Refine::getPdbxDiffrnId, diffractionSetId, entry)
                         .map(EntryData.Refine::getLsRFactorRFree))
-                .add(MxrdrMetadataField.MOLECULAR_WEIGHT, entry.getRcsbEntryInfo().getMolecularWeight())
+                .addAll(MxrdrMetadataField.MACROMOLLECULE_TYPE, determineMacromolleculeType(entry))
+                .add(MxrdrMetadataField.MOLECULAR_WEIGHT, Optional.ofNullable(entry.getRcsbEntryInfo().getMolecularWeight())
+                        .filter(StringUtils::isNotBlank)
+                        .map(Double::valueOf)
+                        .map(v -> v * 1000.0)
+                        .map(String::valueOf))
                 .addAll(MxrdrMetadataField.ENTITY_ID, IntStream.rangeClosed(1, entry.getRcsbEntryInfo().getPolymerEntityCount())
                         .mapToObj(String::valueOf))
                 .addAll(MxrdrMetadataField.ENTITY_SEQUENCE, structureData.getPolymerEntities().stream()
@@ -149,31 +188,102 @@ class PdbDataContainer {
     }
 
     /**
-     * Gets all data from inner collection of entryData sorting by values of index.
+     * Gets the element with the given index from the inner collection of data
+     * object (when field containing index can store only one value) or the only
+     * element of that collection when it has only one element and the index
+     * field is empty and the given index was equal to one.
      */
-    static <D, T> List<T> getAll(Function<D, List<T>> getter, Function<T, Integer> indexGetter, D entryData) {
-        return getter.apply(entryData)
-                .stream()
-                .sorted(Comparator.comparingInt(indexGetter::apply))
-                .collect(Collectors.toList());
+    static <D, T> Optional<T> getIndexed(Function<D, List<T>> getter, Function<T, Integer> indexGetter, Integer indexValue, D entryData) {
+        List<T> innerData = getter.apply(entryData);
+        return innerData.size() == 1 && indexGetter.apply(innerData.get(0)) == null && indexValue == 1
+                ? Optional.ofNullable(innerData.get(0))
+                : innerData.stream()
+                    .filter(t -> indexValue.equals(indexGetter.apply(t)))
+                    .findFirst();
     }
 
     /**
-     * Gets the first (according to index value) entry from inner collection of entryData.
+     * Gets the element with the given index from the inner collection of data
+     * object (when field containing index can store multiple indices – ie.
+     * it's an array in json) or the only element of that collection when it
+     * has only one element and the index field is empty and the given index
+     * was equal to one.
      */
-    static <D, T> Optional<T> getFirst(Function<D, List<T>> getter, Function<T, Integer> indexGetter, D entryData) {
-        return getter.apply(entryData)
-                .stream()
-                .filter(t -> indexGetter.apply(t).equals(FIRST_INDEX))
+    static <D, T> Optional<T> getIndexedForIndexOnList(Function<D, List<T>> getter, Function<T, List<Integer>> indexGetter, Integer indexValue, D entryData) {
+        List<T> innerData = getter.apply(entryData);
+        return innerData.size() == 1 && indexGetter.apply(innerData.get(0)).isEmpty() && indexValue == 1
+                ? Optional.ofNullable(innerData.get(0))
+                : innerData.stream()
+                .filter(t -> indexGetter.apply(t).contains(indexValue))
                 .findFirst();
     }
 
     // -------------------- PRIVATE --------------------
 
+    /**
+     * For the given id of diffraction set read dResolutionHigh from
+     * Reflns with that id, then from ReflnsShell objects for that
+     * diffraction set choose the one with resHigh = dResolutionHigh.
+     */
+    private EntryData.ReflnsShell chooseReflectionsShell(Integer diffractionSetId, EntryData entry) {
+        List<EntryData.ReflnsShell> reflnsShells = entry.getReflnsShell();
+        long shellsWithoutDiffrnId = reflnsShells.stream()
+                .filter(s -> s.getPdbxDiffrnId().isEmpty())
+                .count();
+
+        // If ReflnsShells do not have diffraction set id (eg. 1TIL) and we
+        // want data for the first diffraction set, we treat these shells as
+        // belonging to that set.
+        if (shellsWithoutDiffrnId == reflnsShells.size() && diffractionSetId == 1) {
+            return reflnsShells.stream()
+                    .filter(s -> StringUtils.isNotBlank(s.getdResHigh()))
+                    .min(Comparator.comparingDouble(s -> Double.parseDouble(s.getdResHigh())))
+                    .orElse(new EntryData.ReflnsShell());
+        } else {
+            String maxResolution = entry.getReflns().stream()
+                    .filter(r -> r.getPdbxDiffrnId().contains(diffractionSetId))
+                    .map(EntryData.Reflns::getdResolutionHigh)
+                    .findFirst().orElse(null);
+
+            return reflnsShells.stream()
+                    .filter(s -> s.getPdbxDiffrnId().contains(diffractionSetId))
+                    .filter(s -> Objects.equals(s.getdResHigh(), maxResolution))
+                    .findFirst().orElse(new EntryData.ReflnsShell());
+        }
+    }
+
+    private Stream<String> determineMacromolleculeType(EntryData entryData) {
+        Set<MacromolleculeType> types = new HashSet<>();
+        EntryData.RcsbEntryInfo entryInfo = entryData.getRcsbEntryInfo();
+        if (hasPositiveCount(entryInfo.getPolymerEntityCountDna())) {
+            types.add(MacromolleculeType.DNA);
+        }
+        if (hasPositiveCount(entryInfo.getPolymerEntityCountRna())) {
+            types.add(MacromolleculeType.RNA);
+        }
+        if (hasPositiveCount(entryInfo.getPolymerEntityCountNucleicAcid())) {
+            types.add(MacromolleculeType.DNA);
+            types.add(MacromolleculeType.RNA);
+        }
+        if (hasPositiveCount(entryInfo.getPolymerEntityCountNucleicAcidHybrid())) {
+            types.add(MacromolleculeType.RNA_DNA_HYBRID);
+        }
+        if (hasPositiveCount(entryInfo.getPolymerEntityCountProtein())) {
+            types.add(MacromolleculeType.PROTEIN);
+        }
+        return types.stream()
+                .map(MacromolleculeType::getName);
+    }
+
+    private boolean hasPositiveCount(Integer count) {
+        return count != null && count > 0;
+    }
+
     private static String formatDate(String value) {
-        return StringUtils.isNotBlank(value) && value.length() >= 10 && value.matches("\\d\\d\\d\\d-\\d\\d-\\d\\d.*")
-                ? value.substring(0, 10)
-                : EMPTY;
+        return StringUtils.isNotBlank(value) && value.length() >= 10
+               && value.matches("\\d\\d\\d\\d-\\d\\d-\\d\\d.*")
+                    ? value.substring(0, 10)
+                    : EMPTY;
     }
 
     private static String emptyForNull(String value) {
