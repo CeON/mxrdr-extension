@@ -5,9 +5,8 @@
     <o:importConstants type="pl.edu.icm.pl.mxrdr.extension.notification.MxrdrNotificationType" />
     <f:loadBundle var="mxrdrBundle" basename="MxrdrBundle"/>
 
-    <!--@elvariable id="item" type="edu.harvard.iq.dataverse.persistence.user.UserNotification"-->
+    <!--@elvariable id="item" type="edu.harvard.iq.dataverse.notification.dto.UserNotificationDTO"-->
     <ui:fragment rendered="#{item.type == MxrdrNotificationType.MXRDR_WORKFLOW_SUCCESS}">
-        <i class="icon-dataset text-icon-inline text-muted"></i>
         <h:outputFormat value="#{mxrdrBundle['workflow.success.xds']}" escape="false">
             <o:param>
                 <a href="${pageContext.request.contextPath}/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}"
@@ -19,7 +18,6 @@
     </ui:fragment>
 
     <ui:fragment rendered="#{item.type == MxrdrNotificationType.MXRDR_WORKFLOW_FAIL}">
-        <i class="icon-dataset text-icon-inline text-muted"></i>
         <h:outputFormat value="#{mxrdrBundle['workflow.fail.xds']}" escape="false">
             <o:param>
                 <a href="${pageContext.request.contextPath}/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}"
