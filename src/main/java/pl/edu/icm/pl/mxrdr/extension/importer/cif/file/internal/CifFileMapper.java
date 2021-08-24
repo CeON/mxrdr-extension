@@ -31,6 +31,7 @@ import pl.edu.icm.pl.mxrdr.extension.importer.SymmetryStructureMapper;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -454,6 +455,11 @@ public class CifFileMapper {
         }
 
         @Override
+        public List<String> getColumnNames() {
+            return Collections.emptyList();
+        }
+
+        @Override
         public String getCategoryName() {
             return name;
         }
@@ -635,6 +641,11 @@ public class CifFileMapper {
         @Override
         public Map<String, Column<?>> getColumns() {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<String> getColumnNames() {
+            return Collections.emptyList();
         }
     }
 }
