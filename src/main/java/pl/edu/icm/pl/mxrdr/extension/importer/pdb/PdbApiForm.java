@@ -3,7 +3,8 @@ package pl.edu.icm.pl.mxrdr.extension.importer.pdb;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldKey;
 
 public enum PdbApiForm implements ImporterFieldKey {
-    STRUCTURE_ID;
+    STRUCTURE_ID,
+    DIFFRN_ID;
 
     @Override
     public String getName() {

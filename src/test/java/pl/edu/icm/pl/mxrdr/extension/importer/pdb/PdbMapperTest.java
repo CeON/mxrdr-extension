@@ -30,7 +30,7 @@ class PdbMapperTest {
     @DisplayName("Should create ResultFields from StructureData")
     void toResultFields() {
         // given
-        container.init(new StructureDataProvider().createStructureData());
+        container.init(new StructureDataProvider().createStructureData(), null);
 
         // when
         List<ResultField> resultFields = mapper.toResultFields();

@@ -73,7 +73,8 @@ public enum MxrdrMetadataField {
     UNIT_CELL_PARAMETER_GAMMA("unitCellParameterGamma"),
     REFINEMENT_FACTOR_R_WORK("refinementFactorRWork"),
     REFINEMENT_FACTOR_R_FREE("refinementFactorRFree"),
-    REFINEMENT_FACTORS("refinementFactors");
+    REFINEMENT_FACTORS("refinementFactors"),
+    MACROMOLLECULE_TYPE("macromolleculeType");
 
     private final String value;
 
