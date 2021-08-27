@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.importer.metadata.ImporterRegistry;
 import edu.harvard.iq.dataverse.importer.metadata.MetadataImporter;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import pl.edu.icm.pl.mxrdr.extension.importer.MetadataBlock;
+import pl.edu.icm.pl.mxrdr.extension.importer.common.CommonMapper;
 import pl.edu.icm.pl.mxrdr.extension.importer.pdb.model.StructureData;
 
 import javax.annotation.PostConstruct;
@@ -69,7 +70,7 @@ public class PdbApiImporter implements MetadataImporter {
         String structureId = (String) importerInput.get(PdbApiForm.STRUCTURE_ID);
         String diffractionId = (String) importerInput.get(PdbApiForm.DIFFRN_ID);
         StructureData structureData = apiCaller.getStructureData(structureId);
-        return new PdbMapper(new PdbDataContainer().init(structureData, diffractionId))
+        return new CommonMapper(new PdbDataContainer().init(structureData, diffractionId))
                 .toResultFields();
     }
 

@@ -1,4 +1,4 @@
-package pl.edu.icm.pl.mxrdr.extension.importer.cif.file.internal;
+package pl.edu.icm.pl.mxrdr.extension.importer.cif.file;
 
 import org.rcsb.cif.CifIO;
 import org.rcsb.cif.model.CifFile;

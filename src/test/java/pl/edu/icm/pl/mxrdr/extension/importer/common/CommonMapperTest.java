@@ -1,4 +1,4 @@
-package pl.edu.icm.pl.mxrdr.extension.importer.pdb;
+package pl.edu.icm.pl.mxrdr.extension.importer.common;
 
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import org.apache.commons.lang.StringUtils;
@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
+import pl.edu.icm.pl.mxrdr.extension.importer.pdb.PdbDataContainer;
+import pl.edu.icm.pl.mxrdr.extension.importer.pdb.StructureDataProvider;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -13,24 +15,25 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-class PdbMapperTest {
+class CommonMapperTest {
 
-    private PdbDataContainer container;
-    private PdbMapper mapper;
+    private BaseDataContainer<?> container;
+    private CommonMapper mapper;
 
     @BeforeEach
     void setUp() {
-        container = new PdbDataContainer();
-        mapper = new PdbMapper(container);
+        container = new BaseDataContainer<>();
+        mapper = new CommonMapper(container);
     }
 
     // -------------------- TESTS --------------------
 
     @Test
-    @DisplayName("Should create ResultFields from StructureData")
+    @DisplayName("Should create ResultFields from filled container")
     void toResultFields() {
         // given
-        container.init(new StructureDataProvider().createStructureData(), null);
+        PdbDataContainer pdbDataContainer = new PdbDataContainer().init(new StructureDataProvider().createStructureData(), null);
+        mapper = new CommonMapper(pdbDataContainer);
 
         // when
         List<ResultField> resultFields = mapper.toResultFields();
@@ -46,24 +49,24 @@ class PdbMapperTest {
                 .flatExtracting(ResultField::getChildren)
                 .extracting(ResultField::getName, ResultField::getValue)
                 .containsExactly(
-                    tuple("unitCellParameterA", "104.81"),
-                    tuple("unitCellParameterB", "138.62"),
-                    tuple("unitCellParameterC", "107.25"),
-                    tuple("unitCellParameterAlpha", "90.0"),
-                    tuple("unitCellParameterBeta", "117.21"),
-                    tuple("unitCellParameterGamma", "90.0"));
+                        tuple("unitCellParameterA", "104.81"),
+                        tuple("unitCellParameterB", "138.62"),
+                        tuple("unitCellParameterC", "107.25"),
+                        tuple("unitCellParameterAlpha", "90.0"),
+                        tuple("unitCellParameterBeta", "117.21"),
+                        tuple("unitCellParameterGamma", "90.0"));
         assertThat(resultFields).filteredOn(f -> "entity".equals(f.getName()))
                 .flatExtracting(ResultField::getChildren)
                 .extracting(ResultField::getName, ResultField::getValue)
                 .containsExactly(
-                    tuple("entityId", "1"), tuple("entitySequence", "QWERTY1"),
-                    tuple("entityId", "2"), tuple("entitySequence", "QWERTY2"));
+                        tuple("entityId", "1"), tuple("entitySequence", "QWERTY1"),
+                        tuple("entityId", "2"), tuple("entitySequence", "QWERTY2"));
         assertThat(resultFields).filteredOn(f -> "processingSoftware".equals(f.getName()))
                 .flatExtracting(ResultField::getChildren)
                 .extracting(ResultField::getValue)
                 .containsExactly("XDS");
     }
-    /*
+
     @Test
     @DisplayName("Should create single ResultField with value")
     void single() {
@@ -153,7 +156,7 @@ class PdbMapperTest {
                         tuple(StringUtils.EMPTY, "A"),
                         tuple(StringUtils.EMPTY, "B"));
     }
-    */
+
     @Test
     @DisplayName("Should create empty single/vocabulary field when there is no data or no proper data for the given key")
     void emptySingle() {
