@@ -13,7 +13,7 @@ public class StructureDataProvider {
 
     // -------------------- LOGIC --------------------
 
-    StructureData createStructureData() {
+    public StructureData createStructureData() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         try {

@@ -4,8 +4,8 @@ import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldKey;
 
 public enum CifFileFormKeys implements ImporterFieldKey {
     PDB_ID,
-    CIF_FILE
-    ;
+    DIFFRN_ID,
+    CIF_FILE;
 
     @Override
     public String getName() {

@@ -10,8 +10,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.omnifaces.cdi.Eager;
 import org.rcsb.cif.schema.mm.MmCifFile;
 import pl.edu.icm.pl.mxrdr.extension.importer.MetadataBlock;
-import pl.edu.icm.pl.mxrdr.extension.importer.cif.file.internal.CifFileMapper;
-import pl.edu.icm.pl.mxrdr.extension.importer.cif.file.internal.CifFileReader;
+import pl.edu.icm.pl.mxrdr.extension.importer.common.CommonMapper;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 @Eager
 @ApplicationScoped
@@ -58,17 +56,22 @@ public class CifFileImporter implements MetadataImporter {
     public ImporterData getImporterData() {
         return new ImporterData()
                 .addDescription("importer.form.main.description")
-                .addField(ImporterData.ImporterField.of(CifFileFormKeys.PDB_ID, ImporterFieldType.INPUT, false, "importer.form.pdbId.input", "importer.form.pdbId.hint"))
-                .addField(ImporterData.ImporterField.of(CifFileFormKeys.CIF_FILE, ImporterFieldType.UPLOAD_TEMP_FILE, false, "importer.form.pdb.upload.component", "importer.form.pdb.upload.hint"));
+                .addField(ImporterData.ImporterField.of(CifFileFormKeys.PDB_ID, ImporterFieldType.INPUT, false,
+                        "importer.form.pdbId.input", "importer.form.pdbId.hint"))
+                .addField(ImporterData.ImporterField.of(CifFileFormKeys.CIF_FILE, ImporterFieldType.UPLOAD_TEMP_FILE, false,
+                        "importer.form.cif.upload.component", "importer.form.cif.upload.hint"))
+                .addField(ImporterData.ImporterField.of(CifFileFormKeys.DIFFRN_ID, ImporterFieldType.INPUT,
+                        false, "importer.form.diffrn.id.input", "importer.form.diffrn.id.hint"));
     }
 
     @Override
     public List<ResultField> fetchMetadata(Map<ImporterFieldKey, Object> importerInput) {
         File cifFile = (File) importerInput.get(CifFileFormKeys.CIF_FILE);
         String pdbId = (String) importerInput.get(CifFileFormKeys.PDB_ID);
+        String diffrnId = (String) importerInput.get(CifFileFormKeys.DIFFRN_ID);
         MmCifFile mmCifFile = CifFileReader.readAndParseCifFile(cifFile, pdbId);
-        return new CifFileMapper().asResultFields(mmCifFile)
-                .collect(Collectors.toList());
+        return new CommonMapper(new CifDataContainer().init(mmCifFile.getFirstBlock(), diffrnId))
+                .toResultFields();
     }
 
     @Override

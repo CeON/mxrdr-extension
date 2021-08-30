@@ -5,43 +5,30 @@ import pl.edu.icm.pl.mxrdr.extension.importer.MacromolleculeType;
 import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
 import pl.edu.icm.pl.mxrdr.extension.importer.ProcessingSoftwareMapper;
 import pl.edu.icm.pl.mxrdr.extension.importer.SymmetryStructureMapper;
+import pl.edu.icm.pl.mxrdr.extension.importer.common.BaseDataContainer;
 import pl.edu.icm.pl.mxrdr.extension.importer.pdb.model.EntryData;
 import pl.edu.icm.pl.mxrdr.extension.importer.pdb.model.PolymerEntityData;
 import pl.edu.icm.pl.mxrdr.extension.importer.pdb.model.StructureData;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
-class PdbDataContainer {
-    private static final String DATA_REDUCTION = "data reduction";
-    private static final String PDB_DOI_TEMPLATE = "10.2210/pdb%s/pdb";
-
-    private Map<MxrdrMetadataField, List<String>> container = new HashMap<>();
+public class PdbDataContainer extends BaseDataContainer<PdbDataContainer> {
 
     // -------------------- LOGIC --------------------
 
     /**
      * Fills the container with values from {@link StructureData} according
-     * to the needs of {@link PdbMapper}.
-     *
-     * Here we've made one but strong assumption: in case of taking single
-     * element from the list of inner objects we always choose the first
-     * (that indexed with one or first on the list) and assume that the
-     * result will be consistent, which may not be necessarily true.
+     * to the needs of {@link pl.edu.icm.pl.mxrdr.extension.importer.common.CommonMapper}.
      */
     public PdbDataContainer init(StructureData structureData, String diffrnId) {
         Integer diffractionSetId = Optional.ofNullable(diffrnId)
@@ -148,43 +135,6 @@ class PdbDataContainer {
                 .addAll(MxrdrMetadataField.CITATION_AUTHOR, entry.getRcsbPrimaryCitation().getRcsbAuthors().stream())
                 .add(MxrdrMetadataField.CITATION_JOURNAL, entry.getRcsbPrimaryCitation().getJournalAbbrev())
                 .add(MxrdrMetadataField.CITATION_YEAR, entry.getRcsbPrimaryCitation().getYear());
-    }
-
-    PdbDataContainer add(MxrdrMetadataField key, Optional<String> value) {
-        return add(key, value.orElse(EMPTY));
-    }
-
-    PdbDataContainer add(MxrdrMetadataField key, String value) {
-        List<String> values = container.putIfAbsent(key, new ArrayList<>());
-        values = values != null ? values : container.get(key);
-        values.add(value != null ? value : EMPTY);
-        return this;
-    }
-
-    PdbDataContainer addAll(MxrdrMetadataField key, Stream<String> valueList) {
-        List<String> values = container.putIfAbsent(key, new ArrayList<>());
-        values = values != null ? values : container.get(key);
-        values.addAll(valueList.collect(Collectors.toList()));
-        return this;
-    }
-
-    /**
-     * Returns the first element for key
-     */
-    Optional<String> get(MxrdrMetadataField key) {
-        return container.getOrDefault(key, Collections.emptyList()).stream()
-                .findFirst();
-    }
-
-    Optional<String> getIndexed(MxrdrMetadataField key, int index) {
-        List<String> values = container.getOrDefault(key, Collections.emptyList());
-        return !(index < 0 || index >= values.size())
-                ? Optional.ofNullable(values.get(index))
-                : Optional.empty();
-    }
-
-    List<String> getAll(MxrdrMetadataField key) {
-        return container.getOrDefault(key, Collections.emptyList());
     }
 
     /**

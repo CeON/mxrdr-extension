@@ -11,8 +11,6 @@ import pl.edu.icm.pl.mxrdr.extension.importer.pdb.model.StructureData;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.list;
@@ -78,50 +76,6 @@ class PdbDataContainerTest {
         assertThat(container.getAll(MxrdrMetadataField.ENTITY_ID)).containsExactly("1", "2");
         assertThat(container.getAll(MxrdrMetadataField.ENTITY_SEQUENCE)).containsExactly("QWERTY1", "QWERTY2");
         assertThat(container.get(MxrdrMetadataField.MACROMOLLECULE_TYPE)).hasValue("Protein");
-    }
-
-    @Test
-    @DisplayName("Should add and retrieve single added elements")
-    void addAndRetrieve() {
-        // given & when
-        container.add(MxrdrMetadataField.UNIT_CELL_PARAMETER_A, "A");
-        container.add(MxrdrMetadataField.UNIT_CELL_PARAMETER_B, Optional.ofNullable("B"));
-
-        String elementA = container.get(MxrdrMetadataField.UNIT_CELL_PARAMETER_A).orElse(null);
-        String elementB = container.get(MxrdrMetadataField.UNIT_CELL_PARAMETER_B).orElse(null);
-
-        // then
-        assertThat(elementA).isEqualTo("A");
-        assertThat(elementB).isEqualTo("B");
-    }
-
-    @Test
-    @DisplayName("Should add and retrieve collection of elements")
-    void addAndRetrieveCollection() {
-        // given & when
-        container.addAll(MxrdrMetadataField.ENTITY_ID, Stream.of("1", "2", "3"));
-
-        List<String> elements = container.getAll(MxrdrMetadataField.ENTITY_ID);
-
-        // then
-        assertThat(elements).containsExactly("1", "2", "3");
-    }
-
-    @Test
-    @DisplayName("Should be able to retrieve first or the chosen by index or all elements for key")
-    void retrieveElements() {
-        // given
-        container.addAll(MxrdrMetadataField.ENTITY_ID, Stream.of("1", "2", "3"));
-
-        // when
-        String first = container.get(MxrdrMetadataField.ENTITY_ID).orElse(null);
-        String last = container.getIndexed(MxrdrMetadataField.ENTITY_ID, 2).orElse(null);
-        List<String> all = container.getAll(MxrdrMetadataField.ENTITY_ID);
-
-        // then
-        assertThat(first).isEqualTo("1");
-        assertThat(last).isEqualTo("3");
-        assertThat(all).containsExactly("1", "2", "3");
     }
 
     @Test
