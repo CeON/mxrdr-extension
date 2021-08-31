@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.UserNotification;
-import edu.harvard.iq.dataverse.persistence.user.UserNotificationDao;
+import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -34,7 +34,7 @@ import static pl.edu.icm.pl.mxrdr.extension.notification.MxrdrNotificationType.M
 
 public class MxrdrNotificationSenderTest {
 
-    UserNotificationDao notifications = Mockito.mock(UserNotificationDao.class);
+    UserNotificationRepository notifications = Mockito.mock(UserNotificationRepository.class);
     MailService mailService = Mockito.mock(MailService.class);
     MxrdrEmailFactory mailFactory = Mockito.mock(MxrdrEmailFactory.class);
     Clock clock = Clock.fixed(Instant.parse("2020-06-01T09:10:20.00Z"), UTC);
@@ -49,7 +49,7 @@ public class MxrdrNotificationSenderTest {
         doAnswer(invocation -> {
             ((UserNotification) invocation.getArgument(0)).setId(1L);
             return null;
-        }).when(notifications).save(any(UserNotification.class));
+        }).when(notifications).saveAndFlush(any(UserNotification.class));
     }
 
     @Test
@@ -70,8 +70,7 @@ public class MxrdrNotificationSenderTest {
         assertThat(result.getUserNotification().getObjectId()).isEqualTo(dataset.getId());
         assertThat(result.getUserNotification().getUser()).isEqualTo(user);
         assertThat(result.getUserNotification().getType()).isEqualTo(notificationType);
-        assertThat(result.getUserNotification().getSendDate())
-                .isEqualTo(new SimpleDateFormat("MMMM d, yyyy h:mm a z").format(Timestamp.from(clock.instant())));
+        assertThat(result.getUserNotification().getSendDate()).isEqualTo(Timestamp.from(clock.instant()));
     }
 
     @Test
@@ -90,8 +89,7 @@ public class MxrdrNotificationSenderTest {
         assertThat(result.getUserNotification().getObjectId()).isEqualTo(dataset.getId());
         assertThat(result.getUserNotification().getUser()).isEqualTo(user);
         assertThat(result.getUserNotification().getType()).isEqualTo(notificationType);
-        assertThat(result.getUserNotification().getSendDate())
-                .isEqualTo(new SimpleDateFormat("MMMM d, yyyy h:mm a z").format(Timestamp.from(clock.instant())));
+        assertThat(result.getUserNotification().getSendDate()).isEqualTo(Timestamp.from(clock.instant()));
     }
 
     // -------------------- TESTS --------------------
