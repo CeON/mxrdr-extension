@@ -1,11 +1,13 @@
 package pl.edu.icm.pl.mxrdr.extension.importer.xds;
 
+import edu.harvard.iq.dataverse.importer.metadata.ImporterConstants;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterData;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldKey;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldType;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterRegistry;
 import edu.harvard.iq.dataverse.importer.metadata.MetadataImporter;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
+import org.apache.commons.lang3.StringUtils;
 import org.omnifaces.cdi.Eager;
 import pl.edu.icm.pl.mxrdr.extension.importer.MetadataBlock;
 import pl.edu.icm.pl.mxrdr.extension.xds.output.XdsOutputFileParser;
@@ -25,6 +27,8 @@ import static java.util.Collections.emptyList;
 @Eager
 @ApplicationScoped
 public class XdsImporter implements MetadataImporter {
+
+    private static final String[] ALLOWED_FILE_NAMES = {"CORRECT.LP", "XDS.INP"};
 
     private final ImporterRegistry registry;
 
@@ -78,9 +82,24 @@ public class XdsImporter implements MetadataImporter {
     public Map<ImporterFieldKey, String> validate(Map<ImporterFieldKey, Object> importerInput) {
         Map<ImporterFieldKey, String> errors = new HashMap<>();
         File xdsFile = (File) importerInput.get(XdsImporterForm.XDS_FILE);
-        if (xdsFile.length() < 1) {
+        if (xdsFile != null && !hasProperName(xdsFile)) {
             errors.put(XdsImporterForm.XDS_FILE, "xds.error.wrongFile");
         }
         return errors;
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private boolean hasProperName(File file) {
+        String fileName = file.getName();
+        boolean result = false;
+        for (String allowedName : ALLOWED_FILE_NAMES) {
+            String[] temporaryFileNameParts = fileName.split(ImporterConstants.FILE_NAME_SEPARATOR);
+            String originalName = temporaryFileNameParts.length > 0
+                    ? temporaryFileNameParts[temporaryFileNameParts.length - 1]
+                    : StringUtils.EMPTY;
+            result = result || allowedName.equalsIgnoreCase(originalName);
+        }
+        return result;
     }
 }
