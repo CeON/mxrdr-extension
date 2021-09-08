@@ -1,13 +1,10 @@
 package pl.edu.icm.pl.mxrdr.extension.importer.xdsinp;
 
-import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldKey;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collections;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
