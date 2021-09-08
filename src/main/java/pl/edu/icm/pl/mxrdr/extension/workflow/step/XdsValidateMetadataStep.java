@@ -34,7 +34,10 @@ public class XdsValidateMetadataStep implements WorkflowStep {
             return new Success();
         } else {
             return new Failure("Dataset version should have exactly one dataCollection field. " +
-                    "Current version has: " + dataCollectionFieldsCount + ".");
+                    "Current version has: " + dataCollectionFieldsCount + ".",
+                    "The analysis was aborted due to multiple \"Data Collection\" metadata groups. " +
+                            "The repository can perform the analysis only on dataset versions having exactly " +
+                            "one \"Data Collection\" metadata group.");
         }
     }
 
