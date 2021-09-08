@@ -68,8 +68,7 @@ public class CbfImporter implements MetadataImporter {
         return new ImporterData()
                 .addDescription("cbf.modal.description")
                 .addField(ImporterData.ImporterField.of(CbfImporterForm.CBF_FILE, ImporterFieldType.UPLOAD_TEMP_FILE,
-                                                        true, getBundle(Locale.ENGLISH).getString("cbf.label"),
-                                                        ""));
+                                                        true, "cbf.label", ""));
     }
 
     @Override
@@ -93,7 +92,7 @@ public class CbfImporter implements MetadataImporter {
         File cbfFile = (File) importerInput.get(CbfImporterForm.CBF_FILE);
 
         if (cbfFile != null && !FilenameUtils.getExtension(cbfFile.getName()).equals("cbf")) {
-            errors.put(CbfImporterForm.CBF_FILE, getBundle(Locale.ENGLISH).getString("cbf.error.wrongFile"));
+            errors.put(CbfImporterForm.CBF_FILE, "cbf.error.wrongFile");
             return errors;
         }
 
