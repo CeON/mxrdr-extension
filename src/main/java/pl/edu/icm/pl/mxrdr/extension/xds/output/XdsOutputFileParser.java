@@ -324,7 +324,9 @@ public class XdsOutputFileParser {
 
             String[] splittedValues = fieldValue.split(" ");
 
-            return splittedValues[fieldPosition];
+            return splittedValues.length > fieldPosition
+                    ? splittedValues[fieldPosition]
+                    : "";
         }
         return "";
     }
