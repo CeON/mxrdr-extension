@@ -19,10 +19,9 @@ class XdsInpRunnerTest {
     void prepareFiles() throws IOException {
         // given
         File inputFile = Files.createTempFile("temp-test", "").toFile();
-        Map<ImporterFieldKey, Object> importerInput = Collections.singletonMap(XdsInpFormKeys.INPUT_FILE, inputFile);
 
         // when
-        XdsInpRunner.ProducedPaths producedPaths = runner.prepareFiles(importerInput);
+        XdsInpRunner.ProducedPaths producedPaths = runner.prepareFiles(inputFile);
 
         // then
         assertThat(producedPaths.getTempDirectory()).exists();
@@ -37,10 +36,9 @@ class XdsInpRunnerTest {
     void cleanUp() throws IOException {
         // given
         File inputFile = Files.createTempFile("temp-test", "").toFile();
-        Map<ImporterFieldKey, Object> importerInput = Collections.singletonMap(XdsInpFormKeys.INPUT_FILE, inputFile);
+        XdsInpRunner.ProducedPaths producedPaths = runner.prepareFiles(inputFile);
 
         // when
-        XdsInpRunner.ProducedPaths producedPaths = runner.prepareFiles(importerInput);
         runner.cleanUp(producedPaths);
 
         // then

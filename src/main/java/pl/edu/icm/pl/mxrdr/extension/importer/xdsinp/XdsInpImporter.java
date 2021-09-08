@@ -74,8 +74,9 @@ public class XdsInpImporter implements MetadataImporter {
 
     @Override
     public List<ResultField> fetchMetadata(Map<ImporterFieldKey, Object> importerInput) {
+        File inputFile = (File) importerInput.get(XdsInpFormKeys.INPUT_FILE);
         XdsInpRunner xdsInpRunner = new XdsInpRunner(settingsService);
-        ProducedPaths producedPaths = xdsInpRunner.prepareFiles(importerInput);
+        ProducedPaths producedPaths = xdsInpRunner.prepareFiles(inputFile);
         try {
             xdsInpRunner.runGenerateXdsInp(producedPaths);
             return new XdsOutputFileParser(producedPaths.resolveXdsInp().toFile())

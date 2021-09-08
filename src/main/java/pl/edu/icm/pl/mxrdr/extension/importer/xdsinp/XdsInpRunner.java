@@ -1,6 +1,5 @@
 package pl.edu.icm.pl.mxrdr.extension.importer.xdsinp;
 
-import edu.harvard.iq.dataverse.importer.metadata.ImporterFieldKey;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.slf4j.Logger;
@@ -11,7 +10,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -32,8 +30,7 @@ public class XdsInpRunner {
     /**
      * Creates temporary working directory and moves input file there.
      */
-    ProducedPaths prepareFiles(Map<ImporterFieldKey, Object> importerInput) {
-        File inputFile = (File) importerInput.get(XdsInpFormKeys.INPUT_FILE);
+    ProducedPaths prepareFiles(File inputFile) {
         Path tempDirectory = null;
         Path movedInput = null;
         try {
