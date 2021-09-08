@@ -34,17 +34,17 @@ import java.util.Optional;
 @ViewScoped
 @Named("datasetAnalysisTab")
 public class DatasetAnalysisTab implements Serializable {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(DatasetAnalysisTab.class);
 
     private DatasetFieldServiceBean datasetFields;
-    
+
     private SettingsServiceBean settingsService;
-    
+
     private PermissionsWrapper permissionsWrapper;
-    
+
     private WorkflowExecutionService workflowServiceBean;
-    
+
     private WorkflowArtifactServiceBean workflowArfifactService;
 
     @Inject
@@ -58,10 +58,10 @@ public class DatasetAnalysisTab implements Serializable {
         this.datasetFields = datasetFields;
 
     }
-    
+
     // -------------------- GETTERS --------------------
 
-    
+
     public List<AnalysisResultDTO> getAnalysisFields(DatasetVersion datasetVersion) {
         List<AnalysisResultDTO> resultList = new ArrayList<AnalysisResultDTO>();
         for (XdsAnalysisField field:XdsAnalysisField.values()) {
@@ -72,19 +72,19 @@ public class DatasetAnalysisTab implements Serializable {
             datasetVersion.getDatasetFieldByTypeName(field.getName())
             .map(this::getSimpleValue)
             .ifPresent(res::setPrimaryValue);
-            
+
             for (DatasetField dsf : datasetVersion.getDatasetFieldsOptional()) {
                 if (dsf.getDatasetFieldType().getName().equals(field.getName())) {
                     res.setSecondaryValue(getSimpleValue(dsf));
                 }
             }
-            
+
             resultList.add(res);
         }
-        
+
         return resultList;
     }
-    
+
     private String getSimpleValue(DatasetField datasetField) {
         StringBuilder returnString = new StringBuilder();
         List<String> valuesList = new ArrayList<>();
@@ -106,10 +106,10 @@ public class DatasetAnalysisTab implements Serializable {
         return returnString.toString();
 
     }
-    
+
     // -------------------- LOGIC --------------------
 
-    
+
     public boolean isDatasetUnderEmbargo(Dataset dataset) {
         return dataset.hasActiveEmbargo();
     }
@@ -125,7 +125,7 @@ public class DatasetAnalysisTab implements Serializable {
     public boolean isAnalysisQueuedButNotStarted(WorkflowExecution workflowExecution) {
         return workflowExecution != null && workflowExecution.getSteps().size() == 0;
     }
-    
+
     public boolean isAnalysisInProgress(WorkflowExecution workflowExecution) {
         return workflowExecution != null && !workflowExecution.isFinished();
     }
@@ -146,8 +146,8 @@ public class DatasetAnalysisTab implements Serializable {
         SimpleDateFormat format = new SimpleDateFormat(settingsService.getValueForKey(SettingsServiceBean.Key.DefaultDateFormat));
         return dataset.getEmbargoDate().isEmpty() ? "" : format.format(dataset.getEmbargoDate().getOrNull());
     }
-    
-    
+
+
     public WorkflowExecution getWorkflowExecution(DatasetVersion datasetVersion) {
         if (!datasetVersion.isDraft()) {
             Optional<WorkflowExecution> result = workflowServiceBean.findLatestByTriggerTypeAndDatasetVersion(TriggerType.PostPublishDataset, datasetVersion.getDataset().getId(), datasetVersion.getVersionNumber(), datasetVersion.getMinorVersionNumber());
@@ -157,7 +157,7 @@ public class DatasetAnalysisTab implements Serializable {
         }
         return null;
     }
-    
+
     public List<WorkflowArtifact> getArtifacts(DatasetVersion datasetVersion, WorkflowExecution workflowExecution) {
         return workflowExecution != null ? workflowArfifactService.findAll(workflowExecution.getId()) : Lists.newArrayList();
     }
@@ -170,7 +170,7 @@ public class DatasetAnalysisTab implements Serializable {
             logger.warn(error);
         }
     }
-    
+
     public String getAnalysisFailureReason(DatasetVersion datasetVersion, WorkflowExecution workflowExecution) {
         if (datasetVersion.isDraft()) {
             return "dataset.analysisTab.dataset.in.draft.message";
@@ -185,10 +185,10 @@ public class DatasetAnalysisTab implements Serializable {
         } else if (isAnalysisFailure(workflowExecution)) {
             return "dataset.analysisTab.analysis.failed.message";
         }
-        
+
         return null;
     }
-    
+
     public String getAnalysisFailureReasonDetail(DatasetVersion datasetVersion, WorkflowExecution workflowExecution) {
         if (datasetVersion.isDraft()) {
             return StringUtils.EMPTY;
@@ -200,7 +200,7 @@ public class DatasetAnalysisTab implements Serializable {
             .filter(execution -> execution.getSteps().size() > 0)
             .map(execution -> execution.getLastStep())
             .map(stepExecution -> stepExecution.getOutputParams())
-            .map(outputParams -> outputParams.getOrDefault(Failure.REASON_PARAM_NAME, StringUtils.EMPTY))
+            .map(outputParams -> outputParams.getOrDefault(Failure.MESSAGE_PARAM_NAME, StringUtils.EMPTY))
             .orElse(StringUtils.EMPTY);
     }
 }
