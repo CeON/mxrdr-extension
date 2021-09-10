@@ -116,8 +116,7 @@ public class CbfImporterTest {
 
         //then
         assertEquals(1, validate.size());
-        assertEquals(ResourceBundle.getBundle("CbfImporterBundle",Locale.ENGLISH).getString("cbf.error.wrongFile"),
-                     validate.get(CbfImporterForm.CBF_FILE));
+        assertEquals("cbf.error.wrongFile", validate.get(CbfImporterForm.CBF_FILE));
     }
 
     // -------------------- PRIVATE --------------------
