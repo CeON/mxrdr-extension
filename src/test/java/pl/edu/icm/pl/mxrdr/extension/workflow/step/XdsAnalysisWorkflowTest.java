@@ -1,6 +1,7 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
 import com.google.common.collect.ImmutableMap;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.dataset.DatasetLockServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
@@ -43,6 +44,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Stream;
@@ -127,16 +129,17 @@ public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implem
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        
+
         artifactsService = new WorkflowArtifactServiceBean(
                 artifacts, new DiskWorkflowArtifactStorage(Paths.get(OUTPUT_PATH)), clock);
         executionService = new WorkflowExecutionService(
                 locksService, executions, stepExecutions, contextFactory, artifactsService, executionListeners);
         executionFacade = new WorkflowExecutionFacade(executionService, scheduler);
         worker = new WorkflowExecutionWorker(executionService, scheduler, steps);
-        
+
         steps.register(MXRDR_PROVIDER_ID, this);
-        steps.register(INTERNAL_PROVIDER_ID, new InternalWorkflowStepSPI(steps, versionsService, Mockito.mock(CitationFactory.class)));
+        steps.register(INTERNAL_PROVIDER_ID, new InternalWorkflowStepSPI(steps, versionsService,
+                Mockito.mock(CitationFactory.class), Mockito.mock(AuthenticationServiceBean.class), Clock.systemUTC()));
 
         datasets.save(dataset);
         dataset.getLatestVersion().getDatasetFields().add(
