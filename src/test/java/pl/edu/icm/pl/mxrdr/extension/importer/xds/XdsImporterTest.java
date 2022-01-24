@@ -128,35 +128,6 @@ public class XdsImporterTest {
         assertTrue(containsNameAndValue("hrsAnomalousSignal", "0.639", parentOfHrs));
     }
 
-    @Test
-    public void validate_withCorrectFile() throws URISyntaxException {
-        // given
-        File xdsFile = new File(getClass().getClassLoader().getResource("xds/CORRECT.LP").toURI());
-        Map<ImporterFieldKey, Object> xdsData = new HashMap<>();
-        xdsData.put(XdsImporterForm.XDS_FILE, xdsFile);
-
-        // when
-        Map<ImporterFieldKey, String> validate = xdsImporter.validate(xdsData);
-
-        // then
-        assertTrue(validate.isEmpty());
-    }
-
-    @Test
-    public void validate_withFileMissing() throws URISyntaxException {
-        // given
-        File txtFile = new File(getClass().getClassLoader().getResource("txt/blank.txt").toURI());
-        Map<ImporterFieldKey, Object> txtData = new HashMap<>();
-        txtData.put(XdsImporterForm.XDS_FILE, txtFile);
-
-        // when
-        Map<ImporterFieldKey, String> validate = xdsImporter.validate(txtData);
-
-        // then
-        assertEquals(1, validate.size());
-        assertEquals("xds.error.wrongFile", validate.get(XdsImporterForm.XDS_FILE));
-    }
-
     // -------------------- PRIVATE --------------------
 
     private boolean containsNameAndValue(String name, String value, ResultField parent) {
