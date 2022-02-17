@@ -53,7 +53,7 @@ public class XdsValidateMetadataStep implements WorkflowStep {
 
     private long countDataCollectionFields(DatasetVersion datasetVersion) {
         return datasetVersion
-                .getDatasetFieldsByTypeName(MxrdrMetadataField.DATA_COLLECTION.getValue())
-                .size();
+                .streamDatasetFieldsByTypeName(MxrdrMetadataField.DATA_COLLECTION.getValue())
+                .count();
     }
 }
