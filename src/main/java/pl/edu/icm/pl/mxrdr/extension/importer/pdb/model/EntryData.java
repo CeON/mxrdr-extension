@@ -441,10 +441,10 @@ public class EntryData {
         @JsonProperty("pdbx_rmerge_iobs")
         private String pdbxRMergeIObs;
 
-        @JsonProperty("dresolution_high")
+        @JsonProperty("d_resolution_high")
         private String dResolutionHigh;
 
-        @JsonProperty("dresolution_low")
+        @JsonProperty("d_resolution_low")
         private String dResolutionLow;
 
         @JsonProperty("number_obs")
@@ -500,10 +500,10 @@ public class EntryData {
         @JsonProperty("rmerge_iobs")
         private String RMergeIObs;
 
-        @JsonProperty("dres_high")
+        @JsonProperty("d_res_high")
         private String dResHigh;
 
-        @JsonProperty("dres_low")
+        @JsonProperty("d_res_low")
         private String dResLow;
 
         @JsonProperty("pdbx_cc_half")
