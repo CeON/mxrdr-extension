@@ -193,6 +193,7 @@ public class PdbDataContainer extends BaseDataContainer<PdbDataContainer> {
             String maxResolution = entry.getReflns().stream()
                     .filter(r -> r.getPdbxDiffrnId().contains(diffractionSetId))
                     .map(EntryData.Reflns::getdResolutionHigh)
+                    .filter(Objects::nonNull)
                     .findFirst().orElse(null);
 
             return reflnsShells.stream()

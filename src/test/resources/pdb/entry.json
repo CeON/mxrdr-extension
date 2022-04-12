@@ -93,8 +93,8 @@
       "pdbx_diffrn_id": ["1"],
       "pdbx_net_iover_sigma_i": 9.53,
       "pdbx_ordinal": 1,
-      "dresolution_high": 2.54,
-      "dresolution_low": 48.99
+      "d_resolution_high": 2.54,
+      "d_resolution_low": 48.99
     },
     {
       "number_obs": 271460,
@@ -102,8 +102,8 @@
       "pdbx_diffrn_id": ["2"],
       "pdbx_net_iover_sigma_i": 10.53,
       "pdbx_ordinal": 2,
-      "dresolution_high": 3.54,
-      "dresolution_low": 58.99
+      "d_resolution_high": 3.54,
+      "d_resolution_low": 58.99
     }
   ],
   "reflns_shell": [
@@ -112,32 +112,32 @@
       "mean_iover_sig_iobs": 1.26,
       "pdbx_diffrn_id": ["1"],
       "pdbx_ordinal": 1,
-      "dres_high": 2.54,
-      "dres_low": 2.68
+      "d_res_high": 2.54,
+      "d_res_low": 2.68
     },
     {
       "rmerge_iobs": 10.968,
       "mean_iover_sig_iobs": 11.26,
       "pdbx_diffrn_id": ["1"],
       "pdbx_ordinal": 2,
-      "dres_high": 12.54,
-      "dres_low": 12.68
+      "d_res_high": 12.54,
+      "d_res_low": 12.68
     },
     {
       "rmerge_iobs": 1.968,
       "mean_iover_sig_iobs": 2.26,
       "pdbx_diffrn_id": ["2"],
       "pdbx_ordinal": 3,
-      "dres_high": 3.54,
-      "dres_low": 3.68
+      "d_res_high": 3.54,
+      "d_res_low": 3.68
     },
     {
       "rmerge_iobs": 21.968,
       "mean_iover_sig_iobs": 22.26,
       "pdbx_diffrn_id": ["2"],
       "pdbx_ordinal": 4,
-      "dres_high": 23.54,
-      "dres_low": 23.68
+      "d_res_high": 23.54,
+      "d_res_low": 23.68
     }
   ],
   "software": [

@@ -32,7 +32,8 @@ class CommonMapperTest {
     @DisplayName("Should create ResultFields from filled container")
     void toResultFields() {
         // given
-        PdbDataContainer pdbDataContainer = new PdbDataContainer().init(new StructureDataProvider().createStructureData(), null);
+        PdbDataContainer pdbDataContainer = new PdbDataContainer()
+                .init(new StructureDataProvider().createStructureData(), null);
         mapper = new CommonMapper(pdbDataContainer);
 
         // when
