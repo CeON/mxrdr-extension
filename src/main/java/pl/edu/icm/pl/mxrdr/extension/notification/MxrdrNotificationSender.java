@@ -43,7 +43,7 @@ public class MxrdrNotificationSender {
         notifications.saveAndFlush(notification);
 
         boolean emailSent = mailFactory.getEmailTemplate(type, dvObject)
-                .map(content -> mailService.sendMail(sender.getDisplayInfo().getEmailAddress(), content))
+                .map(content -> mailService.sendMail(sender.getDisplayInfo().getEmailAddress(), null, content))
                 .orElse(false);
 
         if (emailSent) {

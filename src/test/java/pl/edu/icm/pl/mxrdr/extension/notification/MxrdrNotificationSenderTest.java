@@ -26,8 +26,7 @@ import java.util.Optional;
 
 import static java.time.ZoneOffset.UTC;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static pl.edu.icm.pl.mxrdr.extension.notification.MxrdrNotificationType.MXRDR_WORKFLOW_SUCCESS;
@@ -59,7 +58,7 @@ public class MxrdrNotificationSenderTest {
         Dataset dataset = makeDataset();
         when(mailFactory.getEmailTemplate(eq(notificationType), any(DvObject.class)))
                 .thenReturn(Optional.of(new EmailContent("", "", "")));
-        when(mailService.sendMail(eq(user.getEmail()), any(EmailContent.class)))
+        when(mailService.sendMail(eq(user.getEmail()), isNull(), any(EmailContent.class)))
                 .thenReturn(true);
 
         // when
