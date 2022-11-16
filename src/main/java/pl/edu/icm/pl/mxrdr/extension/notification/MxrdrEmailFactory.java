@@ -57,7 +57,7 @@ public class MxrdrEmailFactory {
                                                         dvObject.getDisplayName(),
                                                         constructDatasetLink(dvObject.getGlobalId().asString()),
                                                         mailService.getSystemAddress()),
-                         mailService.getFooterMailMessage(BundleUtil.getCurrentLocale()));
+                         mailService.getDefaultFooterMailMessage(BundleUtil.getCurrentLocale()));
     }
 
     private EmailContent getWorkflowFailureTemplate(DvObject dvObject) {
@@ -67,7 +67,7 @@ public class MxrdrEmailFactory {
                                                         dvObject.getDisplayName(),
                                                         constructDatasetLink(dvObject.getGlobalId().asString()),
                                                         mailService.getSystemAddress()),
-                         mailService.getFooterMailMessage(BundleUtil.getCurrentLocale()));
+                         mailService.getDefaultFooterMailMessage(BundleUtil.getCurrentLocale()));
     }
 
     private String constructDatasetLink(String datasetId) {
