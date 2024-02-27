@@ -72,7 +72,7 @@ public class XdsImagesPatternCalculatingStep extends FilesystemAccessingWorkflow
         String namePattern = calculatePattern(fileNames);
         log.trace("Calculated XDS images name pattern: {}", namePattern);
         return successWith(data -> {
-            data.put(ARGUMENTS_PARAM_NAME, "\"" + namePattern + "\"");
+            data.put(ARGUMENTS_PARAM_NAME, namePattern);
             data.put(FAILURE_ARTIFACTS_PARAM_NAME, XDS_INPUT_FILE_NAME);
         });
     }
