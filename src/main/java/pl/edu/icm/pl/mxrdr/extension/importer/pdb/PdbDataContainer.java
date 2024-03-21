@@ -60,7 +60,8 @@ public class PdbDataContainer extends BaseDataContainer<PdbDataContainer> {
                 .add(MxrdrMetadataField.UNIT_CELL_PARAMETER_ALPHA, entry.getCell().getAngleAlpha())
                 .add(MxrdrMetadataField.UNIT_CELL_PARAMETER_BETA, entry.getCell().getAngleBeta())
                 .add(MxrdrMetadataField.UNIT_CELL_PARAMETER_GAMMA, entry.getCell().getAngleGamma())
-                .add(MxrdrMetadataField.OVERALL_COMPLETENESS, entry.getPdbxVrptSummary().getDataCompleteness())
+                .add(MxrdrMetadataField.OVERALL_COMPLETENESS, Optional.ofNullable(entry.getPdbxVrptSummary())
+                        .map(EntryData.PdbxVrptSummary::getDataCompleteness).orElse(EMPTY))
                 .add(MxrdrMetadataField.OVERALL_I_SIGMA,
                         getIndexedForIndexOnList(EntryData::getReflns, EntryData.Reflns::getPdbxDiffrnId, diffractionSetId, entry)
                         .map(EntryData.Reflns::getPdbxNetIOverSigmaI))
