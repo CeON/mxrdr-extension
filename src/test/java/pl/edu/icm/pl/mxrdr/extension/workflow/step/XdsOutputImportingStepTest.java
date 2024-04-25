@@ -5,7 +5,9 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldTypeRepository;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
+import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionTestBase;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
@@ -20,13 +22,17 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDataset;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
+import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowStep;
 import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
+import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.nextStepContextToExecute;
+import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.nextStepContextToRollback;
 import static edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep.WORK_DIR_PARAM_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -39,7 +45,8 @@ public class XdsOutputImportingStepTest extends WorkflowExecutionTestBase {
     XdsOutputImportingStep step;
 
     Dataset dataset = givenDataset(1L);
-    WorkflowExecutionContext context = givenWorkflowExecutionContext(dataset.getId(), givenWorkflow(1L));
+    Workflow workflow = givenWorkflow(1L, givenWorkflowStep(XdsOutputImportingStep.STEP_ID));
+    WorkflowExecutionContext context = givenWorkflowExecutionContext(dataset.getId(), workflow);
     Path workDir;
 
     @BeforeEach
@@ -47,6 +54,7 @@ public class XdsOutputImportingStepTest extends WorkflowExecutionTestBase {
         super.setUp();
         workDir = Files.createTempDirectory("xds-test-import");
         WorkflowStepParams stepParams = new WorkflowStepParams(WORK_DIR_PARAM_NAME, workDir.toString());
+        context.getExecution().start("test", "127.0.1.1", clock);
         step = new XdsOutputImportingStep(stepParams, versionsService, fieldTypes);
 
         File xdsFile = new File(getClass().getClassLoader().getResource("xds/CORRECT.LP").toURI());
@@ -72,7 +80,8 @@ public class XdsOutputImportingStepTest extends WorkflowExecutionTestBase {
     @Test
     public void shouldImportFile() {
         // when
-        step.run(context);
+        WorkflowExecutionStepContext stepContext = nextStepContextToExecute(context);
+        step.run(stepContext);
         // then
         List<DatasetField> fields = dataset.getLatestVersion().getDatasetFields();
         assertThat(fields).hasSize(41);
@@ -128,12 +137,14 @@ public class XdsOutputImportingStepTest extends WorkflowExecutionTestBase {
         // given
         List<DatasetField> fields = dataset.getLatestVersion().getDatasetFields();
         fields.add(primaryField("unitCellParameterA", "90.00"));
+        WorkflowExecutionStepContext stepContext = nextStepContextToExecute(context);
+        stepContext.getStepExecution().start(Collections.emptyMap(), clock);
         // when
-        step.run(context);
+        step.run(stepContext);
         // then
         assertThat(fields).hasSize(42);
         // when
-        step.rollback(context, new Failure("test"));
+        step.rollback(nextStepContextToRollback(context), new Failure("test"));
         // then
         assertThat(fields).hasSize(1);
     }

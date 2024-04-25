@@ -2,7 +2,7 @@ package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
@@ -26,7 +26,7 @@ public class XdsValidateMetadataStep implements WorkflowStep {
     // -------------------- LOGIC --------------------
 
     @Override
-    public WorkflowStepResult run(WorkflowExecutionContext context) {
+    public WorkflowStepResult run(WorkflowExecutionStepContext context) {
         long dataCollectionFieldsCount = versionsService
                 .withDatasetVersion(context, this::countDataCollectionFields)
                 .orElse(0L);
@@ -42,12 +42,12 @@ public class XdsValidateMetadataStep implements WorkflowStep {
     }
 
     @Override
-    public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
+    public WorkflowStepResult resume(WorkflowExecutionStepContext context, Map<String, String> internalData, String externalData) {
         throw new UnsupportedOperationException("This step does not pause");
     }
 
     @Override
-    public void rollback(WorkflowExecutionContext context, Failure failure) { }
+    public void rollback(WorkflowExecutionStepContext context, Failure failure) { }
 
     // -------------------- PRIVATE --------------------
 

@@ -1,7 +1,7 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
 import com.google.common.io.InputSupplier;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
@@ -70,7 +70,7 @@ public class XdsInputAdjustingStep extends FilesystemAccessingWorkflowStep {
     // -------------------- LOGIC --------------------
 
     @Override
-    protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) throws Exception {
+    protected WorkflowStepResult.Source runInternal(WorkflowExecutionStepContext context, Path workDir) throws Exception {
         log.trace("Adjusting {} with JOB={}", XDS_INPUT_FILE_NAME, jobsValue());
         addFailureArtifacts(XDS_INPUT_FILE_NAME);
         
@@ -90,12 +90,12 @@ public class XdsInputAdjustingStep extends FilesystemAccessingWorkflowStep {
     }
 
     @Override
-    public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
+    public WorkflowStepResult resume(WorkflowExecutionStepContext context, Map<String, String> internalData, String externalData) {
         throw new UnsupportedOperationException("This step does not pause");
     }
 
     @Override
-    public void rollback(WorkflowExecutionContext workflowExecutionContext, Failure reason) { }
+    public void rollback(WorkflowExecutionStepContext workflowExecutionContext, Failure reason) { }
 
     // -------------------- PRIVATE --------------------
 

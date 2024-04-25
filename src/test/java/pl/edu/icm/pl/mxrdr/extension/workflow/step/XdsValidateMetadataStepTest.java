@@ -3,7 +3,9 @@ package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetMother;
+import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionTestBase;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
@@ -21,13 +23,16 @@ import java.util.stream.Stream;
 
 import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDataset;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
+import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowStep;
 import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
+import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.nextStepContextToExecute;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class XdsValidateMetadataStepTest extends WorkflowExecutionTestBase implements ArgumentsProvider {
 
     Dataset dataset = givenDataset(1L);
-    WorkflowExecutionContext context = givenWorkflowExecutionContext(dataset.getId(), givenWorkflow(1L));
+    Workflow workflow = givenWorkflow(1L, givenWorkflowStep(XdsValidateMetadataStep.STEP_ID));
+    WorkflowExecutionContext context = givenWorkflowExecutionContext(dataset.getId(), workflow);
 
     @ParameterizedTest(name = "[{index}] When {0} fields, then success is {1}")
     @ArgumentsSource(XdsValidateMetadataStepTest.class)
@@ -35,11 +40,13 @@ class XdsValidateMetadataStepTest extends WorkflowExecutionTestBase implements A
         // given
         dataset.getLatestVersion().getDatasetFields().addAll(createFields(size));
         datasetVersions.save(dataset.getLatestVersion());
+        context.getExecution().start("test", "127.0.1.1", clock);
+        WorkflowExecutionStepContext stepContext = nextStepContextToExecute(context);
 
         XdsValidateMetadataStep step = new XdsValidateMetadataStep(versionsService);
 
         // when
-        WorkflowStepResult result = step.run(context);
+        WorkflowStepResult result = step.run(stepContext);
 
         // then
         assertThat(result instanceof Success).isEqualTo(isSuccess);
