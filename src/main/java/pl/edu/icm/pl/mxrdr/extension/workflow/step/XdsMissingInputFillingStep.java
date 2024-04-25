@@ -4,7 +4,7 @@ import com.google.common.io.InputSupplier;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
@@ -75,7 +75,7 @@ public class XdsMissingInputFillingStep extends FilesystemAccessingWorkflowStep 
     }
 
     @Override
-    protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) throws Exception {
+    protected WorkflowStepResult.Source runInternal(WorkflowExecutionStepContext context, Path workDir) throws Exception {
         addFailureArtifacts(XDS_INPUT_FILE_NAME);
         List<XdsInputLineProcessor> processors = prepareProcessors(context);
         log.trace("Potentially adjusting values for {} XDS input parameters", processors.size());
@@ -95,16 +95,16 @@ public class XdsMissingInputFillingStep extends FilesystemAccessingWorkflowStep 
     }
 
     @Override
-    public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
+    public WorkflowStepResult resume(WorkflowExecutionStepContext context, Map<String, String> internalData, String externalData) {
         throw new UnsupportedOperationException("This step does not pause");
     }
 
     @Override
-    public void rollback(WorkflowExecutionContext workflowExecutionContext, Failure failure) { }
+    public void rollback(WorkflowExecutionStepContext workflowExecutionContext, Failure failure) { }
 
     // -------------------- PRIVATE --------------------
 
-    private List<XdsInputLineProcessor> prepareProcessors(WorkflowExecutionContext context) {
+    private List<XdsInputLineProcessor> prepareProcessors(WorkflowExecutionStepContext context) {
         return versionsService
                 .withDatasetVersion(context,this::prepareProcessors)
                 .orElseGet(Collections::emptyList);

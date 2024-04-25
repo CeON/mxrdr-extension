@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldTypeRepository;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
@@ -57,7 +57,7 @@ public class XdsOutputImportingStep extends FilesystemAccessingWorkflowStep {
     // -------------------- LOGIC --------------------
 
     @Override
-    protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) {
+    protected WorkflowStepResult.Source runInternal(WorkflowExecutionStepContext context, Path workDir) {
         addFailureArtifacts(XDS_INPUT_FILE_NAME, XDS_OUTPUT_FILE_NAME);
 
         versionsService.withDatasetVersion(context,
@@ -70,12 +70,12 @@ public class XdsOutputImportingStep extends FilesystemAccessingWorkflowStep {
     }
 
     @Override
-    public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
+    public WorkflowStepResult resume(WorkflowExecutionStepContext context, Map<String, String> internalData, String externalData) {
         throw new UnsupportedOperationException("This step does not pause");
     }
 
     @Override
-    public void rollback(WorkflowExecutionContext context, Failure failure) {
+    public void rollback(WorkflowExecutionStepContext context, Failure failure) {
         versionsService.withDatasetVersion(context,
                 datasetVersion -> datasetVersion.getDatasetFields()
                         .removeIf(XdsOutputImportingStep::isXdsDatasetField)

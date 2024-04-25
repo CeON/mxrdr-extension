@@ -1,7 +1,20 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
-import static edu.harvard.iq.dataverse.dataaccess.DataAccess.dataAccess;
-import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
+import edu.harvard.iq.dataverse.workflow.step.Failure;
+import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,22 +32,8 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
-import edu.harvard.iq.dataverse.workflow.step.Failure;
-import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
-import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
-import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.dataAccess;
+import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
 
 /**
  * Fetches dataset version files into local directory filtering images only.
@@ -85,7 +84,7 @@ public class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
     // -------------------- LOGIC --------------------
 
     @Override
-    protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) throws Exception {
+    protected WorkflowStepResult.Source runInternal(WorkflowExecutionStepContext context, Path workDir) throws Exception {
         List<FileMetadata> fileMetadata = versionsService
                 .withDatasetVersion(context, DatasetVersion::getFileMetadatas)
                 .orElseGet(Collections::emptyList);
@@ -110,19 +109,27 @@ public class XdsImagesFetchingStep extends FilesystemAccessingWorkflowStep {
     }
 
     @Override
-    public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
+    public WorkflowStepResult resume(WorkflowExecutionStepContext context, Map<String, String> internalData, String externalData) {
         throw new UnsupportedOperationException("This step des not pause");
     }
 
     @Override
-    public void rollback(WorkflowExecutionContext context, Failure reason) {
-        Path imgPath = resolveWorkDir(context).resolve(imgDirName);
-        try {
-            FileUtils.deleteDirectory(imgPath.toFile());
-        } catch (IOException e) {
-            log.warn("Unable to remove temporary directory for xds images on step rollback: " + imgPath.toString());
+    public void rollback(WorkflowExecutionStepContext context, Failure reason) {
+        String imgDir = context.getStepExecution().getOutputParams().get(IMAGES_DIR_PARAM_NAME);
+        if (imgDir == null) {
+            log.warn("Output directory missing in outputParams.");
+            return;
         }
-        
+
+        resolveWorkDirFromOutputParams(context.getStepExecution())
+                .map(workdir -> workdir.resolve(imgDir))
+                .ifPresent(imgPath -> {
+                    try {
+                        FileUtils.deleteDirectory(imgPath.toFile());
+                    } catch (IOException e) {
+                        log.warn("Unable to remove temporary directory for xds images on step rollback: " + imgPath.toString());
+                    }
+                });
     }
 
     // -------------------- INNER CLASSES --------------------

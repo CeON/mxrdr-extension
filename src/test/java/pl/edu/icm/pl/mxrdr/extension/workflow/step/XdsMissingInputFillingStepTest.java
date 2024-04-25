@@ -1,8 +1,9 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother;
+import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionTestBase;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import org.junit.jupiter.api.AfterEach;
@@ -19,7 +20,10 @@ import java.util.List;
 
 import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDataset;
 import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDatasetFiled;
+import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
+import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowStep;
 import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
+import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.nextStepContextToExecute;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor.XDS_INPUT_FILE_NAME;
 
@@ -28,8 +32,10 @@ class XdsMissingInputFillingStepTest extends WorkflowExecutionTestBase {
     Path workDir;
 
     Dataset dataset = givenDataset(1L);
-    WorkflowExecutionContext context = givenWorkflowExecutionContext(
-            dataset.getId(), WorkflowMother.givenWorkflow(1L));
+    Workflow workflow = givenWorkflow(1L, givenWorkflowStep(XdsMissingInputFillingStep.STEP_ID));
+    WorkflowExecutionContext context = givenWorkflowExecutionContext(dataset.getId(), workflow);
+    WorkflowExecutionStepContext stepContext;
+
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -40,6 +46,9 @@ class XdsMissingInputFillingStepTest extends WorkflowExecutionTestBase {
 
         datasets.save(dataset);
         datasetVersions.save(dataset.getLatestVersion());
+
+        context.getExecution().start("test", "127.0.1.1", clock);
+        stepContext = nextStepContextToExecute(context);
     }
 
     @AfterEach
@@ -62,7 +71,7 @@ class XdsMissingInputFillingStepTest extends WorkflowExecutionTestBase {
         XdsMissingInputFillingStep step = new XdsMissingInputFillingStep(new WorkflowStepParams(), versionsService);
 
         // when
-        step.runInternal(context, workDir);
+        step.runInternal(stepContext, workDir);
 
         // then
         List<String> lines = Files.readAllLines(workDir.resolve(XDS_INPUT_FILE_NAME));
@@ -84,7 +93,7 @@ class XdsMissingInputFillingStepTest extends WorkflowExecutionTestBase {
         XdsMissingInputFillingStep step = new XdsMissingInputFillingStep(new WorkflowStepParams(), versionsService);
 
         // when
-        step.runInternal(context, workDir);
+        step.runInternal(stepContext, workDir);
 
         // then
         List<String> lines = Files.readAllLines(workDir.resolve(XDS_INPUT_FILE_NAME));
@@ -108,7 +117,7 @@ class XdsMissingInputFillingStepTest extends WorkflowExecutionTestBase {
         XdsMissingInputFillingStep step = new XdsMissingInputFillingStep(new WorkflowStepParams(), versionsService);
 
         // when
-        step.runInternal(context, workDir);
+        step.runInternal(stepContext, workDir);
 
         // then
         List<String> lines = Files.readAllLines(workDir.resolve(XDS_INPUT_FILE_NAME));
@@ -131,7 +140,7 @@ class XdsMissingInputFillingStepTest extends WorkflowExecutionTestBase {
         XdsMissingInputFillingStep step = new XdsMissingInputFillingStep(stepParams, versionsService);
 
         // when
-        step.runInternal(context, workDir);
+        step.runInternal(stepContext, workDir);
 
         // then
         List<String> lines = Files.readAllLines(workDir.resolve(XDS_INPUT_FILE_NAME));
