@@ -4,9 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>edu.harvard.iq</groupId>
+        <groupId>pl.edu.icm.dataverse</groupId>
         <artifactId>dataverse-parent</artifactId>
-        <version>4.11</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
 
     <groupId>pl.edu.icm.mxrdr</groupId>
@@ -21,19 +21,19 @@
         <war.theme.path>resources/vecler</war.theme.path>
         <war.icon.path>resources/images</war.icon.path>
 
-        <dataverse.version>4.11</dataverse.version>
+        <dataverse.version>1.0.0-SNAPSHOT</dataverse.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>edu.harvard.iq</groupId>
+            <groupId>pl.edu.icm.dataverse</groupId>
             <artifactId>dataverse-webapp</artifactId>
             <version>${dataverse.version}</version>
             <type>war</type>
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.iq</groupId>
+            <groupId>pl.edu.icm.dataverse</groupId>
             <artifactId>dataverse-webapp</artifactId>
             <version>${dataverse.version}</version>
             <classifier>classes</classifier>
@@ -74,20 +74,20 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.iq</groupId>
+            <groupId>pl.edu.icm.dataverse</groupId>
             <artifactId>dataverse-test-common</artifactId>
             <version>${dataverse.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.iq</groupId>
+            <groupId>pl.edu.icm.dataverse</groupId>
             <artifactId>dataverse-persistence</artifactId>
             <version>${dataverse.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.iq</groupId>
+            <groupId>pl.edu.icm.dataverse</groupId>
             <artifactId>dataverse-webapp</artifactId>
             <version>${dataverse.version}</version>
             <type>test-jar</type>
@@ -214,7 +214,7 @@
                     <warSourceDirectory>${war.source.directory}</warSourceDirectory>
                     <overlays>
                         <overlay>
-                            <groupId>edu.harvard.iq</groupId>
+                            <groupId>pl.edu.icm.dataverse</groupId>
                             <artifactId>dataverse-webapp</artifactId>
                             <excludes>
                                 <exclude>${war.theme.path}/**</exclude>
