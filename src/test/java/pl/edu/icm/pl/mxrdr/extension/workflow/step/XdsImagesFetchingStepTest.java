@@ -3,7 +3,7 @@ package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 import static java.lang.Thread.currentThread;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static pl.edu.icm.pl.mxrdr.extension.workflow.step.XdsImagesFetchingStep.IMAGES_DIR_PARAM_DEFAULT;
 
 import java.io.IOException;
