@@ -1,0 +1,159 @@
+#metadataBlock	name	dataverseAlias	displayName	blockURI
+	macromolecularcrystallography		Macromolecular Crystallography Metadata	
+#datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	inputRendererType	inputRendererOptions	metadatablock_id	termURI	validation	metadata
+	sampleName	Sample Name			text	0		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	pdbId	PDB ID	Protein Data Bank identifier.		text	1		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	beamlineInstitution	Beamline Institution			text	2		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	beamline	Beamline			text	3		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	detectorType	Detector Type			text	4		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	dataCollection	Data Collection			none	5	#NEWLINE	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	dataCollectionWavelength	Wavelength [Å]		Enter a floating-point number...	float	6	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dataCollection	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	dataCollectionDetectorDistance	Crystal-Detector Distance [mm]		Enter a floating-point number...	float	7	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dataCollection	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	dataCollectionOscillationStepSize	Oscillation-Step Size [°]		Enter a floating-point number...	float	8	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dataCollection	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	dataCollectionNumberOfFrames	Number of Frames	Number of collected images.	Enter an integer...	int	9	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dataCollection	TEXT	{}	macromolecularcrystallography		[{"name":"standard_int"}]	{}
+	dataCollectionOrgX	Position of the Beam in the X Axis [px]		Enter a floating-point number...	float	10	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	dataCollection	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	dataCollectionOrgY	Position of the Beam in the Y Axis [px]		Enter a floating-point number...	float	11	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	dataCollection	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	dataCollectionTemperature	Temperature [K]		Enter a floating-point number...	float	12	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	dataCollection	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	dataCollectionStartingAngle	Starting Angle [°]		Enter a floating-point number...	float	13	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	dataCollection	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	dataCollectionDetectorThickness	Detector Thickness [mm]		Enter a floating-point number...	float	14	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	dataCollection	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	dataCollectionDetectorOverload	Detector Overload		Enter an integer...	int	15	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	dataCollection	TEXT	{}	macromolecularcrystallography		[{"name":"standard_int"}]	{}
+	spaceGroup	Space Group			text	16		TRUE	TRUE	FALSE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	unitCellParameters	Unit Cell Parameters			none	17	#NEWLINE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	unitCellParameterA	a [Å]		Enter a floating-point number...	float	18	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	unitCellParameters	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	unitCellParameterB	b [Å]		Enter a floating-point number...	float	19	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	unitCellParameters	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	unitCellParameterC	c [Å]		Enter a floating-point number...	float	20	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	unitCellParameters	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	unitCellParameterAlpha	α [°]		Enter a floating-point number...	float	21	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	unitCellParameters	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	unitCellParameterBeta	β [°]		Enter a floating-point number...	float	22	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	unitCellParameters	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	unitCellParameterGamma	γ [°]		Enter a floating-point number...	float	23	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	unitCellParameters	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	overall	Overall			none	24	#NEWLINE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	overallCompleteness	Completeness		Enter a floating-point number...	float	25	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	overall	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	overallISigma	Mean I/Sigma(I)		Enter a floating-point number...	float	26	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	overall	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	overallCc	CC_1/2		Enter a floating-point number...	float	27	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	overall	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	overallRMerge	R_merge		Enter a floating-point number...	float	28	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	overall	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	overallRMeas	R_meas		Enter a floating-point number...	float	29	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	overall	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	overallDataResolutionRangeLow	Resolution Low		Enter a floating-point number...	float	30	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	overall	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	overallDataResolutionRangeHigh	Resolution High		Enter a floating-point number...	float	31	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	overall	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	overallNumberOfObservedReflections	Number of Observed Reflections		Enter an integer...	int	32	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	overall	TEXT	{}	macromolecularcrystallography		[{"name":"standard_int"}]	{}
+	overallNumberOfUniqueReflections	Number of Unique Reflections		Enter an integer...	int	33	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	overall	TEXT	{}	macromolecularcrystallography		[{"name":"standard_int"}]	{}
+	overallNumberOfPossibleReflections	Number of Possible Reflections		Enter an integer...	int	34	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	overall	TEXT	{}	macromolecularcrystallography		[{"name":"standard_int"}]	{}
+	overallAnomalousCorrelation	Anomalous Correlation		Enter a floating-point number...	float	35	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	overall	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	overallAnomalousSignal	Anomalous Signal		Enter a floating-point number...	float	36	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	overall	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	hrs	Highest Resolution Shell			none	37	#NEWLINE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	hrsCompleteness	Completeness		Enter a floating-point number...	float	38	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	hrs	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	hrsISigma	Mean I/Sigma(I)		Enter a floating-point number...	float	39	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	hrs	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	hrsCc	CC_1/2		Enter a floating-point number...	float	40	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	hrs	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	hrsRMerge	R_merge		Enter a floating-point number...	float	41	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	hrs	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	hrsRMeas	R_meas		Enter a floating-point number...	float	42	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	hrs	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	hrsDataResolutionRangeLow	Resolution Low		Enter a floating-point number...	float	43	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	hrs	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	hrsDataResolutionRangeHigh	Resolution High		Enter a floating-point number...	float	44	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	hrs	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	hrsNumberOfObservedReflections	Number of Observed Reflections		Enter an integer...	int	45	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	hrs	TEXT	{}	macromolecularcrystallography		[{"name":"standard_int"}]	{}
+	hrsNumberOfUniqueReflections	Number of Unique Reflections		Enter an integer...	int	46	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	hrs	TEXT	{}	macromolecularcrystallography		[{"name":"standard_int"}]	{}
+	hrsNumberOfPossibleReflections	Number of Possible Reflections		Enter an integer...	int	47	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	hrs	TEXT	{}	macromolecularcrystallography		[{"name":"standard_int"}]	{}
+	hrsAnomalousCorrelation	Anomalous Correlation		Enter a floating-point number...	float	48	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	hrs	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	hrsAnomalousSignal	Anomalous Signal		Enter a floating-point number...	float	49	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	hrs	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	monochromator	Monochromator Type			text	50		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	processingSoftware	Processing Software	Software used to process diffraction images.		text	51		TRUE	TRUE	TRUE	FALSE	TRUE	FALSE		VOCABULARY_SELECT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	refinementFactors	Refinement Factors			none	52	#NEWLINE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	refinementFactorRWork	R-work		Enter a floating-point number...	float	53	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	refinementFactors	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	refinementFactorRFree	R-free		Enter a floating-point number...	float	54	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	refinementFactors	TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	macromoleculeType	Macromolecule Type			text	55		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		VOCABULARY_SELECT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	molecularWeight	Molecular Weight [Da]		Enter a floating-point number...	float	56		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_number"}]	{}
+	entity	Entity	The distinct (chemically unique) protein, DNA or RNA molecules with defined sequence present in PDB entry.		none	57	#NEWLINE	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	entityId	ID	Enter the numeric identifier of the entity, e.g. 1.		text	58	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	entity	TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	entitySequence	Sequence	Please provide a sequence for each entity separately.		textbox	59	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	entity	TEXTBOX	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	entityCount	Entity Count		Enter an integer...	int	60		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_int"}]	{}
+	residueCount	Residue Count		Enter an integer...	int	61		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_int"}]	{}
+	atomSiteCount	Atom Site Count		Enter an integer...	int	62		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_int"}]	{}
+	pdbTitle	PDB Structure Title			text	63		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	pdbDoi	PDB DOI			text	64		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	pdbStructureAuthor	PDB Structure Author		FamilyName, GivenNameInitial.	text	65		TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	pdbDepositDate	PDB Deposit Date	PDB Deposit Date in YYYY-MM-DD format.	YYYY-MM-DD	date	66		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_date","parameters":{"context":["DATASET"]}},{"name":"date_range","parameters":{"context":["SEARCH"]}}]	{}
+	pdbReleaseDate	PDB Release Date	PDB Release Date in YYYY-MM-DD format.	YYYY-MM-DD	date	67		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_date","parameters":{"context":["DATASET"]}},{"name":"date_range","parameters":{"context":["SEARCH"]}}]	{}
+	pdbRevisionDate	PDB Revision Date	PDB Revision Date in YYYY-MM-DD format.	YYYY-MM-DD	date	68		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_date","parameters":{"context":["DATASET"]}},{"name":"date_range","parameters":{"context":["SEARCH"]}}]	{}
+	citationTitle	PDB Primary Citation Title			text	69		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	citationPubmedId	PDB Primary Citation PubMed ID			text	70		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	citationAuthor	PDB Primary Citation Author		FamilyName, GivenNameInitial.	text	71		TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	citationJournal	PDB Primary Citation Journal Name			text	72		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_input"}]	{}
+	citationYear	PDB Primary Citation Publication Year	PDB Primary Citation Publication Year in YYYY format.	YYYY	date	73		TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	macromolecularcrystallography		[{"name":"standard_date","parameters":{"context":["DATASET"]}},{"name":"date_range","parameters":{"context":["SEARCH"]}}]	{}
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder
+	spaceGroup	1. P1		0
+	spaceGroup	3. P2		1
+	spaceGroup	4. P2(1)		2
+	spaceGroup	5. C2		3
+	spaceGroup	16. P222		4
+	spaceGroup	17. P222(1)		5
+	spaceGroup	18. P2(1)2(1)2		6
+	spaceGroup	19. P2(1)2(1)2(1)		7
+	spaceGroup	20. C222(1)		8
+	spaceGroup	21. C222		9
+	spaceGroup	22. F222		10
+	spaceGroup	23. I222		11
+	spaceGroup	24. I2(1)2(1)2(1)		12
+	spaceGroup	75. P4		13
+	spaceGroup	76. P4(1)		14
+	spaceGroup	77. P4(2)		15
+	spaceGroup	78. P4(3)		16
+	spaceGroup	79. I4		17
+	spaceGroup	80. I4(1)		18
+	spaceGroup	89. P422		19
+	spaceGroup	90. P42(1)2		20
+	spaceGroup	91. P4(1)22		21
+	spaceGroup	92. P4(1)2(1)2		22
+	spaceGroup	93. P4(2)22		23
+	spaceGroup	94. P4(2)2(1)2		24
+	spaceGroup	95. P4(3)22		25
+	spaceGroup	96. P4(3)2(1)2		26
+	spaceGroup	97. I422		27
+	spaceGroup	98. I4(1)22		28
+	spaceGroup	143. P3		29
+	spaceGroup	144. P3(1)		30
+	spaceGroup	145. P3(2)		31
+	spaceGroup	146. R3		32
+	spaceGroup	149. P312		33
+	spaceGroup	150. P321		34
+	spaceGroup	151. P3(1)12		35
+	spaceGroup	152. P3(1)21		36
+	spaceGroup	153. P3(2)12		37
+	spaceGroup	154. P3(2)21		38
+	spaceGroup	155. R32		39
+	spaceGroup	168. P6		40
+	spaceGroup	169. P6(1)		41
+	spaceGroup	170. P6(5)		42
+	spaceGroup	171. P6(2)		43
+	spaceGroup	172. P6(4)		44
+	spaceGroup	173. P6(3)		45
+	spaceGroup	177. P622		46
+	spaceGroup	178. P6(1)22		47
+	spaceGroup	179. P6(5)22		48
+	spaceGroup	180. P6(2)22		49
+	spaceGroup	181. P6(4)22		50
+	spaceGroup	182. P6(3)22		51
+	spaceGroup	195. P23		52
+	spaceGroup	196. F23		53
+	spaceGroup	197. I23		54
+	spaceGroup	198. P2(1)3		55
+	spaceGroup	199. I2(1)3		56
+	spaceGroup	207. P432		57
+	spaceGroup	208. P4(2)32		58
+	spaceGroup	209. F432		59
+	spaceGroup	210. F4(1)32		60
+	spaceGroup	211. I432		61
+	spaceGroup	212. P4(3)32		62
+	spaceGroup	213. P4(1)32		63
+	spaceGroup	214. I4(1)32		64
+	spaceGroup	Other		65
+	processingSoftware	XDS		0
+	processingSoftware	Autoproc		1
+	processingSoftware	d*TREK		2
+	processingSoftware	Denzo		3
+	processingSoftware	Dials		4
+	processingSoftware	HKL2000/HKL3000		5
+	processingSoftware	MOSFLM/iMOSFLM		6
+	processingSoftware	xdsapp		7
+	processingSoftware	Xia2		8
+	processingSoftware	Other		9
+	macromoleculeType	Protein		0
+	macromoleculeType	RNA		1
+	macromoleculeType	DNA		2
+	macromoleculeType	RNA/DNA Hybrid		3
+	macromoleculeType	Other		4

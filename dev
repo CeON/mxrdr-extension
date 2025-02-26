@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+export EXTENSION_SOURCE_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+export DATAVERSE_SOURCE_DIR="${DATAVERSE_SOURCE_DIR:-$( cd -- "$(dirname "$EXTENSION_SOURCE_DIR")/dataverse" >/dev/null 2>&1 ; pwd -P )}"
+export EXTENSION_DIST_DIR="${EXTENSION_SOURCE_DIR}/target"
+
+extension_post_install() {
+  echo "* Copying XDS installation files"
+  copy_to_dv_container "${EXTENSION_SOURCE_DIR}/conf/xds"
+  echo "* Executing xds setup."
+  exec_script_in_dv_container "xds/xds-setup.sh install_all"
+}
+
+export -f extension_post_install
+
+$DATAVERSE_SOURCE_DIR/dev "$@"
+
