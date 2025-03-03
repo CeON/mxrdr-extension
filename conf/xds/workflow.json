@@ -1,0 +1,136 @@
+{
+   "name":"XDS analysis",
+   "id":2,
+   "steps":[
+      {
+         "stepType":"xds-validate-metadata",
+         "provider":"mxrdr",
+         "parameters":{
+            
+         },
+         "requiredSettings":{
+            
+         }
+      },
+      {
+         "stepType":"xds-fetch-images",
+         "provider":"mxrdr",
+         "parameters":{
+            "baseWorkDir":"/srv/glassfish/workflow"
+         },
+         "requiredSettings":{
+            
+         }
+      },
+      {
+         "stepType":"xds-calculate-images-pattern",
+         "provider":"mxrdr",
+         "parameters":{
+            
+         },
+         "requiredSettings":{
+            
+         }
+      },
+      {
+         "stepType":"system-process",
+         "provider":"internal",
+         "parameters":{
+            "command":"generate_XDS.INP"
+         },
+         "requiredSettings":{
+            
+         }
+      },
+      {
+         "stepType":"xds-fill-missing-input",
+         "provider":"mxrdr",
+         "parameters":{
+            "xds_additional_params":"MAXIMUM_NUMBER_OF_PROCESSORS|2;MAXIMUM_NUMBER_OF_JOBS|1"
+         },
+         "requiredSettings":{
+            
+         }
+      },
+      {
+         "stepType":"xds-adjust-input",
+         "provider":"mxrdr",
+         "parameters":{
+            "jobs":"XYCORR;INIT;COLSPOT;IDXREF"
+         },
+         "requiredSettings":{
+            
+         }
+      },
+      {
+         "stepType":"system-process",
+         "provider":"internal",
+         "parameters":{
+            "command":"xds_par"
+         },
+         "requiredSettings":{
+            
+         }
+      },
+      {
+         "stepType":"xds-adjust-input",
+         "provider":"mxrdr",
+         "parameters":{
+            "jobs":"DEFPIX;INTEGRATE;CORRECT"
+         },
+         "requiredSettings":{
+            
+         }
+      },
+      {
+         "stepType":"system-process",
+         "provider":"internal",
+         "parameters":{
+            "command":"xds_par"
+         },
+         "requiredSettings":{
+            
+         }
+      },
+      {
+         "stepType":"xds-adjust-input",
+         "provider":"mxrdr",
+         "parameters":{
+            "adjustResolution":"true"
+         },
+         "requiredSettings":{
+            
+         }
+      },
+      {
+         "stepType":"system-process",
+         "provider":"internal",
+         "parameters":{
+            "command":"xds_par"
+         },
+         "requiredSettings":{
+            
+         }
+      },
+      {
+         "stepType":"xds-output-import",
+         "provider":"mxrdr",
+         "parameters":{
+            
+         },
+         "requiredSettings":{
+            
+         }
+      },
+      {
+         "stepType":"clear-working-directory",
+         "provider":"internal",
+         "parameters":{
+            
+         },
+         "requiredSettings":{
+            
+         }
+      }
+   ]
+}
