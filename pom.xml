@@ -21,7 +21,7 @@
         <war.theme.path>resources/vecler</war.theme.path>
         <war.icon.path>resources/images</war.icon.path>
 
-        <fairchive.version>1.1.4</fairchive.version>
+        <fairchive.version>1.1.5</fairchive.version>
     </properties>
 
     <repositories>
