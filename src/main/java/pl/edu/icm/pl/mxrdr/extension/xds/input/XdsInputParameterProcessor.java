@@ -1,10 +1,10 @@
 package pl.edu.icm.pl.mxrdr.extension.xds.input;
 
-import com.google.common.io.InputSupplier;
+import java.io.IOException;
+import java.util.function.Supplier;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 /**
  * Implementation of XDS input processor that allows changing values of XDS input parameters.
@@ -14,11 +14,11 @@ public class XdsInputParameterProcessor implements XdsInputLineProcessor {
     private static final Logger log = LoggerFactory.getLogger(XdsInputParameterProcessor.class);
 
     public final String pattern;
-    public final InputSupplier<String> replacement;
+    public final Supplier<String> replacement;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    private XdsInputParameterProcessor(String pattern, InputSupplier<String> replacement) {
+    private XdsInputParameterProcessor(String pattern, Supplier<String> replacement) {
         this.pattern = pattern;
         this.replacement = replacement;
     }
@@ -29,7 +29,7 @@ public class XdsInputParameterProcessor implements XdsInputLineProcessor {
      * @param paramValue supplier of value to be put as a replacement of original parameter value.
      * @return line processor for given XDS input parameter.
      */
-    public static XdsInputParameterProcessor replaceAnyValue(String paramName, InputSupplier<String> paramValue) {
+    public static XdsInputParameterProcessor replaceAnyValue(String paramName, Supplier<String> paramValue) {
         return new XdsInputParameterProcessor(anyValueOf(paramName), valueReplacementOf(paramName, paramValue));
     }
 
@@ -39,7 +39,7 @@ public class XdsInputParameterProcessor implements XdsInputLineProcessor {
      * @param paramValue supplier of value to be put as a replacement of original parameter value.
      * @return line processor for given XDS input parameter.
      */
-    public static XdsInputParameterProcessor replaceUndefinedValue(String paramName, InputSupplier<String> paramValue) {
+    public static XdsInputParameterProcessor replaceUndefinedValue(String paramName, Supplier<String> paramValue) {
         return new XdsInputParameterProcessor(undefinedValueOf(paramName), valueReplacementOf(paramName, paramValue));
     }
 
@@ -70,7 +70,7 @@ public class XdsInputParameterProcessor implements XdsInputLineProcessor {
      */
     @Override
     public String process(String line) throws IOException {
-        String newValue = replacement.getInput();
+        String newValue = replacement.get();
         log.trace("Set XDS input param {}", newValue);
         return line.replaceAll(pattern, newValue);
     }
@@ -85,7 +85,7 @@ public class XdsInputParameterProcessor implements XdsInputLineProcessor {
         return paramName + "\\s*=\\s*XXX";
     }
 
-    private static InputSupplier<String> valueReplacementOf(String paramName, InputSupplier<String> paramValue) {
-        return () -> paramName + "=" + paramValue.getInput();
+    private static Supplier<String> valueReplacementOf(String paramName, Supplier<String> paramValue) {
+        return () -> paramName + "=" + paramValue.get();
     }
 }

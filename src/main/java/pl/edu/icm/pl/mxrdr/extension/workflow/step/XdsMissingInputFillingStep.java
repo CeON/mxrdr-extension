@@ -1,20 +1,10 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
-import com.google.common.io.InputSupplier;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
-import edu.harvard.iq.dataverse.workflow.step.Failure;
-import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
-import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
-import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
-import pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputConditionalProcessor;
-import pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor;
-import pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputLineProcessor;
+import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
+import static java.util.stream.Collectors.toList;
+import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor.XDS_INPUT_FILE_NAME;
+import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputParameterProcessor.replaceUndefinedValue;
+import static java.util.Objects.nonNull;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -23,12 +13,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
-import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
-import static java.util.Objects.nonNull;
-import static java.util.stream.Collectors.toList;
-import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor.XDS_INPUT_FILE_NAME;
-import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputParameterProcessor.replaceUndefinedValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
+import edu.harvard.iq.dataverse.workflow.step.Failure;
+import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
+import pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputConditionalProcessor;
+import pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor;
+import pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputLineProcessor;
 
 /**
  * This step checks whether some values in XDS.INP were not set (these are: DETECTOR_DISTANCE,
@@ -123,12 +124,12 @@ public class XdsMissingInputFillingStep extends FilesystemAccessingWorkflowStep 
         final String fieldName = field.getDatasetFieldType().getName();
         final String fieldValue = field.getValue();
         return new XdsInputConditionalProcessor(
-                () -> FACTORIES.containsKey(fieldName) && nonNull(fieldValue),
+        		() -> FACTORIES.containsKey(fieldName) && nonNull(fieldValue),
                 () -> FACTORIES.get(fieldName).apply(() -> fieldValue)
         );
     }
 
     // -------------------- INNER CLASSES --------------------
 
-    private interface XdsInputLineProcessorFactory extends Function<InputSupplier<String>, XdsInputLineProcessor> { }
+    private interface XdsInputLineProcessorFactory extends Function<Supplier<String>, XdsInputLineProcessor> { }
 }
