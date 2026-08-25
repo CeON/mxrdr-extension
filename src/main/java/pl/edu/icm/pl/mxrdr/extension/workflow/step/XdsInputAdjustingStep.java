@@ -1,6 +1,5 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
-import com.google.common.io.InputSupplier;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
