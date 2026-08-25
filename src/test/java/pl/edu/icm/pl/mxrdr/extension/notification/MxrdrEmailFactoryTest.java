@@ -3,6 +3,7 @@ package pl.edu.icm.pl.mxrdr.extension.notification;
 import edu.harvard.iq.dataverse.mail.EmailContent;
 import edu.harvard.iq.dataverse.mail.MailService;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFileCategory;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
@@ -99,7 +100,9 @@ public class MxrdrEmailFactoryTest {
         Dataset ds = new Dataset();
         ds.setId(1L);
         ds.setIdentifier("sample-ds-" + ds.getId());
-        ds.setCategoriesByName(Arrays.asList("CatOne", "CatTwo", "CatThree"));
+        ds.addFileCategory(new DataFileCategory("CatOne"));
+        ds.addFileCategory(new DataFileCategory("CatTwo"));
+        ds.addFileCategory(new DataFileCategory("CatThree"));
 
         final DatasetVersion initialVersion = ds.getVersions().get(0);
 

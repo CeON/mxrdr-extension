@@ -15,7 +15,7 @@ import edu.harvard.iq.dataverse.workflow.artifacts.WorkflowArtifactServiceBean;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionService;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.omnifaces.util.Faces;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -164,7 +164,7 @@ public class DatasetAnalysisTab implements Serializable {
 
     public void downloadArtifact(String name, String location) {
         try {
-            Faces.sendFile(workflowArfifactService.readAsStream(location).get().getInput(), name, true);
+            Faces.sendFile(workflowArfifactService.readAsStream(location).get().get(), name, true);
         } catch (IOException e) {
             String error = "Problem getting stream from " + location + ": " + e;
             logger.warn(error);

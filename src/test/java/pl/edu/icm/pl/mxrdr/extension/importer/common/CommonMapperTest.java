@@ -1,10 +1,11 @@
 package pl.edu.icm.pl.mxrdr.extension.importer.common;
 
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
 import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
 import pl.edu.icm.pl.mxrdr.extension.importer.pdb.PdbDataContainer;
 import pl.edu.icm.pl.mxrdr.extension.importer.pdb.StructureDataProvider;

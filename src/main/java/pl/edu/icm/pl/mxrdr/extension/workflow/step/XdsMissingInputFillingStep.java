@@ -1,6 +1,5 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
-import com.google.common.io.InputSupplier;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
@@ -23,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
 import static java.util.Objects.nonNull;
@@ -130,5 +130,5 @@ public class XdsMissingInputFillingStep extends FilesystemAccessingWorkflowStep 
 
     // -------------------- INNER CLASSES --------------------
 
-    private interface XdsInputLineProcessorFactory extends Function<InputSupplier<String>, XdsInputLineProcessor> { }
+    private interface XdsInputLineProcessorFactory extends Function<Supplier<String>, XdsInputLineProcessor> { }
 }

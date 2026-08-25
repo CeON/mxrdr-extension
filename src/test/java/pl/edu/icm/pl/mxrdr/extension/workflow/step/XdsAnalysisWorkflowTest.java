@@ -80,6 +80,7 @@ public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implem
     static final String INPUT_PATH = "/tmp/xds-images/input";
     static final String OUTPUT_PATH = "/tmp/xds-images/output";
     static final String PROCESSING_PATH = "/tmp/xds-images/processing";
+    static final String SYSTEM_PROCESS_STEP_ID = "system-process";
 
     LocalDirStorageSource storageSource = new LocalDirStorageSource(INPUT_PATH);
 
@@ -105,20 +106,20 @@ public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implem
             givenWorkflowStep(MXRDR_PROVIDER_ID, XdsValidateMetadataStep.STEP_ID, emptyMap()),
             givenWorkflowStep(MXRDR_PROVIDER_ID, XdsImagesFetchingStep.STEP_ID, ImmutableMap.of(BASE_WORK_DIR_PARAM_NAME, PROCESSING_PATH)),
             givenWorkflowStep(MXRDR_PROVIDER_ID, XdsImagesPatternCalculatingStep.STEP_ID, emptyMap()),
-            givenWorkflowStep(INTERNAL_PROVIDER_ID, SystemProcessStep.STEP_ID,
+            givenWorkflowStep(INTERNAL_PROVIDER_ID, SYSTEM_PROCESS_STEP_ID,
                     singletonMap(COMMAND_PARAM_NAME, "generate_XDS.INP")),
             givenWorkflowStep(MXRDR_PROVIDER_ID, XdsMissingInputFillingStep.STEP_ID, emptyMap()),
             givenWorkflowStep(MXRDR_PROVIDER_ID, XdsInputAdjustingStep.STEP_ID,
                     singletonMap(JOBS_PARAM_NAME, "XYCORR;INIT;COLSPOT;IDXREF")),
-            givenWorkflowStep(INTERNAL_PROVIDER_ID, SystemProcessStep.STEP_ID,
+            givenWorkflowStep(INTERNAL_PROVIDER_ID, SYSTEM_PROCESS_STEP_ID,
                     singletonMap(COMMAND_PARAM_NAME, "xds_par")),
             givenWorkflowStep(MXRDR_PROVIDER_ID, XdsInputAdjustingStep.STEP_ID,
                     singletonMap(JOBS_PARAM_NAME, "DEFPIX;INTEGRATE;CORRECT")),
-            givenWorkflowStep(INTERNAL_PROVIDER_ID, SystemProcessStep.STEP_ID,
+            givenWorkflowStep(INTERNAL_PROVIDER_ID, SYSTEM_PROCESS_STEP_ID,
                     singletonMap(COMMAND_PARAM_NAME, "xds_par")),
             givenWorkflowStep(MXRDR_PROVIDER_ID, XdsInputAdjustingStep.STEP_ID,
                     singletonMap(ADJUST_RESOLUTION_PARAM_NAME, "true")),
-            givenWorkflowStep(INTERNAL_PROVIDER_ID, SystemProcessStep.STEP_ID,
+            givenWorkflowStep(INTERNAL_PROVIDER_ID, SYSTEM_PROCESS_STEP_ID,
                     singletonMap(COMMAND_PARAM_NAME, "xds_par")),
             givenWorkflowStep(MXRDR_PROVIDER_ID, XdsOutputImportingStep.STEP_ID, emptyMap()),
             givenWorkflowStep(INTERNAL_PROVIDER_ID, ClearWorkingDirWorkflowStep.STEP_ID, emptyMap())
@@ -139,7 +140,7 @@ public class XdsAnalysisWorkflowTest extends WorkflowExecutionJMSTestBase implem
 
         steps.register(MXRDR_PROVIDER_ID, this);
         steps.register(INTERNAL_PROVIDER_ID, new InternalWorkflowStepSPI(steps, versionsService,
-                Mockito.mock(CitationFactory.class), Mockito.mock(AuthenticationServiceBean.class), Clock.systemUTC()));
+                Mockito.mock(CitationFactory.class)));
 
         datasets.save(dataset);
         dataset.getLatestVersion().getDatasetFields().add(

@@ -1,6 +1,5 @@
 package pl.edu.icm.pl.mxrdr.extension.xds.output;
 
-import com.google.common.io.InputSupplier;
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -9,14 +8,15 @@ import org.slf4j.LoggerFactory;
 import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
 import pl.edu.icm.pl.mxrdr.extension.importer.SymmetryStructureMapper;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.common.io.ByteSource;
+import com.google.common.io.Files;
 
 /**
  * Extracts metadataFields from String lines taken from XDS output file (usually {@value XDS_OUTPUT_FILE_NAME}).
@@ -31,24 +31,21 @@ public class XdsOutputFileParser {
 
     private static final String OVERALL_RESOLUTION_INDICATOR = "STANDARD ERROR OF REFLECTION INTENSITIES AS FUNCTION OF RESOLUTION";
 
-    private final InputSupplier<InputStream> dataSupplier;
+    private final ByteSource dataSupplier;
     private final Charset dataCharset;
 
-    // -------------------- CONSTRUCTORS --------------------
-
     public XdsOutputFileParser(File dataFile) {
-        this(() -> new FileInputStream(dataFile));
+        this(Files.asByteSource(dataFile));
     }
 
-    public XdsOutputFileParser(InputSupplier<InputStream> dataSupplier) {
+    public XdsOutputFileParser(ByteSource dataSupplier) {
         this(dataSupplier, XDS_OUTPUT_FILE_CHARSET);
     }
 
-    public XdsOutputFileParser(InputSupplier<InputStream> dataSupplier, Charset dataCharset) {
+    public XdsOutputFileParser(ByteSource dataSupplier, Charset dataCharset) {
         this.dataSupplier = dataSupplier;
         this.dataCharset = dataCharset;
     }
-
     // -------------------- LOGIC --------------------
 
     public List<ResultField> asResultFields() {
@@ -358,7 +355,7 @@ public class XdsOutputFileParser {
     }
 
     private List<String> readDataLines() {
-        try (InputStream in = new BufferedInputStream(dataSupplier.getInput())) {
+        try (InputStream in = dataSupplier.openBufferedStream()) {
             return IOUtils.readLines(in, dataCharset);
         } catch (IOException e) {
             throw new IllegalStateException("There was a problem with reading XDS input", e);

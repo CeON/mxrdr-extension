@@ -1,6 +1,5 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
-import com.google.common.io.InputSupplier;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
@@ -19,6 +18,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
@@ -103,8 +103,15 @@ public class XdsInputAdjustingStep extends FilesystemAccessingWorkflowStep {
         return String.join(" ", jobs);
     }
 
-    private InputSupplier<String> includeResolutionRangeValue(ResolutionParameterExtractor extractor) {
-        return () -> "50 " + extractor.extract();
+    private Supplier<String> includeResolutionRangeValue(ResolutionParameterExtractor extractor) {
+        return () -> {
+			try {
+				return "50 " + extractor.extract();
+			} catch (IOException e) {
+				log.error(e.getMessage(), e);
+				return "";
+			}
+		};
     }
 
     // -------------------- INNER CLASSES --------------------
