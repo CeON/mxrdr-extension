@@ -1,23 +1,6 @@
 package pl.edu.icm.pl.mxrdr.extension.dataset.tab;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.apache.commons.lang3.StringUtils;
-import org.omnifaces.util.Faces;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Lists;
-
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
@@ -32,6 +15,21 @@ import edu.harvard.iq.dataverse.workflow.artifacts.WorkflowArtifactServiceBean;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionService;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
+import org.apache.commons.lang3.StringUtils;
+import org.omnifaces.util.Faces;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @ViewScoped
 @Named("datasetAnalysisTab")

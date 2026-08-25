@@ -1,20 +1,20 @@
 package pl.edu.icm.pl.mxrdr.extension.importer.common;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
-import java.util.List;
-import java.util.stream.Stream;
-
+import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import edu.harvard.iq.dataverse.importer.metadata.ResultField;
 import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
 import pl.edu.icm.pl.mxrdr.extension.importer.pdb.PdbDataContainer;
 import pl.edu.icm.pl.mxrdr.extension.importer.pdb.StructureDataProvider;
+
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 class CommonMapperTest {
 

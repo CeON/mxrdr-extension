@@ -1,5 +1,13 @@
 package pl.edu.icm.pl.mxrdr.extension.xds.output;
 
+import edu.harvard.iq.dataverse.importer.metadata.ResultField;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
+import pl.edu.icm.pl.mxrdr.extension.importer.SymmetryStructureMapper;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,17 +15,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
-
-import edu.harvard.iq.dataverse.importer.metadata.ResultField;
-import pl.edu.icm.pl.mxrdr.extension.importer.MxrdrMetadataField;
-import pl.edu.icm.pl.mxrdr.extension.importer.SymmetryStructureMapper;
 
 /**
  * Extracts metadataFields from String lines taken from XDS output file (usually {@value XDS_OUTPUT_FILE_NAME}).

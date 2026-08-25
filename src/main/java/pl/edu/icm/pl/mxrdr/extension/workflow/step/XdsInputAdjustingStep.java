@@ -1,10 +1,15 @@
 package pl.edu.icm.pl.mxrdr.extension.workflow.step;
 
-import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
-import static java.util.Collections.singletonList;
-import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor.XDS_INPUT_FILE_NAME;
-import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputParameterProcessor.replaceAnyValue;
-import static pl.edu.icm.pl.mxrdr.extension.xds.output.XdsOutputFileParser.XDS_OUTPUT_FILE_NAME;
+import com.google.common.io.InputSupplier;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
+import edu.harvard.iq.dataverse.workflow.step.Failure;
+import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,16 +22,11 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
-import edu.harvard.iq.dataverse.workflow.step.Failure;
-import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
-import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
-import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
-import pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor;
+import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
+import static java.util.Collections.singletonList;
+import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputFileProcessor.XDS_INPUT_FILE_NAME;
+import static pl.edu.icm.pl.mxrdr.extension.xds.input.XdsInputParameterProcessor.replaceAnyValue;
+import static pl.edu.icm.pl.mxrdr.extension.xds.output.XdsOutputFileParser.XDS_OUTPUT_FILE_NAME;
 
 /**
  * This step allows to replace JOBS and INCLUDE_RESOLUTION_RANGE parameter values in XDS.INP file.
