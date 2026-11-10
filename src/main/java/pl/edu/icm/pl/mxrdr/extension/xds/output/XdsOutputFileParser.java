@@ -1,7 +1,6 @@
 package pl.edu.icm.pl.mxrdr.extension.xds.output;
 
 import edu.harvard.iq.dataverse.importer.metadata.ResultField;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,13 +9,10 @@ import pl.edu.icm.pl.mxrdr.extension.importer.SymmetryStructureMapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.io.ByteSource;
-import com.google.common.io.Files;
 
 /**
  * Extracts metadataFields from String lines taken from XDS output file (usually {@value XDS_OUTPUT_FILE_NAME}).
@@ -31,19 +27,19 @@ public class XdsOutputFileParser {
 
     private static final String OVERALL_RESOLUTION_INDICATOR = "STANDARD ERROR OF REFLECTION INTENSITIES AS FUNCTION OF RESOLUTION";
 
-    private final ByteSource dataSupplier;
+    private final Path dataPath;
     private final Charset dataCharset;
 
     public XdsOutputFileParser(File dataFile) {
-        this(Files.asByteSource(dataFile));
+        this(dataFile.toPath());
     }
 
-    public XdsOutputFileParser(ByteSource dataSupplier) {
-        this(dataSupplier, XDS_OUTPUT_FILE_CHARSET);
+    public XdsOutputFileParser(Path dataPath) {
+        this(dataPath, XDS_OUTPUT_FILE_CHARSET);
     }
 
-    public XdsOutputFileParser(ByteSource dataSupplier, Charset dataCharset) {
-        this.dataSupplier = dataSupplier;
+    public XdsOutputFileParser(Path dataPath, Charset dataCharset) {
+        this.dataPath = dataPath;
         this.dataCharset = dataCharset;
     }
     // -------------------- LOGIC --------------------
@@ -355,8 +351,8 @@ public class XdsOutputFileParser {
     }
 
     private List<String> readDataLines() {
-        try (InputStream in = dataSupplier.openBufferedStream()) {
-            return IOUtils.readLines(in, dataCharset);
+        try {
+            return java.nio.file.Files.readAllLines(dataPath, dataCharset);
         } catch (IOException e) {
             throw new IllegalStateException("There was a problem with reading XDS input", e);
         }
